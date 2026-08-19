@@ -6,6 +6,8 @@ plugins {
     id("org.jetbrains.changelog")
 }
 
+version = "1.0.1"
+
 dependencies {
     testImplementation("junit:junit:4.13.2")
     implementation("org.tinyjee.jgraphx:jgraphx:3.4.1.3")

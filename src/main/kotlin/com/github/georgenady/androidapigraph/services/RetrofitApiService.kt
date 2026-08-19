@@ -5,6 +5,8 @@ import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VfsUtilCore
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.*
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
@@ -22,42 +24,50 @@ class RetrofitApiService(private val project: Project) {
 
     fun findRetrofitEndpoints(): List<ApiNode> {
         val endpoints = mutableListOf<ApiNode>()
-        // Use allScope to ensure we scan across all modules and dependencies if necessary
         val scope = GlobalSearchScope.allScope(project)
         val psiManager = PsiManager.getInstance(project)
 
-        thisLogger().info("Starting Retrofit API scan for project: ${project.name} (Scope: All)")
+        thisLogger().info("Starting Retrofit API scan (Scope: All)")
 
-        // 1. Scan Kotlin Files using FileTypeIndex
+        // 1. Try Index-based search first
         val kotlinFiles = FileTypeIndex.getFiles(KotlinFileType.INSTANCE, scope)
-        thisLogger().info("Found ${kotlinFiles.size} Kotlin files in allScope.")
-        kotlinFiles.forEach { virtualFile ->
-            val psiFile = psiManager.findFile(virtualFile)
-            if (psiFile is KtFile) {
-                val beforeCount = endpoints.size
-                scanKotlinFile(psiFile, endpoints)
-                if (endpoints.size > beforeCount) {
-                    thisLogger().info("Detected ${endpoints.size - beforeCount} endpoint(s) in: ${virtualFile.path}")
-                }
-            }
-        }
-
-        // 2. Scan Java Files using FileTypeIndex
         val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, scope)
-        thisLogger().info("Found ${javaFiles.size} Java files in allScope.")
-        javaFiles.forEach { virtualFile ->
-            val psiFile = psiManager.findFile(virtualFile)
-            if (psiFile is PsiJavaFile) {
-                val beforeCount = endpoints.size
-                scanJavaFile(psiFile, endpoints)
-                if (endpoints.size > beforeCount) {
-                    thisLogger().info("Detected ${endpoints.size - beforeCount} endpoint(s) in: ${virtualFile.path}")
-                }
-            }
+        
+        thisLogger().info("Index results: ${kotlinFiles.size} Kotlin files, ${javaFiles.size} Java files.")
+
+        if (kotlinFiles.isEmpty() && javaFiles.isEmpty()) {
+            thisLogger().warn("Indices are empty. Falling back to manual brute-force directory walk.")
+            performManualBruteForceScan(endpoints)
+        } else {
+            kotlinFiles.forEach { vf -> scanFile(vf, psiManager, endpoints) }
+            javaFiles.forEach { vf -> scanFile(vf, psiManager, endpoints) }
         }
 
-        thisLogger().info("Scan complete. Found ${endpoints.size} endpoints total.")
+        thisLogger().info("Scan complete. Found ${endpoints.size} total endpoints.")
         return endpoints
+    }
+
+    private fun scanFile(virtualFile: VirtualFile, psiManager: PsiManager, endpoints: MutableList<ApiNode>) {
+        val psiFile = psiManager.findFile(virtualFile) ?: return
+        when (psiFile) {
+            is KtFile -> scanKotlinFile(psiFile, endpoints)
+            is PsiJavaFile -> scanJavaFile(psiFile, endpoints)
+        }
+    }
+
+    private fun performManualBruteForceScan(endpoints: MutableList<ApiNode>) {
+        val psiManager = PsiManager.getInstance(project)
+        val baseDir = project.baseDir ?: return
+        
+        VfsUtilCore.iterateChildrenRecursively(baseDir, null) { virtualFile ->
+            if (!virtualFile.isDirectory) {
+                val extension = virtualFile.extension
+                if (extension == "kt" || extension == "java") {
+                    scanFile(virtualFile, psiManager, endpoints)
+                }
+            }
+            true
+        }
     }
 
     private fun scanKotlinFile(file: KtFile, endpoints: MutableList<ApiNode>) {
@@ -102,13 +112,10 @@ class RetrofitApiService(private val project: Project) {
     }
 
     private fun extractKotlinPath(annotation: KtAnnotationEntry): String {
-        // Handle @GET("/path") or @GET(value = "/path")
         val valueArgument = annotation.valueArguments.firstOrNull { 
             it.getArgumentName() == null || it.getArgumentName()?.asName?.asString() == "value"
         } ?: return ""
-        
-        val expression = valueArgument.getArgumentExpression()
-        return expression?.text?.removeSurrounding("\"") ?: ""
+        return valueArgument.getArgumentExpression()?.text?.removeSurrounding("\"") ?: ""
     }
 
     private fun extractJavaPath(annotation: PsiAnnotation): String {

@@ -23,7 +23,7 @@ class ApiGraphComponent : JBPanel<ApiGraphComponent>(BorderLayout()) {
                 return "${value.httpMethod} ${value.path}"
             }
             if (value is String && value.startsWith("REFRESH_BUTTON")) {
-                return "Click here to REFRESH"
+                return "SCAN AGAIN"
             }
             return super.convertValueToString(cell)
         }
@@ -50,35 +50,28 @@ class ApiGraphComponent : JBPanel<ApiGraphComponent>(BorderLayout()) {
             graph.removeCells(graph.getChildVertices(parent))
             
             if (endpoints.isEmpty()) {
-                val msg = "No Retrofit endpoints found.\n" +
-                          "Suggestions:\n" +
-                          "- Ensure your project is synced with Gradle.\n" +
-                          "- Check if @GET/@POST/etc. are correctly imported.\n" +
-                          "- Ensure you are in a module with source code."
+                val msg = "NOTHING FOUND\n\nPossible reasons:\n1. Gradle sync incomplete\n2. Indexing not finished\n3. No @GET/@POST annotations"
+                graph.insertVertex(parent, null, msg, 20.0, 20.0, 300.0, 100.0, 
+                    "fillColor=none;strokeColor=none;fontStyle=1;fontSize=14;align=left;verticalAlign=top")
                 
-                graph.insertVertex(parent, null, msg, 20.0, 20.0, 350.0, 80.0, 
-                    "fillColor=none;strokeColor=none;fontStyle=2;fontSize=12;align=left;verticalAlign=top")
-                
-                // Interactive Refresh vertex
-                graph.insertVertex(parent, null, "REFRESH_BUTTON", 20.0, 110.0, 150.0, 40.0,
-                    "fillColor=#4caf50;fontColor=#ffffff;strokeColor=#2e7d32;rounded=1;fontSize=13;fontStyle=1")
+                // Emergency Button in the Graph
+                graph.insertVertex(parent, null, "REFRESH_BUTTON", 20.0, 130.0, 120.0, 40.0,
+                    "fillColor=#ff9800;fontColor=#ffffff;strokeColor=#e65100;rounded=1;fontSize=14;fontStyle=1")
                 
                 return
             }
 
             val classNodes = mutableMapOf<String, Any>()
-            
             endpoints.groupBy { it.className }.forEach { (className, methods) ->
-                val classVertex = graph.insertVertex(parent, null, className, 0.0, 0.0, 120.0, 40.0, "fillColor=#f0f0f0;fontStyle=1")
+                val classVertex = graph.insertVertex(parent, null, className, 0.0, 0.0, 140.0, 40.0, "fillColor=#f5f5f5;strokeColor=#bdbdbd;fontStyle=1")
                 classNodes[className] = classVertex
                 
                 methods.forEach { node ->
-                    val methodVertex = graph.insertVertex(parent, null, node, 0.0, 0.0, 150.0, 50.0, "fillColor=#e1f5fe")
-                    graph.insertEdge(parent, null, "", classVertex, methodVertex)
+                    val methodVertex = graph.insertVertex(parent, null, node, 0.0, 0.0, 180.0, 40.0, "fillColor=#e3f2fd;strokeColor=#2196f3")
+                    graph.insertEdge(parent, null, "", classVertex, methodVertex, "strokeColor=#90caf9")
                 }
             }
             
-            // Apply layout
             val layout = mxHierarchicalLayout(graph)
             layout.execute(parent)
             
