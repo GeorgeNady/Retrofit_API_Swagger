@@ -4,7 +4,10 @@ import com.github.georgenady.rettrofitapigraph.model.ApiNode
 import com.github.georgenady.rettrofitapigraph.parser.CompositeEndpointParser
 import com.github.georgenady.rettrofitapigraph.parser.JavaEndpointParser
 import com.github.georgenady.rettrofitapigraph.parser.KotlinEndpointParser
+import com.github.georgenady.rettrofitapigraph.toolWindow.MyToolWindow
 import com.intellij.ide.highlighter.JavaFileType
+import com.intellij.openapi.components.service
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiJavaFile
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
@@ -161,5 +164,19 @@ class RetrofitApiServiceTest : BasePlatformTestCase() {
         assertEquals(1, parsed.size)
         assertEquals("GET", parsed[0].httpMethod)
         assertEquals("test", parsed[0].path)
+    }
+
+    @Test
+    fun testRetrofitApiServiceServiceResolution() {
+        val constructor = RetrofitApiService::class.java.getDeclaredConstructor(Project::class.java)
+        assertNotNull(constructor)
+        val serviceInstance = project.service<RetrofitApiService>()
+        assertNotNull(serviceInstance)
+    }
+
+    @Test
+    fun testMyToolWindowCreation() {
+        val toolWindow = MyToolWindow(project)
+        assertNotNull(toolWindow.getComponent())
     }
 }

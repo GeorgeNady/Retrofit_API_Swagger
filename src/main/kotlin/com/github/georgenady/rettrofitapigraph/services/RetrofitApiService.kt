@@ -19,7 +19,7 @@ import com.intellij.psi.PsiManager
 import org.jetbrains.kotlin.psi.KtFile
 
 @Service(Service.Level.PROJECT)
-class RetrofitApiService(
+class RetrofitApiService @JvmOverloads constructor(
     private val project: Project,
     private val fileCollector: ProjectSourceFileCollector = ProjectSourceFileCollector(project),
     private val endpointParser: FileEndpointParser = CompositeEndpointParser(),
