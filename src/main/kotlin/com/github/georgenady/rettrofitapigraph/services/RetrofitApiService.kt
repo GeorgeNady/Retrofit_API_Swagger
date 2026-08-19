@@ -1,10 +1,12 @@
-package com.github.georgenady.androidapigraph.services
+package com.github.georgenady.rettrofitapigraph.services
 
-import com.github.georgenady.androidapigraph.model.ApiNode
+import com.github.georgenady.rettrofitapigraph.model.ApiNode
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ModuleRootManager
+import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.*
@@ -17,57 +19,67 @@ import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtNamedFunction
 
+data class ScanResult(
+    val endpoints: List<ApiNode>,
+    val filesScanned: Int,
+    val durationMs: Long
+)
+
 @Service(Service.Level.PROJECT)
 class RetrofitApiService(private val project: Project) {
 
     private val retrofitAnnotations = listOf("GET", "POST", "PUT", "DELETE", "PATCH")
 
-    fun findRetrofitEndpoints(): List<ApiNode> {
+    fun findRetrofitEndpoints(): ScanResult {
+        val startTime = System.currentTimeMillis()
         val endpoints = mutableListOf<ApiNode>()
+        val scannedFiles = mutableSetOf<VirtualFile>()
+        
         val scope = GlobalSearchScope.allScope(project)
         val psiManager = PsiManager.getInstance(project)
 
-        thisLogger().info("Starting Retrofit API scan (Scope: All)")
+        thisLogger().info("Starting Aggressive Retrofit API scan")
 
-        // 1. Try Index-based search first
+        // 1. Index-based search (Fast)
         val kotlinFiles = FileTypeIndex.getFiles(KotlinFileType.INSTANCE, scope)
         val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, scope)
         
-        thisLogger().info("Index results: ${kotlinFiles.size} Kotlin files, ${javaFiles.size} Java files.")
-
-        if (kotlinFiles.isEmpty() && javaFiles.isEmpty()) {
-            thisLogger().warn("Indices are empty. Falling back to manual brute-force directory walk.")
-            performManualBruteForceScan(endpoints)
-        } else {
-            kotlinFiles.forEach { vf -> scanFile(vf, psiManager, endpoints) }
-            javaFiles.forEach { vf -> scanFile(vf, psiManager, endpoints) }
-        }
-
-        thisLogger().info("Scan complete. Found ${endpoints.size} total endpoints.")
-        return endpoints
-    }
-
-    private fun scanFile(virtualFile: VirtualFile, psiManager: PsiManager, endpoints: MutableList<ApiNode>) {
-        val psiFile = psiManager.findFile(virtualFile) ?: return
-        when (psiFile) {
-            is KtFile -> scanKotlinFile(psiFile, endpoints)
-            is PsiJavaFile -> scanJavaFile(psiFile, endpoints)
-        }
-    }
-
-    private fun performManualBruteForceScan(endpoints: MutableList<ApiNode>) {
-        val psiManager = PsiManager.getInstance(project)
-        val baseDir = project.baseDir ?: return
+        thisLogger().info("Index results: ${kotlinFiles.size} Kotlin, ${javaFiles.size} Java files.")
         
-        VfsUtilCore.iterateChildrenRecursively(baseDir, null) { virtualFile ->
-            if (!virtualFile.isDirectory) {
-                val extension = virtualFile.extension
-                if (extension == "kt" || extension == "java") {
-                    scanFile(virtualFile, psiManager, endpoints)
+        kotlinFiles.forEach { vf -> scannedFiles.add(vf) }
+        javaFiles.forEach { vf -> scannedFiles.add(vf) }
+
+        // 2. Module Content Root walk (Aggressive for multi-module)
+        val moduleManager = ModuleManager.getInstance(project)
+        moduleManager.modules.forEach { module ->
+            val rootManager = ModuleRootManager.getInstance(module)
+            rootManager.contentRoots.forEach { root ->
+                VfsUtilCore.iterateChildrenRecursively(root, null) { virtualFile ->
+                    if (!virtualFile.isDirectory) {
+                        val ext = virtualFile.extension
+                        if (ext == "kt" || ext == "java") {
+                            scannedFiles.add(virtualFile)
+                        }
+                    }
+                    true
                 }
             }
-            true
         }
+
+        thisLogger().info("Total unique files identified for scanning: ${scannedFiles.size}")
+
+        scannedFiles.forEach { virtualFile ->
+            val psiFile = psiManager.findFile(virtualFile) ?: return@forEach
+            when (psiFile) {
+                is KtFile -> scanKotlinFile(psiFile, endpoints)
+                is PsiJavaFile -> scanJavaFile(psiFile, endpoints)
+            }
+        }
+
+        val duration = System.currentTimeMillis() - startTime
+        thisLogger().info("Scan complete. Found ${endpoints.size} endpoints in ${scannedFiles.size} files in ${duration}ms.")
+        
+        return ScanResult(endpoints, scannedFiles.size, duration)
     }
 
     private fun scanKotlinFile(file: KtFile, endpoints: MutableList<ApiNode>) {

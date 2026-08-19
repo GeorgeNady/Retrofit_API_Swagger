@@ -1,4 +1,4 @@
-package com.github.georgenady.androidapigraph.model
+package com.github.georgenady.rettrofitapigraph.model
 
 import com.intellij.psi.PsiElement
 

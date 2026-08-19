@@ -1,4 +1,4 @@
-package com.github.georgenady.androidapigraph.toolWindow
+package com.github.georgenady.rettrofitapigraph.toolWindow
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*
@@ -8,14 +8,12 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
-import com.github.georgenady.androidapigraph.services.RetrofitApiService
-import com.github.georgenady.androidapigraph.ui.ApiGraphComponent
+import com.github.georgenady.rettrofitapigraph.services.RetrofitApiService
+import com.github.georgenady.rettrofitapigraph.ui.ApiGraphComponent
 import java.awt.BorderLayout
-import javax.swing.JButton
 import javax.swing.JPanel
 
 class MyToolWindowFactory : ToolWindowFactory {
@@ -24,6 +22,16 @@ class MyToolWindowFactory : ToolWindowFactory {
         val myToolWindow = MyToolWindow(project)
         val content = ContentFactory.getInstance().createContent(myToolWindow.getComponent(), null, false)
         toolWindow.contentManager.addContent(content)
+        
+        // Add action to tool window header
+        val actionGroup = DefaultActionGroup().apply {
+            add(object : AnAction("Refresh API Graph", "Scan project for Retrofit endpoints", AllIcons.Actions.Refresh) {
+                override fun actionPerformed(e: AnActionEvent) {
+                    myToolWindow.refresh()
+                }
+            })
+        }
+        toolWindow.setTitleActions(listOf(actionGroup.getChildren(null)[0]))
     }
 
     override fun shouldBeAvailable(project: Project) = true
@@ -32,43 +40,28 @@ class MyToolWindowFactory : ToolWindowFactory {
 
         private val apiService = project.service<RetrofitApiService>()
         private val graphComponent = ApiGraphComponent()
-        private val panel = SimpleToolWindowPanel(true, true)
+        private val mainPanel = JPanel(BorderLayout())
 
         init {
             graphComponent.onRefreshRequested = { refresh() }
-            
-            // 1. Create Action Toolbar (Standard)
-            val actionGroup = DefaultActionGroup().apply {
-                add(object : AnAction("Refresh API Graph", "Scan project for Retrofit endpoints", AllIcons.Actions.Refresh) {
-                    override fun actionPerformed(e: AnActionEvent) {
-                        refresh()
-                    }
-                })
-            }
-            val toolbar = ActionManager.getInstance().createActionToolbar("RetrofitApiGraphToolbar", actionGroup, true)
-            toolbar.targetComponent = panel
-            
-            // 2. Create Fallback Button Panel (in case Toolbar is hidden)
-            val fallbackPanel = JPanel(BorderLayout())
-            fallbackPanel.add(JButton("Manual Refresh").apply {
-                addActionListener { refresh() }
-            }, BorderLayout.NORTH)
-            fallbackPanel.add(graphComponent, BorderLayout.CENTER)
-
-            panel.toolbar = toolbar.component
-            panel.setContent(fallbackPanel)
-
+            mainPanel.add(graphComponent, BorderLayout.CENTER)
             refresh()
         }
 
-        fun getComponent() = panel
+        fun getComponent() = mainPanel
 
-        private fun refresh() {
+        fun refresh() {
             ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Scanning for Retrofit APIs") {
                 override fun run(indicator: ProgressIndicator) {
-                    val endpoints = apiService.findRetrofitEndpoints()
                     ApplicationManager.getApplication().invokeLater {
-                        graphComponent.updateData(endpoints)
+                        graphComponent.setStatus("Scanning...")
+                    }
+                    
+                    val result = apiService.findRetrofitEndpoints()
+                    
+                    ApplicationManager.getApplication().invokeLater {
+                        graphComponent.updateData(result.endpoints)
+                        graphComponent.setStatus("Scanned ${result.filesScanned} files in ${result.durationMs}ms. Found ${result.endpoints.size} APIs.")
                     }
                 }
             })

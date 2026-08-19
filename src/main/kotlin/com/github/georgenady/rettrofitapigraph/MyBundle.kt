@@ -1,4 +1,4 @@
-package com.github.georgenady.androidapigraph
+package com.github.georgenady.rettrofitapigraph
 
 import com.intellij.DynamicBundle
 import org.jetbrains.annotations.NonNls

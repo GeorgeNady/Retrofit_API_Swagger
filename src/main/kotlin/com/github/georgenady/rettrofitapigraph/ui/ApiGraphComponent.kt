@@ -1,20 +1,28 @@
-package com.github.georgenady.androidapigraph.ui
+package com.github.georgenady.rettrofitapigraph.ui
 
-import com.github.georgenady.androidapigraph.model.ApiNode
+import com.github.georgenady.rettrofitapigraph.model.ApiNode
+import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
+import com.intellij.util.ui.JBUI
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout
 import com.mxgraph.swing.mxGraphComponent
 import com.mxgraph.view.mxGraph
 import java.awt.BorderLayout
+import java.awt.Color
 import java.awt.Cursor
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.BorderFactory
+import javax.swing.SwingConstants
 
 class ApiGraphComponent : JBPanel<ApiGraphComponent>(BorderLayout()) {
 
     var onRefreshRequested: (() -> Unit)? = null
+    private val statusLabel = JBLabel("Ready").apply {
+        horizontalAlignment = SwingConstants.LEFT
+        border = JBUI.Borders.empty(2, 5)
+    }
 
     private val graph = object : mxGraph() {
         override fun convertValueToString(cell: Any?): String {
@@ -40,7 +48,13 @@ class ApiGraphComponent : JBPanel<ApiGraphComponent>(BorderLayout()) {
             border = BorderFactory.createEmptyBorder()
         }, BorderLayout.CENTER)
         
+        add(statusLabel, BorderLayout.SOUTH)
+        
         setupClickListeners()
+    }
+
+    fun setStatus(text: String) {
+        statusLabel.text = text
     }
 
     fun updateData(endpoints: List<ApiNode>) {
@@ -50,25 +64,32 @@ class ApiGraphComponent : JBPanel<ApiGraphComponent>(BorderLayout()) {
             graph.removeCells(graph.getChildVertices(parent))
             
             if (endpoints.isEmpty()) {
-                val msg = "NOTHING FOUND\n\nPossible reasons:\n1. Gradle sync incomplete\n2. Indexing not finished\n3. No @GET/@POST annotations"
-                graph.insertVertex(parent, null, msg, 20.0, 20.0, 300.0, 100.0, 
-                    "fillColor=none;strokeColor=none;fontStyle=1;fontSize=14;align=left;verticalAlign=top")
+                val msg = "NO ENDPOINTS DETECTED\n\n" +
+                          "Checklist:\n" +
+                          "1. Are your Retrofit interfaces marked with @GET/@POST?\n" +
+                          "2. Is the project fully synced (Gradle)?\n" +
+                          "3. Are the files within module source roots?"
                 
-                // Emergency Button in the Graph
-                graph.insertVertex(parent, null, "REFRESH_BUTTON", 20.0, 130.0, 120.0, 40.0,
-                    "fillColor=#ff9800;fontColor=#ffffff;strokeColor=#e65100;rounded=1;fontSize=14;fontStyle=1")
+                graph.insertVertex(parent, null, msg, 20.0, 20.0, 350.0, 120.0, 
+                    "fillColor=none;strokeColor=none;fontStyle=1;fontSize=13;align=left;verticalAlign=top;fontColor=#888888")
+                
+                // Big Orange Button
+                graph.insertVertex(parent, null, "REFRESH_BUTTON", 20.0, 150.0, 140.0, 45.0,
+                    "fillColor=#F57C00;fontColor=#ffffff;strokeColor=#E65100;rounded=1;fontSize=14;fontStyle=1")
                 
                 return
             }
 
             val classNodes = mutableMapOf<String, Any>()
             endpoints.groupBy { it.className }.forEach { (className, methods) ->
-                val classVertex = graph.insertVertex(parent, null, className, 0.0, 0.0, 140.0, 40.0, "fillColor=#f5f5f5;strokeColor=#bdbdbd;fontStyle=1")
+                val classVertex = graph.insertVertex(parent, null, className, 0.0, 0.0, 160.0, 40.0, 
+                    "fillColor=#EEEEEE;strokeColor=#BDBDBD;fontStyle=1;fontColor=#333333")
                 classNodes[className] = classVertex
                 
                 methods.forEach { node ->
-                    val methodVertex = graph.insertVertex(parent, null, node, 0.0, 0.0, 180.0, 40.0, "fillColor=#e3f2fd;strokeColor=#2196f3")
-                    graph.insertEdge(parent, null, "", classVertex, methodVertex, "strokeColor=#90caf9")
+                    val methodVertex = graph.insertVertex(parent, null, node, 0.0, 0.0, 200.0, 40.0, 
+                        "fillColor=#E3F2FD;strokeColor=#2196F3;fontColor=#0D47A1")
+                    graph.insertEdge(parent, null, "", classVertex, methodVertex, "strokeColor=#90CAF9;endArrow=none")
                 }
             }
             

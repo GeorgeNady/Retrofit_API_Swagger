@@ -1,8 +1,8 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <id>com.github.georgenady.androidapigraph</id>
-    <name>android_api_graph</name>
-    <vendor>georgenady</vendor>
+    <id>com.github.georgenady.rettrofitapigraph</id>
+    <name>Retrofit Api Graph</name>
+    <vendor>George Nady</vendor>
     <description><![CDATA[
         <p><b>Retrofit API Graph</b> visualizes your Retrofit API definitions in a graph-like interface.</p>
         <p>Features:</p>
@@ -20,7 +20,10 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.georgenady.androidapigraph.toolWindow.MyToolWindowFactory" id="RetrofitApiGraph" name="API Graph"/>
+        <toolWindow factoryClass="com.github.georgenady.rettrofitapigraph.toolWindow.MyToolWindowFactory"
+                    id="RetrofitApiGraph"
+                    name="API Graph"
+                    anchor="right"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">

@@ -6,7 +6,7 @@ plugins {
     id("org.jetbrains.changelog")
 }
 
-version = "1.0.1"
+version = "1.0.2"
 
 dependencies {
     testImplementation("junit:junit:4.13.2")
