@@ -5,9 +5,13 @@ plugins {
     id("org.jetbrains.kotlin.jvm")
     id("org.jetbrains.intellij.platform")
     id("org.jetbrains.changelog")
+    id("com.gradleup.shadow") version "8.3.0"
 }
 
-version = "1.0.3"
+version = "1.0.4"
+
+val shadowImplementation: Configuration by configurations.creating
+configurations.implementation.get().extendsFrom(shadowImplementation)
 
 dependencies {
     testImplementation("junit:junit:4.13.2")
@@ -19,5 +23,16 @@ dependencies {
         bundledPlugin("org.jetbrains.android")
         pluginVerifier()
         zipSigner()
+    }
+}
+
+tasks {
+    shadowJar {
+        configurations = listOf(shadowImplementation)
+        archiveClassifier.set("shadow")
+    }
+
+    buildPlugin {
+        // We'll rely on implementation for now, but let's see if we can force bundling
     }
 }

@@ -7,16 +7,21 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
+import com.intellij.ui.components.JBLabel
 import com.intellij.ui.content.ContentFactory
 import com.github.georgenady.rettrofitapigraph.services.RetrofitApiService
 import com.github.georgenady.rettrofitapigraph.ui.ApiGraphComponent
+import com.intellij.util.ui.AsyncProcessIcon
 import java.awt.BorderLayout
+import java.awt.CardLayout
 import javax.swing.JPanel
+import javax.swing.SwingConstants
 
-class MyToolWindowFactory : ToolWindowFactory {
+class MyToolWindowFactory : ToolWindowFactory, DumbAware {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val myToolWindow = MyToolWindow(project)
@@ -39,22 +44,37 @@ class MyToolWindowFactory : ToolWindowFactory {
 
         private val apiService = project.service<RetrofitApiService>()
         private val graphComponent = ApiGraphComponent(project)
-        private val mainPanel = JPanel(BorderLayout())
+        private val cardLayout = CardLayout()
+        private val mainPanel = JPanel(cardLayout)
 
         init {
+            val loadingPanel = JPanel(BorderLayout()).apply {
+                val centerPanel = JPanel(BorderLayout())
+                centerPanel.add(AsyncProcessIcon("Scanning"), BorderLayout.NORTH)
+                centerPanel.add(JBLabel("Scanning Project for Retrofit APIs...", SwingConstants.CENTER), BorderLayout.SOUTH)
+                add(centerPanel, BorderLayout.CENTER)
+            }
+
             graphComponent.onRefreshRequested = { refresh() }
-            mainPanel.add(graphComponent, BorderLayout.CENTER)
+            
+            mainPanel.add(loadingPanel, "LOADING")
+            mainPanel.add(graphComponent, "GRAPH")
+            
             refresh()
         }
 
         fun getComponent() = mainPanel
 
         fun refresh() {
+            cardLayout.show(mainPanel, "LOADING")
+            
             ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Scanning for Retrofit APIs") {
                 override fun run(indicator: ProgressIndicator) {
                     val result = apiService.findRetrofitEndpoints()
                     ApplicationManager.getApplication().invokeLater {
                         graphComponent.updateData(result.endpoints)
+                        graphComponent.setStatus("Scanned ${result.filesScanned} files. Found ${result.endpoints.size} APIs.")
+                        cardLayout.show(mainPanel, "GRAPH")
                     }
                 }
             })

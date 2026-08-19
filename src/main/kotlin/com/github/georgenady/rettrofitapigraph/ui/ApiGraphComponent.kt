@@ -70,14 +70,35 @@ class ApiGraphComponent(private val project: Project) : JBPanel<ApiGraphComponen
         setupClickListeners()
     }
 
+    fun setStatus(text: String) {
+        statusLabel.text = text
+    }
+
     fun updateData(endpoints: List<ApiNode>) {
         val parent = graph.defaultParent
         graph.model.beginUpdate()
         try {
             graph.removeCells(graph.getChildVertices(parent))
             
+            if (endpoints.isEmpty()) {
+                val msg = "NO ENDPOINTS DETECTED\n\n" +
+                          "Checklist:\n" +
+                          "1. Are your Retrofit interfaces marked with @GET/@POST?\n" +
+                          "2. Is the project fully synced (Gradle)?\n" +
+                          "3. Are the files within module source roots?"
+                
+                graph.insertVertex(parent, null, msg, 20.0, 20.0, 350.0, 120.0, 
+                    "fillColor=none;strokeColor=none;fontStyle=1;fontSize=13;align=left;verticalAlign=top;fontColor=#888888")
+                
+                graph.insertVertex(parent, null, "REFRESH_BUTTON", 20.0, 150.0, 140.0, 45.0,
+                    "fillColor=#F57C00;fontColor=#ffffff;strokeColor=#E65100;rounded=1;fontSize=14;fontStyle=1")
+                
+                return
+            }
+
             endpoints.forEach { node ->
-                val style = if (node.supportsCache) "fillColor=#C8E6C9;strokeColor=#4CAF50" else "fillColor=#E3F2FD;strokeColor=#2196F3"
+                val style = if (node.supportsCache) "fillColor=#C8E6C9;strokeColor=#4CAF50;fontColor=#000000" 
+                            else "fillColor=#E3F2FD;strokeColor=#2196F3;fontColor=#000000"
                 graph.insertVertex(parent, null, node, 0.0, 0.0, 200.0, 40.0, style)
             }
             
