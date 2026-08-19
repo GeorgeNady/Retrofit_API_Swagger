@@ -4,16 +4,22 @@
     <name>android_api_graph</name>
     <vendor>georgenady</vendor>
     <description><![CDATA[
-        <p><b>android_api_graph</b> is a repository that provides a pure template to make it easier to create a new plugin project.</p>
-        <p>The main goal of this template is to speed up the setup phase of plugin development for both new and experienced developers by preconfiguring the project scaffold and CI, linking to the proper documentation pages, and keeping everything organized.</p>
+        <p><b>Retrofit API Graph</b> visualizes your Retrofit API definitions in a graph-like interface.</p>
+        <p>Features:</p>
+        <ul>
+            <li>Scan project for @GET, @POST, etc. annotations.</li>
+            <li>List endpoints grouped by interface.</li>
+            <li>Click to navigate to source code.</li>
+        </ul>
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.java</depends>
+    <depends>org.jetbrains.kotlin</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.georgenady.androidapigraph.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
-        <postStartupActivity implementation="com.github.georgenady.androidapigraph.startup.MyProjectActivity" />
+        <toolWindow factoryClass="com.github.georgenady.androidapigraph.toolWindow.MyToolWindowFactory" id="RetrofitApiGraph" name="API Graph"/>
     </extensions>
 </idea-plugin>
