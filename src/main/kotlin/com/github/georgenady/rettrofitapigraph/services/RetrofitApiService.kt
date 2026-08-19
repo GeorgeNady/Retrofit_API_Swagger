@@ -1,6 +1,8 @@
 package com.github.georgenady.rettrofitapigraph.services
 
+import com.github.georgenady.rettrofitapigraph.model.AnnotationDetail
 import com.github.georgenady.rettrofitapigraph.model.ApiNode
+import com.github.georgenady.rettrofitapigraph.model.ParameterDetail
 import com.github.georgenady.rettrofitapigraph.model.ScanResult
 import com.github.georgenady.rettrofitapigraph.parser.CompositeEndpointParser
 import com.github.georgenady.rettrofitapigraph.parser.FileEndpointParser

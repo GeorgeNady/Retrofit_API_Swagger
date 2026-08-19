@@ -1,43 +1,55 @@
 package com.github.georgenady.rettrofitapigraph.toolWindow
 
+import com.github.georgenady.rettrofitapigraph.model.ApiFilterModel
+import com.github.georgenady.rettrofitapigraph.model.ApiNode
 import com.github.georgenady.rettrofitapigraph.services.RetrofitApiService
 import com.github.georgenady.rettrofitapigraph.ui.ApiListPanel
-import com.intellij.icons.AllIcons
+import com.github.georgenady.rettrofitapigraph.ui.sidepanel.FeatureSidePanel
+import com.github.georgenady.rettrofitapigraph.ui.sidepanel.sections.DetailsSection
+import com.github.georgenady.rettrofitapigraph.ui.sidepanel.sections.FilterSection
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
-import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
+import com.intellij.ui.OnePixelSplitter
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.AsyncProcessIcon
 import java.awt.BorderLayout
 import java.awt.CardLayout
-import java.awt.FlowLayout
-import javax.swing.JButton
 import javax.swing.JPanel
 import javax.swing.SwingConstants
 
 class MyToolWindow(private val project: Project) {
 
     private val apiService = project.service<RetrofitApiService>()
-    private val listPanel = ApiListPanel() // Updated to ApiListPanel
+    private val listPanel = ApiListPanel()
+    private val sidePanel = FeatureSidePanel()
     private val cardLayout = CardLayout()
     private val contentPanel = JPanel(cardLayout)
     private val mainWrapper = JPanel(BorderLayout())
 
+    private var allEndpoints: List<ApiNode> = emptyList()
+    private var currentFilter = ApiFilterModel()
+
+    private val splitter = OnePixelSplitter(false, 1.0f).apply {
+        firstComponent = contentPanel
+        secondComponent = null // Hidden by default
+    }
+
+    private val filterSection = FilterSection { newFilter ->
+        currentFilter = newFilter
+        applyFilters()
+    }
+
     init {
         mainWrapper.putClientProperty("MyToolWindow", this)
 
-        val toolbarPanel = JPanel(FlowLayout(FlowLayout.LEFT))
-        toolbarPanel.add(JButton("Scan Project", AllIcons.Actions.Find).apply {
-            addActionListener { refresh() }
-        })
-
         val loadingPanel = JPanel(BorderLayout()).apply {
-            val centerPanel = JPanel(BorderLayout())
+            isOpaque = false
+            val centerPanel = JPanel(BorderLayout()).apply { isOpaque = false }
             centerPanel.add(AsyncProcessIcon("Scanning"), BorderLayout.NORTH)
             centerPanel.add(
                 JBLabel("Discovering API Endpoints...", SwingConstants.CENTER),
@@ -47,17 +59,41 @@ class MyToolWindow(private val project: Project) {
         }
 
         listPanel.onRefreshRequested = { refresh() }
+        listPanel.onNodeSelected = { node ->
+            sidePanel.notifyNodeSelected(node)
+        }
+
+        sidePanel.addSection(filterSection)
+        sidePanel.addSection(DetailsSection())
 
         contentPanel.add(loadingPanel, "LOADING")
         contentPanel.add(listPanel, "GRAPH")
 
-        mainWrapper.add(toolbarPanel, BorderLayout.NORTH)
-        mainWrapper.add(contentPanel, BorderLayout.CENTER)
+        // Splitter is already horizontal (vertical = false)
+        mainWrapper.add(splitter, BorderLayout.CENTER)
 
         refresh()
     }
 
     fun getComponent() = mainWrapper
+
+    fun toggleSidePanel() {
+        if (splitter.secondComponent == null) {
+            splitter.secondComponent = sidePanel
+            splitter.proportion = 0.7f
+        } else {
+            splitter.secondComponent = null
+            splitter.proportion = 1.0f
+        }
+        splitter.revalidate()
+        splitter.repaint()
+    }
+
+    private fun applyFilters() {
+        val filtered = allEndpoints.filter { currentFilter.matches(it) }
+        listPanel.setEndpoints(filtered)
+        listPanel.setStatus("Showing ${filtered.size} of ${allEndpoints.size} endpoints.")
+    }
 
     fun refresh() {
         cardLayout.show(contentPanel, "LOADING")
@@ -68,15 +104,16 @@ class MyToolWindow(private val project: Project) {
                     val result = apiService.findRetrofitEndpoints(indicator)
 
                     ApplicationManager.getApplication().invokeLater {
-                        listPanel.setEndpoints(result.endpoints)
+                        allEndpoints = result.endpoints
+                        
+                        val modules = allEndpoints.map { it.className }.distinct().sorted()
+                        filterSection.updateModules(modules)
+                        
+                        applyFilters()
 
-                        val status = if (result.isDumb) {
-                            "Indexing in progress. Please wait and scan again."
-                        } else {
-                            "🔎 Found ${result.endpoints.size} 🛜 endpoints in ⌛ ${result.durationMs} ms."
+                        if (result.isDumb) {
+                            listPanel.setStatus("Indexing in progress. Please wait and scan again.")
                         }
-
-                        listPanel.setStatus(status)
                         cardLayout.show(contentPanel, "GRAPH")
                     }
                 }

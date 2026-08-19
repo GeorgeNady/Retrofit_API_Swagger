@@ -26,11 +26,17 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <actions>
-        <action id="com.github.georgenady.rettrofitapigraph.actions.RefreshApiGraphAction"
+        <action id="RetrofitApiGraph.Refresh"
                 class="com.github.georgenady.rettrofitapigraph.actions.RefreshApiGraphAction"
                 text="Refresh API Graph"
                 description="Scan project for Retrofit endpoints"
                 icon="AllIcons.Actions.Refresh">
+        </action>
+        <action id="RetrofitApiGraph.ToggleSidePanel"
+                class="com.github.georgenady.rettrofitapigraph.actions.ToggleSidePanelAction"
+                text="Toggle Side Panel"
+                description="Show or hide the feature panel"
+                icon="AllIcons.General.Filter">
         </action>
     </actions>
 

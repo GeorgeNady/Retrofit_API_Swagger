@@ -1,6 +1,8 @@
 package com.github.georgenady.rettrofitapigraph.parser
 
+import com.github.georgenady.rettrofitapigraph.model.AnnotationDetail
 import com.github.georgenady.rettrofitapigraph.model.ApiNode
+import com.github.georgenady.rettrofitapigraph.model.ParameterDetail
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
@@ -34,9 +36,12 @@ class KotlinEndpointParser : FileEndpointParser {
         var httpMethod: String? = null
         var path = ""
         var supportsCache = false
+        val allAnnotations = mutableListOf<AnnotationDetail>()
 
         for (annotation in function.annotationEntries) {
             val name = annotation.shortName?.asString() ?: continue
+            val args = extractKotlinAnnotationArgs(annotation)
+            allAnnotations.add(AnnotationDetail(name, args))
 
             if (name in RetrofitConstants.HTTP_METHODS) {
                 httpMethod = name
@@ -57,14 +62,32 @@ class KotlinEndpointParser : FileEndpointParser {
         val parentClass = PsiTreeUtil.getParentOfType(function, KtClassOrObject::class.java)
         val className = parentClass?.name ?: file.name.substringBeforeLast(".")
 
+        val parameters = if (httpMethod != "GET") {
+            function.valueParameters.map { 
+                ParameterDetail(it.name ?: "unnamed", it.typeReference?.text ?: "Any")
+            }
+        } else emptyList()
+
         return ApiNode(
             methodName = function.name ?: "unknownMethod",
-            httpMethod = httpMethod,
+            httpMethod = httpMethod!!,
             path = path,
             className = className,
             psiElement = function,
-            supportsCache = supportsCache
+            supportsCache = supportsCache,
+            annotations = allAnnotations,
+            parameters = parameters
         )
+    }
+
+    private fun extractKotlinAnnotationArgs(annotation: KtAnnotationEntry): Map<String, String> {
+        val args = mutableMapOf<String, String>()
+        annotation.valueArguments.forEachIndexed { index, arg ->
+            val name = arg.getArgumentName()?.asName?.asString() ?: "value_$index"
+            val value = arg.getArgumentExpression()?.text?.removeSurrounding("\"") ?: ""
+            args[name] = value
+        }
+        return args
     }
 
     private fun extractKotlinPath(annotation: KtAnnotationEntry, httpMethod: String): String {

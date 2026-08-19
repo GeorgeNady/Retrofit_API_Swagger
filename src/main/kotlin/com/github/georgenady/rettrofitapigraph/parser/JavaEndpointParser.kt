@@ -1,6 +1,8 @@
 package com.github.georgenady.rettrofitapigraph.parser
 
+import com.github.georgenady.rettrofitapigraph.model.AnnotationDetail
 import com.github.georgenady.rettrofitapigraph.model.ApiNode
+import com.github.georgenady.rettrofitapigraph.model.ParameterDetail
 import com.intellij.psi.PsiAnnotation
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiFile
@@ -36,12 +38,16 @@ class JavaEndpointParser : FileEndpointParser {
         var httpMethod: String? = null
         var path = ""
         var supportsCache = false
+        val allAnnotations = mutableListOf<AnnotationDetail>()
 
         for (annotation in method.annotations) {
             val qualifiedName = annotation.qualifiedName
             val shortName = qualifiedName?.substringAfterLast(".")
                 ?: annotation.nameReferenceElement?.referenceName
                 ?: continue
+            
+            val args = extractJavaAnnotationArgs(annotation)
+            allAnnotations.add(AnnotationDetail(shortName, args))
 
             if (shortName in RetrofitConstants.HTTP_METHODS) {
                 httpMethod = shortName
@@ -53,14 +59,32 @@ class JavaEndpointParser : FileEndpointParser {
 
         if (httpMethod == null) return null
 
+        val parameters = if (httpMethod != "GET") {
+            method.parameterList.parameters.map { 
+                ParameterDetail(it.name, it.type.presentableText)
+            }
+        } else emptyList()
+
         return ApiNode(
             methodName = method.name,
-            httpMethod = httpMethod,
+            httpMethod = httpMethod!!,
             path = path,
             className = psiClass.name ?: file.name.substringBeforeLast("."),
             psiElement = method,
-            supportsCache = supportsCache
+            supportsCache = supportsCache,
+            annotations = allAnnotations,
+            parameters = parameters
         )
+    }
+
+    private fun extractJavaAnnotationArgs(annotation: PsiAnnotation): Map<String, String> {
+        val args = mutableMapOf<String, String>()
+        annotation.parameterList.attributes.forEach { attr ->
+            val name = attr.name ?: "value"
+            val value = attr.value?.text?.removeSurrounding("\"") ?: ""
+            args[name] = value
+        }
+        return args
     }
 
     private fun extractJavaPath(annotation: PsiAnnotation, httpMethod: String): String {

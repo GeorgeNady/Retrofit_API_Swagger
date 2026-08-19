@@ -11,6 +11,7 @@ import javax.swing.JPanel
 class ApiListPanel : JPanel(BorderLayout()) {
 
     var onRefreshRequested: (() -> Unit)? = null
+    var onNodeSelected: ((ApiNode) -> Unit)? = null
 
     private val cardLayout = CardLayout()
     private val contentSwitcher = JPanel(cardLayout)
@@ -18,6 +19,7 @@ class ApiListPanel : JPanel(BorderLayout()) {
     private val statusBar = ApiStatusBarView()
 
     private val cardListContainer = ApiCardListContainer { selectedNode ->
+        onNodeSelected?.invoke(selectedNode)
         selectedNode.psiElement?.let { element ->
             if (element is com.intellij.pom.Navigatable && element.canNavigate()) {
                 element.navigate(true)
