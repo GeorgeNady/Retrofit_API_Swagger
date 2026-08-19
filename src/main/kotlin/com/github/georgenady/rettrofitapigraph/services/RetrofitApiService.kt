@@ -52,7 +52,7 @@ class RetrofitApiService @JvmOverloads constructor(
         for ((index, virtualFile) in filesToScan.withIndex()) {
             indicator?.checkCanceled()
             indicator?.fraction = if (totalFilesCount > 0) (index.toDouble() / totalFilesCount) else 1.0
-            indicator?.text = "Scanning API endpoints 🔎(${index + 1}/$totalFilesCount)..."
+            indicator?.text = "Scanning API endpoints 🔎 (${index + 1}/$totalFilesCount)..."
             indicator?.text2 = virtualFile.name
 
             val fileEndpoints = runReadActionBlocking {

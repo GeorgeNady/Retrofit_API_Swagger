@@ -58,7 +58,8 @@ class ApiCardComponent(
             isOpaque = false
             add(BadgeLabel(node.httpMethod, theme.badgeColor))
 
-            val pathLabel = JBLabel(if (node.path.isNotEmpty()) node.path else "/").apply {
+            val pathLabel = JBLabel(node.path.ifEmpty { "/" }).apply {
+                border = JBUI.Borders.empty(0, 12, 0, 0)
                 font = Font(Font.MONOSPACED, Font.BOLD, 14)
                 foreground = JBColor(Color(0x3B, 0x41, 0x51), Color(0xE1, 0xE4, 0xEA))
             }
