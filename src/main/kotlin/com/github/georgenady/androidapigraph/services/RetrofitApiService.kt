@@ -1,12 +1,15 @@
 package com.github.georgenady.androidapigraph.services
 
 import com.github.georgenady.androidapigraph.model.ApiNode
+import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.psi.*
+import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
+import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtFile
@@ -19,29 +22,29 @@ class RetrofitApiService(private val project: Project) {
 
     fun findRetrofitEndpoints(): List<ApiNode> {
         val endpoints = mutableListOf<ApiNode>()
-        
-        // Use ProjectRootManager to find source roots and iterate
-        val projectRootManager = ProjectRootManager.getInstance(project)
+        val scope = GlobalSearchScope.projectScope(project)
         val psiManager = PsiManager.getInstance(project)
-        
-        projectRootManager.contentRoots.forEach { root ->
-            val directory = psiManager.findDirectory(root)
-            if (directory != null) {
-                traverseDirectory(directory, endpoints)
+
+        thisLogger().info("Starting Retrofit API scan for project: ${project.name}")
+
+        // 1. Scan Kotlin Files using FileTypeIndex
+        FileTypeIndex.getFiles(KotlinFileType.INSTANCE, scope).forEach { virtualFile ->
+            val psiFile = psiManager.findFile(virtualFile)
+            if (psiFile is KtFile) {
+                scanKotlinFile(psiFile, endpoints)
             }
         }
 
+        // 2. Scan Java Files using FileTypeIndex
+        FileTypeIndex.getFiles(JavaFileType.INSTANCE, scope).forEach { virtualFile ->
+            val psiFile = psiManager.findFile(virtualFile)
+            if (psiFile is PsiJavaFile) {
+                scanJavaFile(psiFile, endpoints)
+            }
+        }
+
+        thisLogger().info("Scan complete. Found ${endpoints.size} endpoints.")
         return endpoints
-    }
-
-    private fun traverseDirectory(directory: PsiDirectory, endpoints: MutableList<ApiNode>) {
-        directory.files.forEach { file ->
-            when (file) {
-                is KtFile -> scanKotlinFile(file, endpoints)
-                is PsiJavaFile -> scanJavaFile(file, endpoints)
-            }
-        }
-        directory.subdirectories.forEach { traverseDirectory(it, endpoints) }
     }
 
     private fun scanKotlinFile(file: KtFile, endpoints: MutableList<ApiNode>) {
@@ -56,7 +59,7 @@ class RetrofitApiService(private val project: Project) {
                         methodName = function.name ?: "unknown",
                         httpMethod = name!!,
                         path = path,
-                        className = parentClass?.name ?: "Unknown",
+                        className = parentClass?.name ?: file.name,
                         psiElement = function
                     ))
                 }
@@ -76,7 +79,7 @@ class RetrofitApiService(private val project: Project) {
                             methodName = method.name,
                             httpMethod = shortName,
                             path = path,
-                            className = psiClass.name ?: "Unknown",
+                            className = psiClass.name ?: file.name,
                             psiElement = method
                         ))
                     }
@@ -86,7 +89,11 @@ class RetrofitApiService(private val project: Project) {
     }
 
     private fun extractKotlinPath(annotation: KtAnnotationEntry): String {
-        val valueArgument = annotation.valueArguments.firstOrNull() ?: return ""
+        // Handle @GET("/path") or @GET(value = "/path")
+        val valueArgument = annotation.valueArguments.firstOrNull { 
+            it.getArgumentName() == null || it.getArgumentName()?.asName?.asString() == "value"
+        } ?: return ""
+        
         val expression = valueArgument.getArgumentExpression()
         return expression?.text?.removeSurrounding("\"") ?: ""
     }

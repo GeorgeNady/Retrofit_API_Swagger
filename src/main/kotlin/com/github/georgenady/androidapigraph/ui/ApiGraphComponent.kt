@@ -39,6 +39,11 @@ class ApiGraphComponent : JBPanel<ApiGraphComponent>(BorderLayout()) {
         try {
             graph.removeCells(graph.getChildVertices(parent))
             
+            if (endpoints.isEmpty()) {
+                graph.insertVertex(parent, null, "No Retrofit endpoints found.\nClick Refresh or check your project roots.", 20.0, 20.0, 300.0, 50.0, "fillColor=none;strokeColor=none;fontStyle=2;fontSize=14")
+                return
+            }
+
             val classNodes = mutableMapOf<String, Any>()
             
             endpoints.groupBy { it.className }.forEach { (className, methods) ->
