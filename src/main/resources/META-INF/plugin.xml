@@ -20,8 +20,8 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.georgenady.rettrofitapigraph.toolWindow.MyToolWindowFactory"
-                    id="RetrofitApiGraph"
+        <toolWindow factoryClass="com.github.georgenady.rettrofitapigraph.factory.MyToolWindowFactory"
+                    id="Retrofit Api Graph"
                     name="API Graph"
                     anchor="right"/>
     </extensions>

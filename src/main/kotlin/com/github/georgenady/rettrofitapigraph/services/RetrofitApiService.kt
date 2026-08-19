@@ -5,6 +5,7 @@ import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.module.ModuleManager
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.vfs.VfsUtilCore
@@ -25,7 +26,8 @@ import org.jetbrains.kotlin.psi.KtNamedFunction
 data class ScanResult(
     val endpoints: List<ApiNode>,
     val filesScanned: Int,
-    val durationMs: Long
+    val durationMs: Long,
+    val isDumb: Boolean
 )
 
 @Service(Service.Level.PROJECT)
@@ -34,35 +36,41 @@ class RetrofitApiService(private val project: Project) {
     private val retrofitAnnotations = listOf("GET", "POST", "PUT", "DELETE", "PATCH")
 
     fun findRetrofitEndpoints(): ScanResult {
-        return CachedValuesManager.getManager(project).getCachedValue(project) {
-            val result = performScan()
-            CachedValueProvider.Result.create(result, PsiModificationTracker.MODIFICATION_COUNT)
-        }
+        // We use a shorter cache during development or disable it to ensure freshness
+        val result = performScan()
+        thisLogger().info("Scan complete: found ${result.endpoints.size} endpoints in ${result.filesScanned} files.")
+        return result
     }
 
     private fun performScan(): ScanResult {
         val startTime = System.currentTimeMillis()
         val endpoints = mutableListOf<ApiNode>()
         val scannedFiles = mutableSetOf<VirtualFile>()
+        val isDumb = DumbService.isDumb(project)
         
         val scope = GlobalSearchScope.allScope(project)
         val psiManager = PsiManager.getInstance(project)
 
-        thisLogger().info("Starting Aggressive Retrofit API scan (v1.0.4)")
+        thisLogger().info("Scanning project: ${project.name} (Dumb Mode: $isDumb)")
 
-        // 1. Index-based search (Fast)
-        val kotlinFiles = FileTypeIndex.getFiles(KotlinFileType.INSTANCE, scope)
-        val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, scope)
-        
-        kotlinFiles.forEach { scannedFiles.add(it) }
-        javaFiles.forEach { scannedFiles.add(it) }
+        // 1. Index-based search (Only works in Smart Mode)
+        if (!isDumb) {
+            try {
+                FileTypeIndex.getFiles(KotlinFileType.INSTANCE, scope).forEach { scannedFiles.add(it) }
+                FileTypeIndex.getFiles(JavaFileType.INSTANCE, scope).forEach { scannedFiles.add(it) }
+                thisLogger().info("Index found ${scannedFiles.size} files.")
+            } catch (e: Exception) {
+                thisLogger().warn("Index access failed: ${e.message}")
+            }
+        }
 
-        // 2. Module Content Root walk (Fail-safe)
-        if (scannedFiles.isEmpty()) {
-            thisLogger().warn("Index returned 0 files. Performing manual module root walk.")
+        // 2. Brute-force fallback (Always do this if index is small or empty)
+        if (scannedFiles.size < 10) {
+            thisLogger().info("Performing manual module root walk for more results.")
             val moduleManager = ModuleManager.getInstance(project)
             moduleManager.modules.forEach { module ->
-                ModuleRootManager.getInstance(module).contentRoots.forEach { root ->
+                val rootManager = ModuleRootManager.getInstance(module)
+                rootManager.contentRoots.forEach { root ->
                     VfsUtilCore.iterateChildrenRecursively(root, null) { virtualFile ->
                         if (!virtualFile.isDirectory) {
                             val ext = virtualFile.extension
@@ -76,20 +84,23 @@ class RetrofitApiService(private val project: Project) {
             }
         }
 
-        thisLogger().info("Total files identified: ${scannedFiles.size}")
+        thisLogger().info("Total files to analyze: ${scannedFiles.size}")
 
         scannedFiles.forEach { virtualFile ->
-            val psiFile = psiManager.findFile(virtualFile) ?: return@forEach
-            when (psiFile) {
-                is KtFile -> scanKotlinFile(psiFile, endpoints)
-                is PsiJavaFile -> scanJavaFile(psiFile, endpoints)
+            try {
+                val psiFile = psiManager.findFile(virtualFile)
+                if (psiFile is KtFile) {
+                    scanKotlinFile(psiFile, endpoints)
+                } else if (psiFile is PsiJavaFile) {
+                    scanJavaFile(psiFile, endpoints)
+                }
+            } catch (e: Exception) {
+                thisLogger().error("Failed to scan file: ${virtualFile.path}", e)
             }
         }
 
         val duration = System.currentTimeMillis() - startTime
-        thisLogger().info("Scan complete. Found ${endpoints.size} endpoints.")
-        
-        return ScanResult(endpoints, scannedFiles.size, duration)
+        return ScanResult(endpoints, scannedFiles.size, duration, isDumb)
     }
 
     private fun scanKotlinFile(file: KtFile, endpoints: MutableList<ApiNode>) {
@@ -98,7 +109,6 @@ class RetrofitApiService(private val project: Project) {
             var httpMethod: String? = null
             var path = ""
             var supportsCache = false
-            val invalidatesKeys = mutableListOf<String>()
 
             function.annotationEntries.forEach { annotation ->
                 val name = annotation.shortName?.asString()
@@ -118,8 +128,7 @@ class RetrofitApiService(private val project: Project) {
                     path = path,
                     className = parentClass?.name ?: file.name,
                     psiElement = function,
-                    supportsCache = supportsCache,
-                    invalidatesKeys = invalidatesKeys
+                    supportsCache = supportsCache
                 ))
             }
         }
