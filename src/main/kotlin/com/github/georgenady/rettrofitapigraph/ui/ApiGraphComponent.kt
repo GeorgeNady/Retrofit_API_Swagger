@@ -24,6 +24,7 @@ import javax.swing.SwingConstants
 class ApiGraphComponent(private val project: Project) : JBPanel<ApiGraphComponent>(BorderLayout()) {
 
     var onRefreshRequested: (() -> Unit)? = null
+
     private val statusLabel = JBLabel("Ready").apply {
         horizontalAlignment = SwingConstants.LEFT
         border = JBUI.Borders.empty(4, 8)
@@ -42,7 +43,7 @@ class ApiGraphComponent(private val project: Project) : JBPanel<ApiGraphComponen
             return super.convertValueToString(cell)
         }
     }
-    
+
     private val graphComponent = mxGraphComponent(graph)
 
     init {
