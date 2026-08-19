@@ -5,6 +5,7 @@ import com.github.georgenady.rettrofitapigraph.ui.ApiListPanel
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -72,7 +73,7 @@ class MyToolWindow(private val project: Project) {
                         val status = if (result.isDumb) {
                             "Indexing in progress. Please wait and scan again."
                         } else {
-                            "Found ${result.endpoints.size} endpoints in ${result.durationMs}ms."
+                            "🔎 Found ${result.endpoints.size} 🛜 endpoints in ⌛ ${result.durationMs} ms."
                         }
 
                         listPanel.setStatus(status)
