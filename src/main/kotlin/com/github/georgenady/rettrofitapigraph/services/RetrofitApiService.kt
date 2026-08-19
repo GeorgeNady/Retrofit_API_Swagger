@@ -37,11 +37,11 @@ class RetrofitApiService @JvmOverloads constructor(
         val isDumb = DumbService.isDumb(project)
 
         if (isDumb) {
-            thisLogger().warn("Project is currently in dumb mode (indexing). Scan results might be incomplete.")
+            thisLogger().warn("🔄 Project is currently in dumb mode (indexing). Scan results might be incomplete.")
             return ScanResult(emptyList(), 0, 0, true)
         }
 
-        indicator?.text = "Discovering source files..."
+        indicator?.text = "🕵🏼‍♂️ Discovering source files..."
         val filesToScan = fileCollector.collectSourceFiles(indicator)
         val totalFilesCount = filesToScan.size
         thisLogger().info("Collected $totalFilesCount project source files for scanning.")
@@ -52,7 +52,7 @@ class RetrofitApiService @JvmOverloads constructor(
         for ((index, virtualFile) in filesToScan.withIndex()) {
             indicator?.checkCanceled()
             indicator?.fraction = if (totalFilesCount > 0) (index.toDouble() / totalFilesCount) else 1.0
-            indicator?.text = "Scanning API endpoints (${index + 1}/$totalFilesCount)..."
+            indicator?.text = "Scanning API endpoints 🔎(${index + 1}/$totalFilesCount)..."
             indicator?.text2 = virtualFile.name
 
             val fileEndpoints = runReadActionBlocking {
@@ -65,7 +65,7 @@ class RetrofitApiService @JvmOverloads constructor(
         }
 
         val duration = System.currentTimeMillis() - startTime
-        thisLogger().info("Scan finished: Scanned $totalFilesCount files, found ${endpoints.size} endpoints in ${duration}ms.")
+        thisLogger().info("✅ Scan finished: 🗒 Scanned $totalFilesCount files️, 🛜 found ${endpoints.size} endpoints in ⌛ ${duration}ms.")
         return ScanResult(endpoints, totalFilesCount, duration, false)
     }
 

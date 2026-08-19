@@ -54,7 +54,7 @@ class ApiCardComponent(
         }
 
         // ROW 2: HTTP Badge + Path
-        val row2PathPanel = JPanel(FlowLayout(FlowLayout.LEFT, 10, 0)).apply {
+        val row2PathPanel = JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)).apply {
             isOpaque = false
             add(BadgeLabel(node.httpMethod, theme.badgeColor))
 
