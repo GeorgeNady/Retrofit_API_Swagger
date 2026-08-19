@@ -1,198 +1,92 @@
 package com.github.georgenady.rettrofitapigraph.ui
 
-
-import com.github.georgenady.rettrofitapigraph.model.ApiEndpoint
-import com.intellij.ui.JBColor
+import com.github.georgenady.rettrofitapigraph.model.ApiNode
+import com.github.georgenady.rettrofitapigraph.services.CacheScaffoldingService
+import com.intellij.openapi.components.service
+import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout
 import com.mxgraph.swing.mxGraphComponent
-import com.mxgraph.util.mxConstants
+import com.mxgraph.util.mxEvent
 import com.mxgraph.view.mxGraph
 import java.awt.BorderLayout
 import java.awt.Cursor
-import java.awt.Dimension
-import java.awt.Font
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.BorderFactory
 import javax.swing.SwingConstants
-import javax.swing.SwingUtilities
 
-class ApiGraphComponent : JBPanel<ApiGraphComponent>(BorderLayout()) {
+class ApiGraphComponent(private val project: Project) : JBPanel<ApiGraphComponent>(BorderLayout()) {
 
     var onRefreshRequested: (() -> Unit)? = null
-
-    private val statusLabel = JBLabel("Ready").apply {
+    private val statusLabel = JBLabel("Design Mode: Draw arrows to set cache invalidation").apply {
         horizontalAlignment = SwingConstants.LEFT
-        border = JBUI.Borders.empty(4, 8)
-        font = Font(Font.SANS_SERIF, Font.PLAIN, 11)
-        foreground = JBColor.GRAY
+        border = JBUI.Borders.empty(2, 5)
     }
 
     private val graph = object : mxGraph() {
         override fun convertValueToString(cell: Any?): String {
             val value = model.getValue(cell)
-            if (value is ApiEndpoint) {
-                return "  [${value.httpMethod}]  ${value.path}  "
-            }
-            if (value is String && value.startsWith("REFRESH_BUTTON")) {
-                return "SCAN AGAIN"
+            if (value is ApiNode) {
+                return "${value.httpMethod} ${value.path}"
             }
             return super.convertValueToString(cell)
         }
-
-        override fun isCellSelectable(cell: Any?): Boolean {
-            return true
-        }
     }
-
-    private val graphComponent = mxGraphComponent(graph).apply {
-        isConnectable = false
-        isDragEnabled = false
-        setPanning(true)
-        viewport.isOpaque = true
-        viewport.background = JBColor(0xF5F5F5, 0x1E1E1E)
-        background = JBColor(0xF5F5F5, 0x1E1E1E)
-        border = BorderFactory.createEmptyBorder()
-        // FIX: Ensure graph component maintains minimum visible dimensions inside JBScrollPane
-        minimumSize = Dimension(400, 300)
-    }
-
-    private val scrollPane = JBScrollPane(graphComponent).apply {
-        border = BorderFactory.createEmptyBorder()
-        viewport.background = JBColor(0xF5F5F5, 0x1E1E1E)
-    }
+    
+    private val graphComponent = mxGraphComponent(graph)
 
     init {
-        preferredSize = Dimension(600, 400)
-        applyModernStylesheet()
+        graph.isCellsEditable = false
+        graph.isAllowDanglingEdges = false
+        graphComponent.isConnectable = true
+        graphComponent.isDragEnabled = true
+        
+        graph.addListener(mxEvent.CELL_CONNECTED) { _, evt ->
+            val edge = evt.getProperty("edge")
+            val source = graph.model.getTerminal(edge, true)
+            val target = graph.model.getTerminal(edge, false)
+            
+            if (source != null && target != null) {
+                val sourceNode = graph.model.getValue(source) as? ApiNode
+                val targetNode = graph.model.getValue(target) as? ApiNode
+                
+                if (sourceNode != null && targetNode != null) {
+                    val service = project.service<CacheScaffoldingService>()
+                    service.setupCacheDependency(sourceNode, targetNode)
+                    statusLabel.text = "Injected cache dependency: ${sourceNode.methodName} -> ${targetNode.methodName}"
+                }
+            }
+        }
 
-        add(scrollPane, BorderLayout.CENTER)
+        add(JBScrollPane(graphComponent).apply {
+            border = BorderFactory.createEmptyBorder()
+        }, BorderLayout.CENTER)
+        
         add(statusLabel, BorderLayout.SOUTH)
-
         setupClickListeners()
     }
 
-    fun setStatus(text: String) {
-        statusLabel.text = text
-    }
-
-    private fun applyModernStylesheet() {
-        val stylesheet = graph.stylesheet
-
-        val classStyle = HashMap<String, Any>().apply {
-            put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_RECTANGLE)
-            put(mxConstants.STYLE_PERIMETER, mxConstants.PERIMETER_RECTANGLE)
-            put(mxConstants.STYLE_ROUNDED, true)
-            put(mxConstants.STYLE_FILLCOLOR, "#2D2D30")
-            put(mxConstants.STYLE_STROKECOLOR, "#3E3E42")
-            put(mxConstants.STYLE_STROKEWIDTH, 2)
-            put(mxConstants.STYLE_FONTCOLOR, "#FFFFFF")
-            put(mxConstants.STYLE_FONTSIZE, 13)
-            put(mxConstants.STYLE_FONTSTYLE, mxConstants.FONT_BOLD)
-            put(mxConstants.STYLE_ALIGN, mxConstants.ALIGN_CENTER)
-            put(mxConstants.STYLE_VERTICAL_ALIGN, mxConstants.ALIGN_MIDDLE)
-        }
-        stylesheet.putCellStyle("CLASS_NODE", classStyle)
-
-        fun createMethodStyle(fillColor: String, strokeColor: String): HashMap<String, Any> {
-            return HashMap<String, Any>().apply {
-                put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_RECTANGLE)
-                put(mxConstants.STYLE_ROUNDED, true)
-                put(mxConstants.STYLE_FILLCOLOR, fillColor)
-                put(mxConstants.STYLE_STROKECOLOR, strokeColor)
-                put(mxConstants.STYLE_STROKEWIDTH, 1)
-                put(mxConstants.STYLE_FONTCOLOR, "#FFFFFF")
-                put(mxConstants.STYLE_FONTSIZE, 12)
-                put(mxConstants.STYLE_FONTSTYLE, mxConstants.FONT_BOLD)
-                put(mxConstants.STYLE_ALIGN, mxConstants.ALIGN_LEFT)
-                put(mxConstants.STYLE_VERTICAL_ALIGN, mxConstants.ALIGN_MIDDLE)
+    fun updateData(endpoints: List<ApiNode>) {
+        val parent = graph.defaultParent
+        graph.model.beginUpdate()
+        try {
+            graph.removeCells(graph.getChildVertices(parent))
+            
+            endpoints.forEach { node ->
+                val style = if (node.supportsCache) "fillColor=#C8E6C9;strokeColor=#4CAF50" else "fillColor=#E3F2FD;strokeColor=#2196F3"
+                graph.insertVertex(parent, null, node, 0.0, 0.0, 200.0, 40.0, style)
             }
+            
+            mxHierarchicalLayout(graph).execute(parent)
+            
+        } finally {
+            graph.model.endUpdate()
         }
-
-        stylesheet.putCellStyle("GET_NODE", createMethodStyle("#0C66E4", "#0052CC"))
-        stylesheet.putCellStyle("POST_NODE", createMethodStyle("#22A06B", "#1F845A"))
-        stylesheet.putCellStyle("PUT_NODE", createMethodStyle("#8F49DE", "#6E2FAD"))
-        stylesheet.putCellStyle("DELETE_NODE", createMethodStyle("#DE350B", "#BF2600"))
-        stylesheet.putCellStyle("DEFAULT_NODE", createMethodStyle("#36373A", "#505256"))
-
-        val edgeStyle = HashMap<String, Any>().apply {
-            put(mxConstants.STYLE_ROUNDED, true)
-            put(mxConstants.STYLE_EDGE, mxConstants.EDGESTYLE_ORTHOGONAL)
-            put(mxConstants.STYLE_STROKECOLOR, "#5E6C84")
-            put(mxConstants.STYLE_STROKEWIDTH, 2)
-            put(mxConstants.STYLE_ENDARROW, mxConstants.NONE)
-        }
-        stylesheet.putCellStyle("EDGE_STYLE", edgeStyle)
-    }
-
-    fun updateData(endpoints: List<ApiEndpoint>) {
-        // FIX: Ensure UI manipulation happens strictly on Swing Event Dispatch Thread (EDT)
-        SwingUtilities.invokeLater {
-            val parent = graph.defaultParent
-            graph.model.beginUpdate()
-            try {
-                graph.removeCells(graph.getChildVertices(parent))
-
-                if (endpoints.isEmpty()) {
-                    val msg = "NO RETROFIT APIS FOUND"
-                    graph.insertVertex(
-                        parent, null, msg, 30.0, 30.0, 280.0, 60.0,
-                        "fillColor=none;strokeColor=none;fontStyle=1;fontSize=14;fontColor=#888888"
-                    )
-                    graph.insertVertex(
-                        parent, null, "REFRESH_BUTTON", 30.0, 100.0, 140.0, 40.0,
-                        "fillColor=#0052CC;fontColor=#ffffff;strokeColor=#0747A6;rounded=1;fontSize=12;fontStyle=1"
-                    )
-                } else {
-                    endpoints.groupBy { it.className }.forEach { (className, methods) ->
-                        val classVertex = graph.insertVertex(
-                            parent, null, "  $className  ",
-                            0.0, 0.0, 240.0, 48.0,
-                            "CLASS_NODE"
-                        )
-
-                        methods.forEach { node ->
-                            val styleKey = when (node.httpMethod.uppercase()) {
-                                "GET" -> "GET_NODE"
-                                "POST" -> "POST_NODE"
-                                "PUT" -> "PUT_NODE"
-                                "DELETE" -> "DELETE_NODE"
-                                else -> "DEFAULT_NODE"
-                            }
-
-                            val methodVertex = graph.insertVertex(
-                                parent, null, node,
-                                0.0, 0.0, 280.0, 38.0,
-                                styleKey
-                            )
-
-                            graph.insertEdge(parent, null, "", classVertex, methodVertex, "EDGE_STYLE")
-                        }
-                    }
-
-                    val layout = mxHierarchicalLayout(graph).apply {
-                        interRankCellSpacing = 60.0
-                        intraCellSpacing = 20.0
-                        orientation = SwingConstants.WEST
-                    }
-                    layout.execute(parent)
-                }
-            } finally {
-                graph.model.endUpdate()
-            }
-
-            // FIX: Force graph canvas re-layout and container revalidation
-            graph.refresh()
-            graphComponent.refresh()
-            graphComponent.zoomActual()
-
-            revalidate()
-            repaint()
-        }
+        graphComponent.refresh()
     }
 
     private fun setupClickListeners() {
@@ -201,24 +95,13 @@ class ApiGraphComponent : JBPanel<ApiGraphComponent>(BorderLayout()) {
                 val cell = graphComponent.getCellAt(e.x, e.y)
                 if (cell != null) {
                     val value = graph.model.getValue(cell)
-                    if (value is ApiEndpoint) {
-                        val element = value.psiElement
-                        if (element is com.intellij.pom.Navigatable && element.canNavigate()) {
-                            element.navigate(true)
+                    if (value is ApiNode) {
+                        value.psiElement?.let { element ->
+                            if (element is com.intellij.pom.Navigatable && element.canNavigate()) {
+                                element.navigate(true)
+                            }
                         }
-                    } else if (value is String && value.startsWith("REFRESH_BUTTON")) {
-                        onRefreshRequested?.invoke()
                     }
-                }
-            }
-
-            override fun mouseMoved(e: MouseEvent) {
-                val cell = graphComponent.getCellAt(e.x, e.y)
-                val value = if (cell != null) graph.model.getValue(cell) else null
-                graphComponent.cursor = if (value is ApiEndpoint || (value is String && value.startsWith("REFRESH_BUTTON"))) {
-                    Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
-                } else {
-                    Cursor.getDefaultCursor()
                 }
             }
         })

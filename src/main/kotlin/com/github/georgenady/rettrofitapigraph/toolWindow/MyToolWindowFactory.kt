@@ -23,7 +23,6 @@ class MyToolWindowFactory : ToolWindowFactory {
         val content = ContentFactory.getInstance().createContent(myToolWindow.getComponent(), null, false)
         toolWindow.contentManager.addContent(content)
         
-        // Add action to tool window header
         val actionGroup = DefaultActionGroup().apply {
             add(object : AnAction("Refresh API Graph", "Scan project for Retrofit endpoints", AllIcons.Actions.Refresh) {
                 override fun actionPerformed(e: AnActionEvent) {
@@ -39,7 +38,7 @@ class MyToolWindowFactory : ToolWindowFactory {
     class MyToolWindow(private val project: Project) {
 
         private val apiService = project.service<RetrofitApiService>()
-        private val graphComponent = ApiGraphComponent()
+        private val graphComponent = ApiGraphComponent(project)
         private val mainPanel = JPanel(BorderLayout())
 
         init {
@@ -53,15 +52,9 @@ class MyToolWindowFactory : ToolWindowFactory {
         fun refresh() {
             ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Scanning for Retrofit APIs") {
                 override fun run(indicator: ProgressIndicator) {
-                    ApplicationManager.getApplication().invokeLater {
-                        graphComponent.setStatus("Scanning...")
-                    }
-                    
                     val result = apiService.findRetrofitEndpoints()
-                    
                     ApplicationManager.getApplication().invokeLater {
                         graphComponent.updateData(result.endpoints)
-                        graphComponent.setStatus("Scanned ${result.filesScanned} files in ${result.durationMs}ms. Found ${result.endpoints.size} APIs.")
                     }
                 }
             })

@@ -1,6 +1,6 @@
 package com.github.georgenady.rettrofitapigraph.services
 
-import com.github.georgenady.rettrofitapigraph.model.ApiEndpoint
+import com.github.georgenady.rettrofitapigraph.model.ApiNode
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
@@ -20,7 +20,7 @@ import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtNamedFunction
 
 data class ScanResult(
-    val endpoints: List<ApiEndpoint>,
+    val endpoints: List<ApiNode>,
     val filesScanned: Int,
     val durationMs: Long
 )
@@ -32,41 +32,17 @@ class RetrofitApiService(private val project: Project) {
 
     fun findRetrofitEndpoints(): ScanResult {
         val startTime = System.currentTimeMillis()
-        val endpoints = mutableListOf<ApiEndpoint>()
+        val endpoints = mutableListOf<ApiNode>()
         val scannedFiles = mutableSetOf<VirtualFile>()
         
         val scope = GlobalSearchScope.allScope(project)
         val psiManager = PsiManager.getInstance(project)
 
-        thisLogger().info("Starting Aggressive Retrofit API scan")
-
-        // 1. Index-based search (Fast)
         val kotlinFiles = FileTypeIndex.getFiles(KotlinFileType.INSTANCE, scope)
         val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, scope)
         
-        thisLogger().info("Index results: ${kotlinFiles.size} Kotlin, ${javaFiles.size} Java files.")
-        
         kotlinFiles.forEach { vf -> scannedFiles.add(vf) }
         javaFiles.forEach { vf -> scannedFiles.add(vf) }
-
-        // 2. Module Content Root walk (Aggressive for multi-module)
-        val moduleManager = ModuleManager.getInstance(project)
-        moduleManager.modules.forEach { module ->
-            val rootManager = ModuleRootManager.getInstance(module)
-            rootManager.contentRoots.forEach { root ->
-                VfsUtilCore.iterateChildrenRecursively(root, null) { virtualFile ->
-                    if (!virtualFile.isDirectory) {
-                        val ext = virtualFile.extension
-                        if (ext == "kt" || ext == "java") {
-                            scannedFiles.add(virtualFile)
-                        }
-                    }
-                    true
-                }
-            }
-        }
-
-        thisLogger().info("Total unique files identified for scanning: ${scannedFiles.size}")
 
         scannedFiles.forEach { virtualFile ->
             val psiFile = psiManager.findFile(virtualFile) ?: return@forEach
@@ -77,47 +53,66 @@ class RetrofitApiService(private val project: Project) {
         }
 
         val duration = System.currentTimeMillis() - startTime
-        thisLogger().info("Scan complete. Found ${endpoints.size} endpoints in ${scannedFiles.size} files in ${duration}ms.")
-        
         return ScanResult(endpoints, scannedFiles.size, duration)
     }
 
-    private fun scanKotlinFile(file: KtFile, endpoints: MutableList<ApiEndpoint>) {
+    private fun scanKotlinFile(file: KtFile, endpoints: MutableList<ApiNode>) {
         val functions = PsiTreeUtil.findChildrenOfType(file, KtNamedFunction::class.java)
         functions.forEach { function ->
+            var httpMethod: String? = null
+            var path = ""
+            var supportsCache = false
+            val invalidatesKeys = mutableListOf<String>()
+
             function.annotationEntries.forEach { annotation ->
                 val name = annotation.shortName?.asString()
                 if (name in retrofitAnnotations) {
-                    val path = extractKotlinPath(annotation)
-                    val parentClass = PsiTreeUtil.getParentOfType(function, KtClass::class.java)
-                    endpoints.add(ApiEndpoint(
-                        methodName = function.name ?: "unknown",
-                        httpMethod = name!!,
-                        path = path,
-                        className = parentClass?.name ?: file.name,
-                        psiElement = function
-                    ))
+                    httpMethod = name
+                    path = extractKotlinPath(annotation)
+                } else if (name == "SupportCache") {
+                    supportsCache = true
+                } else if (name == "InvalidateCache") {
+                    // Extract keys from annotation
                 }
+            }
+
+            if (httpMethod != null) {
+                val parentClass = PsiTreeUtil.getParentOfType(function, KtClass::class.java)
+                endpoints.add(ApiNode(
+                    methodName = function.name ?: "unknown",
+                    httpMethod = httpMethod!!,
+                    path = path,
+                    className = parentClass?.name ?: file.name,
+                    psiElement = function,
+                    supportsCache = supportsCache,
+                    invalidatesKeys = invalidatesKeys
+                ))
             }
         }
     }
 
-    private fun scanJavaFile(file: PsiJavaFile, endpoints: MutableList<ApiEndpoint>) {
+    private fun scanJavaFile(file: PsiJavaFile, endpoints: MutableList<ApiNode>) {
         file.classes.forEach { psiClass ->
             psiClass.methods.forEach { method ->
+                var httpMethod: String? = null
+                var path = ""
+                
                 method.annotations.forEach { annotation ->
-                    val qualifiedName = annotation.qualifiedName ?: ""
-                    val shortName = qualifiedName.substringAfterLast(".")
+                    val shortName = annotation.qualifiedName?.substringAfterLast(".") ?: ""
                     if (shortName in retrofitAnnotations) {
-                        val path = extractJavaPath(annotation)
-                        endpoints.add(ApiEndpoint(
-                            methodName = method.name,
-                            httpMethod = shortName,
-                            path = path,
-                            className = psiClass.name ?: file.name,
-                            psiElement = method
-                        ))
+                        httpMethod = shortName
+                        path = extractJavaPath(annotation)
                     }
+                }
+
+                if (httpMethod != null) {
+                    endpoints.add(ApiNode(
+                        methodName = method.name,
+                        httpMethod = httpMethod!!,
+                        path = path,
+                        className = psiClass.name ?: file.name,
+                        psiElement = method
+                    ))
                 }
             }
         }
