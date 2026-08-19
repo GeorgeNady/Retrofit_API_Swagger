@@ -3,164 +3,201 @@ package com.github.georgenady.rettrofitapigraph.services
 import com.github.georgenady.rettrofitapigraph.model.ApiNode
 import com.github.georgenady.rettrofitapigraph.model.ScanResult
 import com.intellij.ide.highlighter.JavaFileType
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
-import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.ModuleRootManager
-import com.intellij.openapi.vfs.VfsUtilCore
+import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.*
+import com.intellij.psi.JavaPsiFacade
+import com.intellij.psi.PsiAnnotation
+import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiJavaFile
+import com.intellij.psi.PsiLiteralExpression
+import com.intellij.psi.PsiManager
+import com.intellij.psi.PsiMethod
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.ProjectScope
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
-import org.jetbrains.kotlin.psi.KtClass
+import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtNamedFunction
+import org.jetbrains.kotlin.psi.KtStringTemplateExpression
 
 @Service(Service.Level.PROJECT)
 class RetrofitApiService(private val project: Project) {
 
-    private val retrofitAnnotations = listOf("GET", "POST", "PUT", "DELETE", "PATCH")
+    companion object {
+        val HTTP_METHODS = setOf(
+            "GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS", "HTTP"
+        )
+        val RETROFIT_PACKAGE_PREFIX = "retrofit2.http."
+    }
 
     fun findRetrofitEndpoints(): ScanResult {
-        // We use a shorter cache during development or disable it to ensure freshness
-        val result = performScan()
-        thisLogger().info("Scan complete: found ${result.endpoints.size} endpoints in ${result.filesScanned} files.")
-        return result
-    }
-
-    private fun performScan(): ScanResult {
         val startTime = System.currentTimeMillis()
-        val endpoints = mutableListOf<ApiNode>()
-        val scannedFiles = mutableSetOf<VirtualFile>()
         val isDumb = DumbService.isDumb(project)
-        
-        val scope = GlobalSearchScope.allScope(project)
-        val psiManager = PsiManager.getInstance(project)
 
-        thisLogger().info("Scanning project: ${project.name} (Dumb Mode: $isDumb)")
-
-        // 1. Index-based search (Only works in Smart Mode)
-        if (!isDumb) {
-            try {
-                FileTypeIndex.getFiles(KotlinFileType.INSTANCE, scope).forEach { scannedFiles.add(it) }
-                FileTypeIndex.getFiles(JavaFileType.INSTANCE, scope).forEach { scannedFiles.add(it) }
-                thisLogger().info("Index found ${scannedFiles.size} files.")
-            } catch (e: Exception) {
-                thisLogger().warn("Index access failed: ${e.message}")
-            }
+        if (isDumb) {
+            thisLogger().warn("Project is currently in dumb mode (indexing). Scan results might be incomplete.")
+            return ScanResult(emptyList(), 0, 0, true)
         }
 
-        // 2. Brute-force fallback (Always do this if index is small or empty)
-        if (scannedFiles.size < 10) {
-            thisLogger().info("Performing manual module root walk for more results.")
-            val moduleManager = ModuleManager.getInstance(project)
-            moduleManager.modules.forEach { module ->
-                val rootManager = ModuleRootManager.getInstance(module)
-                rootManager.contentRoots.forEach { root ->
-                    VfsUtilCore.iterateChildrenRecursively(root, null) { virtualFile ->
-                        if (!virtualFile.isDirectory) {
-                            val ext = virtualFile.extension
-                            if (ext == "kt" || ext == "java") {
-                                scannedFiles.add(virtualFile)
-                            }
-                        }
-                        true
-                    }
-                }
+        return ReadAction.compute<ScanResult, Throwable> {
+            val endpoints = mutableListOf<ApiNode>()
+            val psiManager = PsiManager.getInstance(project)
+
+            // Include project scope and content scope to ensure multi-module Android / Kotlin / Java projects are covered
+            val scope = ProjectScope.getContentScope(project)
+                .union(GlobalSearchScope.projectScope(project))
+
+            val fileIndex = ProjectRootManager.getInstance(project).fileIndex
+            val processedFiles = mutableSetOf<VirtualFile>()
+
+            // 1. Collect Kotlin files
+            val ktFiles = FileTypeIndex.getFiles(KotlinFileType.INSTANCE, scope)
+            for (virtualFile in ktFiles) {
+                if (fileIndex.isInLibrary(virtualFile) || fileIndex.isInLibraryClasses(virtualFile)) continue
+                if (!processedFiles.add(virtualFile)) continue
+                val psiFile = psiManager.findFile(virtualFile) as? KtFile ?: continue
+                scanKotlinFile(psiFile, endpoints)
             }
-        }
 
-        thisLogger().info("Total files to analyze: ${scannedFiles.size}")
-
-        scannedFiles.forEach { virtualFile ->
-            try {
-                val psiFile = psiManager.findFile(virtualFile)
-                if (psiFile is KtFile) {
-                    scanKotlinFile(psiFile, endpoints)
-                } else if (psiFile is PsiJavaFile) {
-                    scanJavaFile(psiFile, endpoints)
-                }
-            } catch (e: Exception) {
-                thisLogger().error("Failed to scan file: ${virtualFile.path}", e)
+            // 2. Collect Java files
+            val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, scope)
+            for (virtualFile in javaFiles) {
+                if (fileIndex.isInLibrary(virtualFile) || fileIndex.isInLibraryClasses(virtualFile)) continue
+                if (!processedFiles.add(virtualFile)) continue
+                val psiFile = psiManager.findFile(virtualFile) as? PsiJavaFile ?: continue
+                scanJavaFile(psiFile, endpoints)
             }
-        }
 
-        val duration = System.currentTimeMillis() - startTime
-        return ScanResult(endpoints, scannedFiles.size, duration, isDumb)
+            val totalFiles = processedFiles.size
+            val duration = System.currentTimeMillis() - startTime
+            thisLogger().info("Scan finished: Scanned $totalFiles files, found ${endpoints.size} endpoints in ${duration}ms.")
+            ScanResult(endpoints, totalFiles, duration, false)
+        }
     }
 
-    private fun scanKotlinFile(file: KtFile, endpoints: MutableList<ApiNode>) {
+    fun scanKotlinFile(file: KtFile, endpoints: MutableList<ApiNode>) {
         val functions = PsiTreeUtil.findChildrenOfType(file, KtNamedFunction::class.java)
-        functions.forEach { function ->
+
+        for (function in functions) {
             var httpMethod: String? = null
             var path = ""
             var supportsCache = false
 
-            function.annotationEntries.forEach { annotation ->
-                val name = annotation.shortName?.asString()
-                if (name in retrofitAnnotations) {
+            for (annotation in function.annotationEntries) {
+                val name = annotation.shortName?.asString() ?: continue
+
+                if (name in HTTP_METHODS) {
                     httpMethod = name
-                    path = extractKotlinPath(annotation)
-                } else if (name == "SupportCache") {
+                    path = extractKotlinPath(annotation, name)
+                } else if (name.startsWith(RETROFIT_PACKAGE_PREFIX)) {
+                    val simpleName = name.removePrefix(RETROFIT_PACKAGE_PREFIX)
+                    if (simpleName in HTTP_METHODS) {
+                        httpMethod = simpleName
+                        path = extractKotlinPath(annotation, simpleName)
+                    }
+                } else if (name == "SupportCache" || name.endsWith(".SupportCache")) {
                     supportsCache = true
                 }
             }
 
             if (httpMethod != null) {
-                val parentClass = PsiTreeUtil.getParentOfType(function, KtClass::class.java)
-                endpoints.add(ApiNode(
-                    methodName = function.name ?: "unknown",
-                    httpMethod = httpMethod!!,
-                    path = path,
-                    className = parentClass?.name ?: file.name,
-                    psiElement = function,
-                    supportsCache = supportsCache
-                ))
+                val parentClass = PsiTreeUtil.getParentOfType(function, KtClassOrObject::class.java)
+                val className = parentClass?.name ?: file.name.substringBeforeLast(".")
+
+                endpoints.add(
+                    ApiNode(
+                        methodName = function.name ?: "unknownMethod",
+                        httpMethod = httpMethod,
+                        path = path,
+                        className = className,
+                        psiElement = function,
+                        supportsCache = supportsCache
+                    )
+                )
             }
         }
     }
 
-    private fun scanJavaFile(file: PsiJavaFile, endpoints: MutableList<ApiNode>) {
-        file.classes.forEach { psiClass ->
-            psiClass.methods.forEach { method ->
+    fun scanJavaFile(file: PsiJavaFile, endpoints: MutableList<ApiNode>) {
+        val classes = PsiTreeUtil.findChildrenOfType(file, PsiClass::class.java)
+
+        for (psiClass in classes) {
+            for (method in psiClass.methods) {
                 var httpMethod: String? = null
                 var path = ""
-                
-                method.annotations.forEach { annotation ->
-                    val shortName = annotation.qualifiedName?.substringAfterLast(".") ?: ""
-                    if (shortName in retrofitAnnotations) {
+                var supportsCache = false
+
+                for (annotation in method.annotations) {
+                    val qualifiedName = annotation.qualifiedName
+                    val shortName = qualifiedName?.substringAfterLast(".")
+                        ?: annotation.nameReferenceElement?.referenceName
+                        ?: continue
+
+                    if (shortName in HTTP_METHODS) {
                         httpMethod = shortName
-                        path = extractJavaPath(annotation)
+                        path = extractJavaPath(annotation, shortName)
+                    } else if (shortName == "SupportCache") {
+                        supportsCache = true
                     }
                 }
 
                 if (httpMethod != null) {
-                    endpoints.add(ApiNode(
-                        methodName = method.name,
-                        httpMethod = httpMethod!!,
-                        path = path,
-                        className = psiClass.name ?: file.name,
-                        psiElement = method
-                    ))
+                    endpoints.add(
+                        ApiNode(
+                            methodName = method.name,
+                            httpMethod = httpMethod,
+                            path = path,
+                            className = psiClass.name ?: file.name.substringBeforeLast("."),
+                            psiElement = method,
+                            supportsCache = supportsCache
+                        )
+                    )
                 }
             }
         }
     }
 
-    private fun extractKotlinPath(annotation: KtAnnotationEntry): String {
-        val valueArgument = annotation.valueArguments.firstOrNull { 
+    private fun extractKotlinPath(annotation: KtAnnotationEntry, httpMethod: String): String {
+        if (httpMethod == "HTTP") {
+            val pathArg = annotation.valueArguments.find { it.getArgumentName()?.asName?.asString() == "path" }
+                ?: annotation.valueArguments.getOrNull(1)
+            val text = pathArg?.getArgumentExpression()?.text ?: ""
+            return cleanQuotes(text)
+        }
+
+        val argument = annotation.valueArguments.firstOrNull {
             it.getArgumentName() == null || it.getArgumentName()?.asName?.asString() == "value"
         } ?: return ""
-        return valueArgument.getArgumentExpression()?.text?.removeSurrounding("\"") ?: ""
+
+        val expression = argument.getArgumentExpression()
+        val text = expression?.text ?: return ""
+        return cleanQuotes(text)
     }
 
-    private fun extractJavaPath(annotation: PsiAnnotation): String {
-        val attribute = annotation.findAttributeValue("value") ?: return ""
-        return attribute.text.removeSurrounding("\"")
+    private fun extractJavaPath(annotation: PsiAnnotation, httpMethod: String): String {
+        if (httpMethod == "HTTP") {
+            val pathAttr = annotation.findAttributeValue("path")
+            if (pathAttr != null) {
+                return cleanQuotes(pathAttr.text)
+            }
+        }
+
+        val valueAttribute = annotation.findAttributeValue("value")
+        return if (valueAttribute != null) cleanQuotes(valueAttribute.text) else ""
+    }
+
+    private fun cleanQuotes(text: String): String {
+        return text.trim()
+            .removeSurrounding("\"\"\"")
+            .removeSurrounding("\"")
     }
 }

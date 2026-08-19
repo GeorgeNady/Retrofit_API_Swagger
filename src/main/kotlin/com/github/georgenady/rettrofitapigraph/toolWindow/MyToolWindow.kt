@@ -8,6 +8,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.AsyncProcessIcon
@@ -27,13 +28,11 @@ class MyToolWindow(private val project: Project) {
     private val mainWrapper = JPanel(BorderLayout())
 
     init {
-        // Top Toolbar (Persistent)
         val toolbarPanel = JPanel(FlowLayout(FlowLayout.LEFT))
         toolbarPanel.add(JButton("Scan Project", AllIcons.Actions.Find).apply {
             addActionListener { refresh() }
         })
 
-        // Loading State
         val loadingPanel = JPanel(BorderLayout()).apply {
             val centerPanel = JPanel(BorderLayout())
             centerPanel.add(AsyncProcessIcon("Scanning"), BorderLayout.NORTH)
@@ -60,19 +59,25 @@ class MyToolWindow(private val project: Project) {
     fun refresh() {
         cardLayout.show(contentPanel, "LOADING")
 
-        ProgressManager.getInstance()
-            .run(object : Task.Backgroundable(project, "Retrofit API Discovery") {
+        DumbService.getInstance(project).runWhenSmart {
+            ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Retrofit API Discovery") {
                 override fun run(indicator: ProgressIndicator) {
                     val result = apiService.findRetrofitEndpoints()
+
                     ApplicationManager.getApplication().invokeLater {
                         graphComponent.updateData(result.endpoints)
-                        val status =
-                            "Found ${result.endpoints.size} endpoints in ${result.filesScanned} files. " +
-                                    if (result.isDumb) "(Index incomplete)" else ""
+
+                        val status = if (result.isDumb) {
+                            "Indexing in progress. Please wait and scan again."
+                        } else {
+                            "Found ${result.endpoints.size} endpoints in ${result.durationMs}ms."
+                        }
+
                         graphComponent.setStatus(status)
                         cardLayout.show(contentPanel, "GRAPH")
                     }
                 }
             })
+        }
     }
 }

@@ -17,6 +17,7 @@ dependencies {
         local("/Users/georgenady/Applications/Android Studio.app/Contents")
         bundledPlugin("org.jetbrains.kotlin")
         bundledPlugin("org.jetbrains.android")
+        testFramework(TestFrameworkType.Platform)
         pluginVerifier()
         zipSigner()
     }
