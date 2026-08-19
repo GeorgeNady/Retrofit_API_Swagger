@@ -1,5 +1,6 @@
 package com.github.georgenady.rettrofitapigraph.factory
 
+import com.github.georgenady.rettrofitapigraph.actions.RefreshApiGraphAction
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.ApplicationManager
@@ -31,15 +32,12 @@ class MyToolWindowFactory : ToolWindowFactory, DumbAware {
         val content = ContentFactory.getInstance().createContent(myToolWindow.getComponent(), null, false)
         toolWindow.contentManager.addContent(content)
         
-        // Add a secondary refresh in the header as well
-        val actionGroup = DefaultActionGroup().apply {
-            add(object : AnAction("Force Scan", "Scan project for Retrofit endpoints", AllIcons.Actions.Refresh) {
-                override fun actionPerformed(e: AnActionEvent) {
-                    myToolWindow.refresh()
-                }
-            })
+        // Add Refresh action to tool window header
+        val actionManager = ActionManager.getInstance()
+        val refreshAction = actionManager.getAction(RefreshApiGraphAction::class.java.canonicalName)
+        if (refreshAction != null) {
+            toolWindow.setTitleActions(listOf(refreshAction))
         }
-        toolWindow.setTitleActions(listOf(actionGroup.getChildren(null)[0]))
     }
 
     override fun shouldBeAvailable(project: Project) = true

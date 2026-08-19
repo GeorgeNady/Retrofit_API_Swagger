@@ -52,17 +52,16 @@ class RetrofitApiService(private val project: Project) {
             val endpoints = mutableListOf<ApiNode>()
             val psiManager = PsiManager.getInstance(project)
 
-            // Include project scope and content scope to ensure multi-module Android / Kotlin / Java projects are covered
-            val scope = ProjectScope.getContentScope(project)
-                .union(GlobalSearchScope.projectScope(project))
+            // Use allScope for maximum coverage
+            val scope = GlobalSearchScope.allScope(project)
 
             val fileIndex = ProjectRootManager.getInstance(project).fileIndex
             val processedFiles = mutableSetOf<VirtualFile>()
 
             // 1. Collect Kotlin files
             val ktFiles = FileTypeIndex.getFiles(KotlinFileType.INSTANCE, scope)
+            thisLogger().info("Index found ${ktFiles.size} Kotlin files.")
             for (virtualFile in ktFiles) {
-                if (fileIndex.isInLibrary(virtualFile) || fileIndex.isInLibraryClasses(virtualFile)) continue
                 if (!processedFiles.add(virtualFile)) continue
                 val psiFile = psiManager.findFile(virtualFile) as? KtFile ?: continue
                 scanKotlinFile(psiFile, endpoints)
@@ -70,17 +69,35 @@ class RetrofitApiService(private val project: Project) {
 
             // 2. Collect Java files
             val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, scope)
+            thisLogger().info("Index found ${javaFiles.size} Java files.")
             for (virtualFile in javaFiles) {
-                if (fileIndex.isInLibrary(virtualFile) || fileIndex.isInLibraryClasses(virtualFile)) continue
                 if (!processedFiles.add(virtualFile)) continue
                 val psiFile = psiManager.findFile(virtualFile) as? PsiJavaFile ?: continue
                 scanJavaFile(psiFile, endpoints)
             }
 
-            val totalFiles = processedFiles.size
+            // 3. Brute-force fallback for multi-module projects where indices might miss some content
+            if (processedFiles.size < 5) {
+                thisLogger().info("Index results too low (${processedFiles.size}). Performing manual module walk.")
+                com.intellij.openapi.module.ModuleManager.getInstance(project).modules.forEach { module ->
+                    com.intellij.openapi.roots.ModuleRootManager.getInstance(module).contentRoots.forEach { root ->
+                        com.intellij.openapi.vfs.VfsUtilCore.iterateChildrenRecursively(root, null) { vf ->
+                            if (!vf.isDirectory && (vf.extension == "kt" || vf.extension == "java")) {
+                                if (processedFiles.add(vf)) {
+                                    val psiFile = psiManager.findFile(vf)
+                                    if (psiFile is KtFile) scanKotlinFile(psiFile, endpoints)
+                                    else if (psiFile is PsiJavaFile) scanJavaFile(psiFile, endpoints)
+                                }
+                            }
+                            true
+                        }
+                    }
+                }
+            }
+            val totalFilesCount = processedFiles.size
             val duration = System.currentTimeMillis() - startTime
-            thisLogger().info("Scan finished: Scanned $totalFiles files, found ${endpoints.size} endpoints in ${duration}ms.")
-            ScanResult(endpoints, totalFiles, duration, false)
+            thisLogger().info("Scan finished: Scanned $totalFilesCount files, found ${endpoints.size} endpoints in ${duration}ms.")
+            ScanResult(endpoints, totalFilesCount, duration, false)
         }
     }
 

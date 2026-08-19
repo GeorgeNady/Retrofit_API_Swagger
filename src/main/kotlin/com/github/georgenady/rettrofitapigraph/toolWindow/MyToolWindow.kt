@@ -28,6 +28,8 @@ class MyToolWindow(private val project: Project) {
     private val mainWrapper = JPanel(BorderLayout())
 
     init {
+        mainWrapper.putClientProperty("MyToolWindow", this)
+
         val toolbarPanel = JPanel(FlowLayout(FlowLayout.LEFT))
         toolbarPanel.add(JButton("Scan Project", AllIcons.Actions.Find).apply {
             addActionListener { refresh() }

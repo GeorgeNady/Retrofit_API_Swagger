@@ -115,13 +115,13 @@ class ApiGraphComponent(private val project: Project) : JBPanel<ApiGraphComponen
                 methods.forEach { node ->
                     val (methodBg, methodBorder) = getMethodColors(node.httpMethod, isDark)
                     val style = if (node.supportsCache) {
-                        "fillColor=#1B5E20;fontColor=#FFFFFF;strokeColor=#4CAF50;rounded=1;fontSize=12;arcSize=10"
+                        "fillColor=#2E7D32;fontColor=#FFFFFF;strokeColor=#4CAF50;rounded=1;fontSize=12;arcSize=10"
                     } else {
                         "fillColor=$methodBg;strokeColor=$methodBorder;fontColor=$textColor;rounded=1;fontSize=12;arcSize=10"
                     }
 
                     val methodVertex = graph.insertVertex(parent, null, node, 0.0, 0.0, 260.0, 45.0, style)
-                    graph.insertEdge(parent, null, "", classVertex, methodVertex, "strokeColor=$classStroke;endArrow=none")
+                    graph.insertEdge(parent, null, "", classVertex, methodVertex, "strokeColor=$classStroke;endArrow=none;verticalAlign=middle")
                 }
             }
 

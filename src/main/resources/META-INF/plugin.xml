@@ -25,11 +25,21 @@
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
+    <actions>
+        <action id="com.github.georgenady.rettrofitapigraph.actions.RefreshApiGraphAction"
+                class="com.github.georgenady.rettrofitapigraph.actions.RefreshApiGraphAction"
+                text="Refresh API Graph"
+                description="Scan project for Retrofit endpoints"
+                icon="AllIcons.Actions.Refresh">
+        </action>
+    </actions>
+
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow factoryClass="com.github.georgenady.rettrofitapigraph.factory.MyToolWindowFactory"
-                    id="Retrofit Api Graph"
-                    name="API Graph"
-                    anchor="right"/>
+                    id="RetrofitApiGraph"
+                    name="Retrofit Api Graph"
+                    anchor="right"
+                    icon="AllIcons.Nodes.PpLib"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
