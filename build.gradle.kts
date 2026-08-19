@@ -16,6 +16,7 @@ dependencies {
     intellijPlatform {
         local("/Users/georgenady/Applications/Android Studio.app/Contents")
         bundledPlugin("org.jetbrains.kotlin")
+        bundledPlugin("com.intellij.java")
         bundledPlugin("org.jetbrains.android")
         testFramework(TestFrameworkType.Platform)
         pluginVerifier()
@@ -24,7 +25,14 @@ dependencies {
 }
 
 tasks {
-    buildPlugin {
-        // The intellij-platform plugin automatically bundles 'implementation' dependencies into the ZIP distribution.
+    patchPluginXml {
+        // Set the minimum supported IDE version (e.g., 2024.1+)
+        sinceBuild.set("241")
+
+        // Bumping to 261.* or leaving it unset allows installation on 2026 builds
+        untilBuild.set("261.*")
+
+        // OPTIONAL: To completely disable the upper version limit so it works on any future Studio/IntelliJ update:
+        // untilBuild.set(provider { null })
     }
 }
