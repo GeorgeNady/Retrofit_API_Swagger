@@ -1,6 +1,6 @@
 package com.github.georgenady.rettrofitapigraph.services
 
-import com.github.georgenady.rettrofitapigraph.model.ApiNode
+import com.github.georgenady.rettrofitapigraph.model.ApiEndpoint
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
@@ -20,7 +20,7 @@ import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtNamedFunction
 
 data class ScanResult(
-    val endpoints: List<ApiNode>,
+    val endpoints: List<ApiEndpoint>,
     val filesScanned: Int,
     val durationMs: Long
 )
@@ -32,7 +32,7 @@ class RetrofitApiService(private val project: Project) {
 
     fun findRetrofitEndpoints(): ScanResult {
         val startTime = System.currentTimeMillis()
-        val endpoints = mutableListOf<ApiNode>()
+        val endpoints = mutableListOf<ApiEndpoint>()
         val scannedFiles = mutableSetOf<VirtualFile>()
         
         val scope = GlobalSearchScope.allScope(project)
@@ -82,7 +82,7 @@ class RetrofitApiService(private val project: Project) {
         return ScanResult(endpoints, scannedFiles.size, duration)
     }
 
-    private fun scanKotlinFile(file: KtFile, endpoints: MutableList<ApiNode>) {
+    private fun scanKotlinFile(file: KtFile, endpoints: MutableList<ApiEndpoint>) {
         val functions = PsiTreeUtil.findChildrenOfType(file, KtNamedFunction::class.java)
         functions.forEach { function ->
             function.annotationEntries.forEach { annotation ->
@@ -90,7 +90,7 @@ class RetrofitApiService(private val project: Project) {
                 if (name in retrofitAnnotations) {
                     val path = extractKotlinPath(annotation)
                     val parentClass = PsiTreeUtil.getParentOfType(function, KtClass::class.java)
-                    endpoints.add(ApiNode(
+                    endpoints.add(ApiEndpoint(
                         methodName = function.name ?: "unknown",
                         httpMethod = name!!,
                         path = path,
@@ -102,7 +102,7 @@ class RetrofitApiService(private val project: Project) {
         }
     }
 
-    private fun scanJavaFile(file: PsiJavaFile, endpoints: MutableList<ApiNode>) {
+    private fun scanJavaFile(file: PsiJavaFile, endpoints: MutableList<ApiEndpoint>) {
         file.classes.forEach { psiClass ->
             psiClass.methods.forEach { method ->
                 method.annotations.forEach { annotation ->
@@ -110,7 +110,7 @@ class RetrofitApiService(private val project: Project) {
                     val shortName = qualifiedName.substringAfterLast(".")
                     if (shortName in retrofitAnnotations) {
                         val path = extractJavaPath(annotation)
-                        endpoints.add(ApiNode(
+                        endpoints.add(ApiEndpoint(
                             methodName = method.name,
                             httpMethod = shortName,
                             path = path,
