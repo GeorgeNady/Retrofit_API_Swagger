@@ -10,6 +10,7 @@ import java.awt.BorderLayout
 import java.awt.Cursor
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import javax.swing.BorderFactory
 
 class ApiGraphComponent : JBPanel<ApiGraphComponent>(BorderLayout()) {
 
@@ -27,8 +28,12 @@ class ApiGraphComponent : JBPanel<ApiGraphComponent>(BorderLayout()) {
     init {
         graphComponent.isConnectable = false
         graphComponent.isDragEnabled = false
+        graphComponent.viewport.isOpaque = false
+        graphComponent.isOpaque = false
         
-        add(JBScrollPane(graphComponent), BorderLayout.CENTER)
+        add(JBScrollPane(graphComponent).apply {
+            border = BorderFactory.createEmptyBorder()
+        }, BorderLayout.CENTER)
         
         setupClickListeners()
     }
@@ -40,7 +45,12 @@ class ApiGraphComponent : JBPanel<ApiGraphComponent>(BorderLayout()) {
             graph.removeCells(graph.getChildVertices(parent))
             
             if (endpoints.isEmpty()) {
-                graph.insertVertex(parent, null, "No Retrofit endpoints found.\nClick Refresh or check your project roots.", 20.0, 20.0, 300.0, 50.0, "fillColor=none;strokeColor=none;fontStyle=2;fontSize=14")
+                val msg = "No Retrofit endpoints found.\n" +
+                          "1. Ensure your project is synced.\n" +
+                          "2. Verify @GET/@POST annotations are present.\n" +
+                          "3. Click the Refresh icon in the toolbar."
+                graph.insertVertex(parent, null, msg, 20.0, 20.0, 350.0, 100.0, 
+                    "fillColor=none;strokeColor=none;fontStyle=2;fontSize=12;align=left;verticalAlign=top")
                 return
             }
 

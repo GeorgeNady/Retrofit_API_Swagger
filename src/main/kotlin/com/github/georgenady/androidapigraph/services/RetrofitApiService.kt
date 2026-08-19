@@ -28,7 +28,9 @@ class RetrofitApiService(private val project: Project) {
         thisLogger().info("Starting Retrofit API scan for project: ${project.name}")
 
         // 1. Scan Kotlin Files using FileTypeIndex
-        FileTypeIndex.getFiles(KotlinFileType.INSTANCE, scope).forEach { virtualFile ->
+        val kotlinFiles = FileTypeIndex.getFiles(KotlinFileType.INSTANCE, scope)
+        thisLogger().info("Found ${kotlinFiles.size} Kotlin files to scan.")
+        kotlinFiles.forEach { virtualFile ->
             val psiFile = psiManager.findFile(virtualFile)
             if (psiFile is KtFile) {
                 scanKotlinFile(psiFile, endpoints)
@@ -36,7 +38,9 @@ class RetrofitApiService(private val project: Project) {
         }
 
         // 2. Scan Java Files using FileTypeIndex
-        FileTypeIndex.getFiles(JavaFileType.INSTANCE, scope).forEach { virtualFile ->
+        val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, scope)
+        thisLogger().info("Found ${javaFiles.size} Java files to scan.")
+        javaFiles.forEach { virtualFile ->
             val psiFile = psiManager.findFile(virtualFile)
             if (psiFile is PsiJavaFile) {
                 scanJavaFile(psiFile, endpoints)
