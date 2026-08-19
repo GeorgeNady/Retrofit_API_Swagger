@@ -1,7 +1,7 @@
 package com.github.georgenady.rettrofitapigraph.toolWindow
 
 import com.github.georgenady.rettrofitapigraph.services.RetrofitApiService
-import com.github.georgenady.rettrofitapigraph.ui.ApiGraphComponent
+import com.github.georgenady.rettrofitapigraph.ui.ApiListPanel
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
@@ -22,7 +22,7 @@ import javax.swing.SwingConstants
 class MyToolWindow(private val project: Project) {
 
     private val apiService = project.service<RetrofitApiService>()
-    private val graphComponent = ApiGraphComponent(project)
+    private val listPanel = ApiListPanel() // Updated to ApiListPanel
     private val cardLayout = CardLayout()
     private val contentPanel = JPanel(cardLayout)
     private val mainWrapper = JPanel(BorderLayout())
@@ -45,10 +45,10 @@ class MyToolWindow(private val project: Project) {
             add(centerPanel, BorderLayout.CENTER)
         }
 
-        graphComponent.onRefreshRequested = { refresh() }
+        listPanel.onRefreshRequested = { refresh() }
 
         contentPanel.add(loadingPanel, "LOADING")
-        contentPanel.add(graphComponent, "GRAPH")
+        contentPanel.add(listPanel, "GRAPH")
 
         mainWrapper.add(toolbarPanel, BorderLayout.NORTH)
         mainWrapper.add(contentPanel, BorderLayout.CENTER)
@@ -62,12 +62,12 @@ class MyToolWindow(private val project: Project) {
         cardLayout.show(contentPanel, "LOADING")
 
         DumbService.getInstance(project).runWhenSmart {
-            ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Retrofit API Discovery") {
+            ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Retrofit API Discovery", true) {
                 override fun run(indicator: ProgressIndicator) {
-                    val result = apiService.findRetrofitEndpoints()
+                    val result = apiService.findRetrofitEndpoints(indicator)
 
                     ApplicationManager.getApplication().invokeLater {
-                        graphComponent.updateData(result.endpoints)
+                        listPanel.setEndpoints(result.endpoints)
 
                         val status = if (result.isDumb) {
                             "Indexing in progress. Please wait and scan again."
@@ -75,7 +75,14 @@ class MyToolWindow(private val project: Project) {
                             "Found ${result.endpoints.size} endpoints in ${result.durationMs}ms."
                         }
 
-                        graphComponent.setStatus(status)
+                        listPanel.setStatus(status)
+                        cardLayout.show(contentPanel, "GRAPH")
+                    }
+                }
+
+                override fun onCancel() {
+                    ApplicationManager.getApplication().invokeLater {
+                        listPanel.setStatus("Scan cancelled.")
                         cardLayout.show(contentPanel, "GRAPH")
                     }
                 }

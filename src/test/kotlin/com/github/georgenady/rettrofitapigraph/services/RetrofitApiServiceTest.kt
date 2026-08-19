@@ -1,7 +1,10 @@
 package com.github.georgenady.rettrofitapigraph.services
 
 import com.github.georgenady.rettrofitapigraph.model.ApiNode
-import com.intellij.psi.JavaPsiFacade
+import com.github.georgenady.rettrofitapigraph.parser.CompositeEndpointParser
+import com.github.georgenady.rettrofitapigraph.parser.JavaEndpointParser
+import com.github.georgenady.rettrofitapigraph.parser.KotlinEndpointParser
+import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiJavaFile
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
@@ -23,11 +26,14 @@ class RetrofitApiServiceTest : BasePlatformTestCase() {
             import retrofit2.http.POST
             import retrofit2.http.PUT
             import retrofit2.http.DELETE
+            import retrofit2.http.HTTP
             import retrofit2.http.Path
             import retrofit2.http.Body
+            import com.example.annotations.SupportCache
 
             interface UserApiService {
                 @GET("users/{id}")
+                @SupportCache
                 suspend fun getUser(@Path("id") id: String): User
 
                 @POST("users/create")
@@ -38,6 +44,9 @@ class RetrofitApiServiceTest : BasePlatformTestCase() {
 
                 @DELETE("users/{id}")
                 fun deleteUser(@Path("id") id: String)
+
+                @HTTP(method = "CUSTOM", path = "users/custom")
+                fun customHttp()
             }
         """.trimIndent()
 
@@ -51,13 +60,14 @@ class RetrofitApiServiceTest : BasePlatformTestCase() {
         val endpoints = mutableListOf<ApiNode>()
         service.scanKotlinFile(psiFile, endpoints)
 
-        assertEquals(4, endpoints.size)
+        assertEquals(5, endpoints.size)
 
         val getEndpoint = endpoints.find { it.methodName == "getUser" }
         assertNotNull(getEndpoint)
         assertEquals("GET", getEndpoint?.httpMethod)
         assertEquals("users/{id}", getEndpoint?.path)
         assertEquals("UserApiService", getEndpoint?.className)
+        assertTrue(getEndpoint?.supportsCache == true)
 
         val postEndpoint = endpoints.find { it.methodName == "createUser" }
         assertNotNull(postEndpoint)
@@ -73,6 +83,11 @@ class RetrofitApiServiceTest : BasePlatformTestCase() {
         assertNotNull(deleteEndpoint)
         assertEquals("DELETE", deleteEndpoint?.httpMethod)
         assertEquals("users/{id}", deleteEndpoint?.path)
+
+        val httpEndpoint = endpoints.find { it.methodName == "customHttp" }
+        assertNotNull(httpEndpoint)
+        assertEquals("HTTP", httpEndpoint?.httpMethod)
+        assertEquals("users/custom", httpEndpoint?.path)
     }
 
     @Test
@@ -82,6 +97,7 @@ class RetrofitApiServiceTest : BasePlatformTestCase() {
 
             import retrofit2.http.GET;
             import retrofit2.http.POST;
+            import retrofit2.http.HTTP;
             import retrofit2.Call;
 
             public interface JavaApiService {
@@ -90,11 +106,15 @@ class RetrofitApiServiceTest : BasePlatformTestCase() {
 
                 @POST("items/add")
                 Call<Void> addItem();
+
+                @HTTP(method = "DELETE", path = "items/remove")
+                Call<Void> removeItem();
             }
         """.trimIndent()
 
         val psiFile = PsiFileFactory.getInstance(project).createFileFromText(
             "JavaApiService.java",
+            JavaFileType.INSTANCE,
             javaCode
         ) as PsiJavaFile
 
@@ -102,7 +122,7 @@ class RetrofitApiServiceTest : BasePlatformTestCase() {
         val endpoints = mutableListOf<ApiNode>()
         service.scanJavaFile(psiFile, endpoints)
 
-        assertEquals(2, endpoints.size)
+        assertEquals(3, endpoints.size)
 
         val getItems = endpoints.find { it.methodName == "getItems" }
         assertNotNull(getItems)
@@ -114,5 +134,32 @@ class RetrofitApiServiceTest : BasePlatformTestCase() {
         assertNotNull(addItem)
         assertEquals("POST", addItem?.httpMethod)
         assertEquals("items/add", addItem?.path)
+
+        val removeItem = endpoints.find { it.methodName == "removeItem" }
+        assertNotNull(removeItem)
+        assertEquals("HTTP", removeItem?.httpMethod)
+        assertEquals("items/remove", removeItem?.path)
+    }
+
+    @Test
+    fun testCompositeEndpointParser() {
+        val composite = CompositeEndpointParser()
+
+        val kotlinFile = PsiFileFactory.getInstance(project).createFileFromText(
+            "Sample.kt",
+            KotlinFileType.INSTANCE,
+            """
+                interface SampleApi {
+                    @retrofit2.http.GET("test")
+                    fun test(): String
+                }
+            """.trimIndent()
+        )
+
+        assertTrue(composite.canParse(kotlinFile))
+        val parsed = composite.parse(kotlinFile)
+        assertEquals(1, parsed.size)
+        assertEquals("GET", parsed[0].httpMethod)
+        assertEquals("test", parsed[0].path)
     }
 }
