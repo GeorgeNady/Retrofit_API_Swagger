@@ -8,6 +8,7 @@ plugins {
 
 dependencies {
     testImplementation("junit:junit:4.13.2")
+    implementation("org.tinyjee.jgraphx:jgraphx:3.4.1.3")
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {

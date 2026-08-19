@@ -1,55 +1,91 @@
 package com.github.georgenady.androidapigraph.ui
 
 import com.github.georgenady.androidapigraph.model.ApiNode
-import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
-import java.awt.*
-import javax.swing.BorderFactory
-import javax.swing.BoxLayout
+import com.mxgraph.layout.hierarchical.mxHierarchicalLayout
+import com.mxgraph.swing.mxGraphComponent
+import com.mxgraph.view.mxGraph
+import java.awt.BorderLayout
+import java.awt.Cursor
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 
 class ApiGraphComponent : JBPanel<ApiGraphComponent>(BorderLayout()) {
 
-    private val container = JBPanel<JBPanel<*>>().apply {
-        layout = BoxLayout(this, BoxLayout.Y_AXIS)
+    private val graph = object : mxGraph() {
+        override fun convertValueToString(cell: Any?): String {
+            val value = model.getValue(cell)
+            if (value is ApiNode) {
+                return "${value.httpMethod} ${value.path}"
+            }
+            return super.convertValueToString(cell)
+        }
     }
+    private val graphComponent = mxGraphComponent(graph)
 
     init {
-        add(JBScrollPane(container), BorderLayout.CENTER)
+        graphComponent.isConnectable = false
+        graphComponent.isDragEnabled = false
+        
+        add(JBScrollPane(graphComponent), BorderLayout.CENTER)
+        
+        setupClickListeners()
     }
 
     fun updateData(endpoints: List<ApiNode>) {
-        container.removeAll()
-        
-        endpoints.groupBy { it.className }.forEach { (className, methods) ->
-            val classPanel = JBPanel<JBPanel<*>>().apply {
-                layout = BoxLayout(this, BoxLayout.Y_AXIS)
-                border = BorderFactory.createTitledBorder(className)
-                alignmentX = Component.LEFT_ALIGNMENT
+        val parent = graph.defaultParent
+        graph.model.beginUpdate()
+        try {
+            graph.removeCells(graph.getChildVertices(parent))
+            
+            val classNodes = mutableMapOf<String, Any>()
+            
+            endpoints.groupBy { it.className }.forEach { (className, methods) ->
+                val classVertex = graph.insertVertex(parent, null, className, 0.0, 0.0, 120.0, 40.0, "fillColor=#f0f0f0;fontStyle=1")
+                classNodes[className] = classVertex
+                
+                methods.forEach { node ->
+                    val methodVertex = graph.insertVertex(parent, null, node, 0.0, 0.0, 150.0, 50.0, "fillColor=#e1f5fe")
+                    graph.insertEdge(parent, null, "", classVertex, methodVertex)
+                }
             }
             
-            methods.forEach { node ->
-                val methodLabel = JBLabel("${node.httpMethod} ${node.path} (${node.methodName})").apply {
-                    border = BorderFactory.createEmptyBorder(5, 10, 5, 10)
-                    cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
-                    
-                    // Click to navigate
-                    addMouseListener(object : java.awt.event.MouseAdapter() {
-                        override fun mouseClicked(e: java.awt.event.MouseEvent?) {
-                            node.psiElement?.let { element ->
-                                if (element is com.intellij.pom.Navigatable && element.canNavigate()) {
-                                    element.navigate(true)
-                                }
-                            }
-                        }
-                    })
-                }
-                classPanel.add(methodLabel)
-            }
-            container.add(classPanel)
+            // Apply layout
+            val layout = mxHierarchicalLayout(graph)
+            layout.execute(parent)
+            
+        } finally {
+            graph.model.endUpdate()
         }
         
-        revalidate()
-        repaint()
+        graphComponent.refresh()
+    }
+
+    private fun setupClickListeners() {
+        graphComponent.graphControl.addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent) {
+                val cell = graphComponent.getCellAt(e.x, e.y)
+                if (cell != null) {
+                    val value = graph.model.getValue(cell)
+                    if (value is ApiNode) {
+                        value.psiElement?.let { element ->
+                            if (element is com.intellij.pom.Navigatable && element.canNavigate()) {
+                                element.navigate(true)
+                            }
+                        }
+                    }
+                }
+            }
+            
+            override fun mouseMoved(e: MouseEvent) {
+                val cell = graphComponent.getCellAt(e.x, e.y)
+                graphComponent.cursor = if (cell != null && graph.model.getValue(cell) is ApiNode) {
+                    Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+                } else {
+                    Cursor.getDefaultCursor()
+                }
+            }
+        })
     }
 }

@@ -1,6 +1,9 @@
 package com.github.georgenady.androidapigraph.toolWindow
 
 import com.intellij.openapi.components.service
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
@@ -39,8 +42,16 @@ class MyToolWindowFactory : ToolWindowFactory {
         }
 
         private fun refresh() {
-            val endpoints = apiService.findRetrofitEndpoints()
-            graphComponent.updateData(endpoints)
+            ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Scanning for Retrofit APIs") {
+                override fun run(indicator: ProgressIndicator) {
+                    val endpoints = apiService.findRetrofitEndpoints()
+                    
+                    // Update UI on EDT
+                    com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
+                        graphComponent.updateData(endpoints)
+                    }
+                }
+            })
         }
     }
 }
