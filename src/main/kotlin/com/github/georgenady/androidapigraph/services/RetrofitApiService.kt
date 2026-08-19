@@ -22,32 +22,41 @@ class RetrofitApiService(private val project: Project) {
 
     fun findRetrofitEndpoints(): List<ApiNode> {
         val endpoints = mutableListOf<ApiNode>()
-        val scope = GlobalSearchScope.projectScope(project)
+        // Use allScope to ensure we scan across all modules and dependencies if necessary
+        val scope = GlobalSearchScope.allScope(project)
         val psiManager = PsiManager.getInstance(project)
 
-        thisLogger().info("Starting Retrofit API scan for project: ${project.name}")
+        thisLogger().info("Starting Retrofit API scan for project: ${project.name} (Scope: All)")
 
         // 1. Scan Kotlin Files using FileTypeIndex
         val kotlinFiles = FileTypeIndex.getFiles(KotlinFileType.INSTANCE, scope)
-        thisLogger().info("Found ${kotlinFiles.size} Kotlin files to scan.")
+        thisLogger().info("Found ${kotlinFiles.size} Kotlin files in allScope.")
         kotlinFiles.forEach { virtualFile ->
             val psiFile = psiManager.findFile(virtualFile)
             if (psiFile is KtFile) {
+                val beforeCount = endpoints.size
                 scanKotlinFile(psiFile, endpoints)
+                if (endpoints.size > beforeCount) {
+                    thisLogger().info("Detected ${endpoints.size - beforeCount} endpoint(s) in: ${virtualFile.path}")
+                }
             }
         }
 
         // 2. Scan Java Files using FileTypeIndex
         val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, scope)
-        thisLogger().info("Found ${javaFiles.size} Java files to scan.")
+        thisLogger().info("Found ${javaFiles.size} Java files in allScope.")
         javaFiles.forEach { virtualFile ->
             val psiFile = psiManager.findFile(virtualFile)
             if (psiFile is PsiJavaFile) {
+                val beforeCount = endpoints.size
                 scanJavaFile(psiFile, endpoints)
+                if (endpoints.size > beforeCount) {
+                    thisLogger().info("Detected ${endpoints.size - beforeCount} endpoint(s) in: ${virtualFile.path}")
+                }
             }
         }
 
-        thisLogger().info("Scan complete. Found ${endpoints.size} endpoints.")
+        thisLogger().info("Scan complete. Found ${endpoints.size} endpoints total.")
         return endpoints
     }
 

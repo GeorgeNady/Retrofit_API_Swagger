@@ -14,11 +14,16 @@ import javax.swing.BorderFactory
 
 class ApiGraphComponent : JBPanel<ApiGraphComponent>(BorderLayout()) {
 
+    var onRefreshRequested: (() -> Unit)? = null
+
     private val graph = object : mxGraph() {
         override fun convertValueToString(cell: Any?): String {
             val value = model.getValue(cell)
             if (value is ApiNode) {
                 return "${value.httpMethod} ${value.path}"
+            }
+            if (value is String && value.startsWith("REFRESH_BUTTON")) {
+                return "Click here to REFRESH"
             }
             return super.convertValueToString(cell)
         }
@@ -46,11 +51,18 @@ class ApiGraphComponent : JBPanel<ApiGraphComponent>(BorderLayout()) {
             
             if (endpoints.isEmpty()) {
                 val msg = "No Retrofit endpoints found.\n" +
-                          "1. Ensure your project is synced.\n" +
-                          "2. Verify @GET/@POST annotations are present.\n" +
-                          "3. Click the Refresh icon in the toolbar."
-                graph.insertVertex(parent, null, msg, 20.0, 20.0, 350.0, 100.0, 
+                          "Suggestions:\n" +
+                          "- Ensure your project is synced with Gradle.\n" +
+                          "- Check if @GET/@POST/etc. are correctly imported.\n" +
+                          "- Ensure you are in a module with source code."
+                
+                graph.insertVertex(parent, null, msg, 20.0, 20.0, 350.0, 80.0, 
                     "fillColor=none;strokeColor=none;fontStyle=2;fontSize=12;align=left;verticalAlign=top")
+                
+                // Interactive Refresh vertex
+                graph.insertVertex(parent, null, "REFRESH_BUTTON", 20.0, 110.0, 150.0, 40.0,
+                    "fillColor=#4caf50;fontColor=#ffffff;strokeColor=#2e7d32;rounded=1;fontSize=13;fontStyle=1")
+                
                 return
             }
 
@@ -89,13 +101,16 @@ class ApiGraphComponent : JBPanel<ApiGraphComponent>(BorderLayout()) {
                                 element.navigate(true)
                             }
                         }
+                    } else if (value is String && value.startsWith("REFRESH_BUTTON")) {
+                        onRefreshRequested?.invoke()
                     }
                 }
             }
             
             override fun mouseMoved(e: MouseEvent) {
                 val cell = graphComponent.getCellAt(e.x, e.y)
-                graphComponent.cursor = if (cell != null && graph.model.getValue(cell) is ApiNode) {
+                val value = if (cell != null) graph.model.getValue(cell) else null
+                graphComponent.cursor = if (value is ApiNode || (value is String && value.startsWith("REFRESH_BUTTON"))) {
                     Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
                 } else {
                     Cursor.getDefaultCursor()

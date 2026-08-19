@@ -20,7 +20,7 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.georgenady.androidapigraph.toolWindow.MyToolWindowFactory" id="RetrofitApiGraph" name="API Graph"/>
+        <toolWindow factoryClass="com.github.georgenady.androidapigraph.toolWindow.MyToolWindowFactory" id="Retrofit Api Graph" name="API Graph"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">

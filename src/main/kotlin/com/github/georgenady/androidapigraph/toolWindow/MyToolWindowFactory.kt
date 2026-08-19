@@ -31,6 +31,8 @@ class MyToolWindowFactory : ToolWindowFactory {
         private val panel = SimpleToolWindowPanel(true, true)
 
         init {
+            graphComponent.onRefreshRequested = { refresh() }
+            
             val actionGroup = DefaultActionGroup().apply {
                 add(object : AnAction("Refresh API Graph", "Scan project for Retrofit endpoints", AllIcons.Actions.Refresh) {
                     override fun actionPerformed(e: AnActionEvent) {
