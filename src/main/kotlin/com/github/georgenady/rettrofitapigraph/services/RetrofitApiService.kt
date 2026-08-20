@@ -1,5 +1,6 @@
 package com.github.georgenady.rettrofitapigraph.services
 
+import com.github.georgenady.rettrofitapigraph.MyBundle
 import com.github.georgenady.rettrofitapigraph.model.AnnotationDetail
 import com.github.georgenady.rettrofitapigraph.model.ApiNode
 import com.github.georgenady.rettrofitapigraph.model.ParameterDetail
@@ -39,11 +40,11 @@ class RetrofitApiService @JvmOverloads constructor(
         val isDumb = DumbService.isDumb(project)
 
         if (isDumb) {
-            thisLogger().warn("🔄 Project is currently in dumb mode (indexing). Scan results might be incomplete.")
+            thisLogger().warn("🔄 " + MyBundle.message("dashboard.indexing"))
             return ScanResult(emptyList(), 0, 0, true)
         }
 
-        indicator?.text = "🕵🏼‍♂️ Discovering source files..."
+        indicator?.text = "🕵🏼‍♂️ " + MyBundle.message("dashboard.scanning")
         val filesToScan = fileCollector.collectSourceFiles(indicator)
         val totalFilesCount = filesToScan.size
         thisLogger().info("Collected $totalFilesCount project source files for scanning.")
@@ -71,7 +72,7 @@ class RetrofitApiService @JvmOverloads constructor(
         }
 
         val duration = System.currentTimeMillis() - startTime
-        thisLogger().info("✅ Scan finished: 🗒 Scanned $totalFilesCount files️, 🛜 found ${endpoints.size} endpoints, ⌛ in ${duration}ms.")
+        thisLogger().info("✅ " + MyBundle.message("dashboard.found_endpoints", endpoints.size, duration))
         return ScanResult(endpoints, totalFilesCount, duration, false)
     }
 

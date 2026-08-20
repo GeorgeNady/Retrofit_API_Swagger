@@ -1,5 +1,6 @@
 package com.github.georgenady.rettrofitapigraph.ui.components
 
+import com.github.georgenady.rettrofitapigraph.MyBundle
 import com.intellij.icons.AllIcons
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
@@ -27,17 +28,17 @@ class ApiEmptyStateView(
             insets = JBUI.insets(4)
         }
 
-        val titleLabel = JBLabel("No Retrofit Endpoints Found", SwingConstants.CENTER).apply {
+        val titleLabel = JBLabel(MyBundle.message("empty.title"), SwingConstants.CENTER).apply {
             font = font.deriveFont(Font.BOLD, 16f)
             foreground = JBColor.namedColor("Label.infoForeground", JBColor.GRAY)
         }
 
-        val subtitleLabel = JBLabel("Ensure your interfaces use @GET, @POST, etc. annotations.", SwingConstants.CENTER).apply {
+        val subtitleLabel = JBLabel(MyBundle.message("empty.subtitle"), SwingConstants.CENTER).apply {
             font = font.deriveFont(Font.PLAIN, 12f)
             foreground = JBColor.namedColor("Label.subtextForeground", JBColor.GRAY)
         }
 
-        val scanButton = JButton("Scan Project", AllIcons.Actions.Refresh).apply {
+        val scanButton = JButton(MyBundle.message("action.scan_project"), AllIcons.Actions.Refresh).apply {
             cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
             addActionListener { onScanRequested?.invoke() }
         }

@@ -1,5 +1,6 @@
 package com.github.georgenady.rettrofitapigraph.ui.sidepanel.sections
 
+import com.github.georgenady.rettrofitapigraph.MyBundle
 import com.github.georgenady.rettrofitapigraph.model.ApiFilterModel
 import com.github.georgenady.rettrofitapigraph.model.ApiNode
 import com.github.georgenady.rettrofitapigraph.ui.sidepanel.SidePanelSection
@@ -21,7 +22,7 @@ class FilterSection(
     private val onFilterChanged: (ApiFilterModel) -> Unit
 ) : SidePanelSection {
 
-    override val title: String = "Search & Filters"
+    override val title: String = MyBundle.message("filter.title")
 
     private var isUpdatingCombo = false
 
@@ -58,7 +59,7 @@ class FilterSection(
             return Dimension(Int.MAX_VALUE, preferredSize.height)
         }
     }.apply {
-        addItem("All Modules")
+        addItem(MyBundle.message("filter.all_modules"))
         border = JBUI.Borders.empty(2, 6)
 
         setRenderer(object : DefaultListCellRenderer() {
@@ -117,7 +118,7 @@ class FilterSection(
         isUpdatingCombo = true
         try {
             moduleCombo.removeAllItems()
-            moduleCombo.addItem("All Modules")
+            moduleCombo.addItem(MyBundle.message("filter.all_modules"))
             modules.distinct().sorted().forEach { moduleCombo.addItem(it) }
         } finally {
             isUpdatingCombo = false

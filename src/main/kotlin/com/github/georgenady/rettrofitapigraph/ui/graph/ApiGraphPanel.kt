@@ -1,5 +1,6 @@
 package com.github.georgenady.rettrofitapigraph.ui.graph
 
+import com.github.georgenady.rettrofitapigraph.MyBundle
 import com.github.georgenady.rettrofitapigraph.model.ApiNode
 import com.github.georgenady.rettrofitapigraph.ui.theme.SwaggerTheme
 import com.intellij.openapi.project.Project
@@ -207,6 +208,17 @@ class ApiGraphPanel(
         graph.model.beginUpdate()
         try {
             graph.removeCells(graph.getChildVertices(parent))
+
+            if (endpoints.isEmpty()) {
+                val msg = MyBundle.message("empty.nothing_found")
+                graph.insertVertex(parent, null, msg, 40.0, 40.0, 250.0, 30.0, 
+                    "fillColor=none;strokeColor=none;fontStyle=1;fontSize=15;align=center;fontColor=#888888")
+                
+                graph.insertVertex(parent, null, "REFRESH_BUTTON", 85.0, 90.0, 150.0, 45.0,
+                    "fillColor=#F57C00;fontColor=#ffffff;strokeColor=#E65100;rounded=1;fontSize=14;fontStyle=1")
+                
+                return
+            }
 
             val classNodes = mutableMapOf<String, Any>()
             val isDark = !JBColor.isBright()

@@ -1,5 +1,6 @@
 package com.github.georgenady.rettrofitapigraph.ui.sidepanel.sections
 
+import com.github.georgenady.rettrofitapigraph.MyBundle
 import com.github.georgenady.rettrofitapigraph.model.ApiNode
 import com.github.georgenady.rettrofitapigraph.ui.sidepanel.SidePanelSection
 import com.intellij.ui.JBColor
@@ -20,7 +21,7 @@ import javax.swing.Scrollable
 
 class DetailsSection : SidePanelSection {
 
-    override val title: String = "API Details"
+    override val title: String = MyBundle.message("details.title")
 
     /**
      * A JTextArea that implements Scrollable to strictly track the viewport width.
@@ -76,12 +77,12 @@ class DetailsSection : SidePanelSection {
         }
     }
 
-    private val nameText = ResponsiveWrappedTextArea("Select an API...", Font.BOLD, 14f)
+    private val nameText = ResponsiveWrappedTextArea(MyBundle.message("details.select_api"), Font.BOLD, 14f)
     private val methodText = ResponsiveWrappedTextArea("", Font.PLAIN, 12f)
     private val pathText = ResponsiveWrappedTextArea("", Font.PLAIN, 12f)
     private val classText = ResponsiveWrappedTextArea("", Font.PLAIN, 12f)
 
-    private val annotationsLabel = JBLabel("Annotations:").apply {
+    private val annotationsLabel = JBLabel(MyBundle.message("details.annotations")).apply {
         font = font.deriveFont(Font.BOLD, 12f)
         alignmentX = JComponent.LEFT_ALIGNMENT
     }
@@ -91,7 +92,7 @@ class DetailsSection : SidePanelSection {
         alignmentX = JComponent.LEFT_ALIGNMENT
     }
 
-    private val parametersLabel = JBLabel("Parameters:").apply {
+    private val parametersLabel = JBLabel(MyBundle.message("details.parameters")).apply {
         font = font.deriveFont(Font.BOLD, 12f)
         alignmentX = JComponent.LEFT_ALIGNMENT
     }
@@ -144,7 +145,7 @@ class DetailsSection : SidePanelSection {
         parametersList.removeAll()
 
         if (node == null) {
-            nameText.text = "Select an API..."
+            nameText.text = MyBundle.message("details.select_api")
             methodText.text = ""
             pathText.text = ""
             classText.text = ""
@@ -156,9 +157,9 @@ class DetailsSection : SidePanelSection {
             parametersLabel.isVisible = false
         } else {
             nameText.text = node.methodName
-            methodText.text = "Method: ${node.httpMethod}"
-            pathText.text = "Path: ${node.path}"
-            classText.text = "Service: ${node.className}"
+            methodText.text = MyBundle.message("details.method", node.httpMethod)
+            pathText.text = MyBundle.message("details.path", node.path)
+            classText.text = MyBundle.message("details.service", node.className)
 
             methodText.isVisible = true
             pathText.isVisible = true

@@ -1,5 +1,6 @@
 package com.github.georgenady.rettrofitapigraph.ui.graph
 
+import com.github.georgenady.rettrofitapigraph.MyBundle
 import com.intellij.icons.AllIcons
 import com.intellij.ui.JBColor
 import com.intellij.util.ui.JBUI
@@ -34,10 +35,10 @@ class GraphOverlayToolbar(
 
         // Group panel for Zoom actions
         val zoomPanel = createGroupPanel().apply {
-            add(createButton(AllIcons.General.Add, "Zoom In") { onZoomIn() })
-            add(createButton(AllIcons.General.Remove, "Zoom Out") { onZoomOut() })
-            add(createButton(null, "1:1") { onZoomReset() }.apply { text = "1:1"; font = font.deriveFont(9f) })
-            add(createButton(AllIcons.General.FitContent, "Fit to Screen") { onZoomFit() })
+            add(createButton(AllIcons.General.Add, MyBundle.message("action.zoom_in.text")) { onZoomIn() })
+            add(createButton(AllIcons.General.Remove, MyBundle.message("action.zoom_out.text")) { onZoomOut() })
+            add(createButton(null, MyBundle.message("action.zoom_actual.text")) { onZoomReset() }.apply { text = "1:1"; font = font.deriveFont(9f) })
+            add(createButton(AllIcons.General.FitContent, MyBundle.message("action.zoom_fit.text")) { onZoomFit() })
         }
 
         add(handPanel)

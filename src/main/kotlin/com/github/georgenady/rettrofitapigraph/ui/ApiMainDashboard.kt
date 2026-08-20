@@ -1,5 +1,6 @@
 package com.github.georgenady.rettrofitapigraph.ui
 
+import com.github.georgenady.rettrofitapigraph.MyBundle
 import com.github.georgenady.rettrofitapigraph.model.ApiNode
 import com.github.georgenady.rettrofitapigraph.services.ApiStateService
 import com.github.georgenady.rettrofitapigraph.ui.components.ApiCardListContainer
@@ -63,7 +64,7 @@ class ApiMainDashboard(private val project: Project) : JPanel(BorderLayout()) {
         isOpaque = false
         val centerPanel = JPanel(BorderLayout()).apply { isOpaque = false }
         centerPanel.add(AsyncProcessIcon("Scanning"), BorderLayout.NORTH)
-        centerPanel.add(JBLabel("Discovering APIs...", SwingConstants.CENTER), BorderLayout.SOUTH)
+        centerPanel.add(JBLabel(MyBundle.message("dashboard.scanning"), SwingConstants.CENTER), BorderLayout.SOUTH)
         add(centerPanel, BorderLayout.CENTER)
     }
 
@@ -108,7 +109,7 @@ class ApiMainDashboard(private val project: Project) : JPanel(BorderLayout()) {
     private fun setupSubscriptions() {
         project.messageBus.connect().subscribe(ApiStateService.TOPIC, object : ApiStateService.ApiStateListener {
             override fun onEndpointsUpdated(endpoints: List<ApiNode>, totalScanned: Int, durationMs: Long) {
-                statusBar.setMessage("🔎 Found ${endpoints.size} endpoints in $durationMs ms.")
+                statusBar.setMessage(MyBundle.message("dashboard.found_endpoints", endpoints.size, durationMs))
                 
                 // Update module list in filter section
                 val modules = endpoints.map { it.className }.distinct().sorted()
@@ -164,7 +165,7 @@ class ApiMainDashboard(private val project: Project) : JPanel(BorderLayout()) {
             // Revert to all APIs if the filter matched nothing
             listPanel.render(allEndpoints)
             graphPanel.render(allEndpoints)
-            statusBar.setMessage("No matches found. Showing all APIs.")
+            statusBar.setMessage(MyBundle.message("dashboard.no_matches"))
         } else {
             listPanel.render(filteredEndpoints)
             graphPanel.render(filteredEndpoints)
