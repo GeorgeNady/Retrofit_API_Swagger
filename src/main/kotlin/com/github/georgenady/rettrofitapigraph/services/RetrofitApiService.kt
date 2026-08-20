@@ -17,6 +17,7 @@ import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiJavaFile
 import com.intellij.psi.PsiManager
 import org.jetbrains.kotlin.psi.KtFile
@@ -74,6 +75,27 @@ class RetrofitApiService @JvmOverloads constructor(
         val duration = System.currentTimeMillis() - startTime
         thisLogger().info("✅ " + MyBundle.message("dashboard.found_endpoints", endpoints.size, duration))
         return ScanResult(endpoints, totalFilesCount, duration, false)
+    }
+
+    fun findRetrofitEndpointsInFile(virtualFile: VirtualFile): List<ApiNode> {
+        if (DumbService.isDumb(project)) {
+            thisLogger().warn("Skipping single file parse: Project indexing is in progress.")
+            return emptyList()
+        }
+
+        return runReadActionBlocking {
+            if (!virtualFile.isValid) return@runReadActionBlocking emptyList()
+
+            val psiManager = PsiManager.getInstance(project)
+            val psiFile = psiManager.findFile(virtualFile) ?: return@runReadActionBlocking emptyList()
+
+            val parsed = endpointParser.parse(psiFile)
+            if (parsed.isNotEmpty()) {
+                thisLogger().info("Parsed ${parsed.size} endpoints from single file: ${virtualFile.name}")
+            }
+
+            parsed
+        }
     }
 
     fun scanKotlinFile(file: KtFile, endpoints: MutableList<ApiNode>) {

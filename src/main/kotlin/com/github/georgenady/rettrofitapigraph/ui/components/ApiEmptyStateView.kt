@@ -38,7 +38,7 @@ class ApiEmptyStateView(
             foreground = JBColor.namedColor("Label.subtextForeground", JBColor.GRAY)
         }
 
-        val scanButton = JButton(MyBundle.message("action.scan_project"), AllIcons.Actions.Refresh).apply {
+        val scanButton = JButton(MyBundle.message("action.scan_project"), AllIcons.Actions.ForceRefresh).apply {
             cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
             addActionListener { onScanRequested?.invoke() }
         }

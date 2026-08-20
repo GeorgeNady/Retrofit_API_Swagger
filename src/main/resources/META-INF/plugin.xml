@@ -59,6 +59,8 @@
                     name="Retrofit Api Graph"
                     anchor="right"
                     icon="AllIcons.Nodes.PpLib"/>
+
+        <fileEditorProvider implementation="com.github.georgenady.rettrofitapigraph.editor.RetrofitPreviewEditorProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
