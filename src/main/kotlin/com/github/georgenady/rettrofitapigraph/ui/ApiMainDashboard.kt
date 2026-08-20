@@ -29,6 +29,12 @@ class ApiMainDashboard(private val project: Project) : JPanel(BorderLayout()) {
     private val contentSwitcher = JPanel(cardLayout)
     private val statusBar = ApiStatusBarView()
 
+    // UI Sections
+    private val filterSection = FilterSection { newFilter ->
+        stateService.setFilter(newFilter)
+    }
+    private val detailsSection = DetailsSection()
+
     // 1. API List Panel
     private val listPanel = ApiCardListContainer { selectedNode ->
         stateService.selectNode(selectedNode)
@@ -41,11 +47,8 @@ class ApiMainDashboard(private val project: Project) : JPanel(BorderLayout()) {
 
     // 3. Tools Side Panel (Set a reasonable preferred width constraint)
     private val sidePanel = FeatureSidePanel(project).apply {
-        val filterSection = FilterSection { newFilter ->
-            stateService.setFilter(newFilter)
-        }
         addSection(filterSection)
-        addSection(DetailsSection())
+        addSection(detailsSection)
 
         // FIX 1: Allow side panel to collapse as small as 150px without pushing splitters
         minimumSize = Dimension(JBUI.scale(150), 0)
@@ -71,15 +74,14 @@ class ApiMainDashboard(private val project: Project) : JPanel(BorderLayout()) {
         setHonorComponentsMinimumSize(true)
     }
 
-    private val mainSplitter = object : OnePixelSplitter(false, 0.75f) {
+    private val mainSplitter = object : OnePixelSplitter(false, 1.0f) {
         override fun setProportion(proportion: Float) {
-            // Clamp proportion strictly between 50% and 85% to keep the side panel compact
-            val clamped = proportion.coerceIn(0.50f, 0.85f)
+            val clamped = proportion.coerceIn(0.50f, 0.95f)
             super.setProportion(clamped)
         }
     }.apply {
         firstComponent = leftSplitter
-        secondComponent = sidePanel
+        secondComponent = null // Hidden by default
         setHonorComponentsMinimumSize(true)
     }
 
@@ -94,6 +96,9 @@ class ApiMainDashboard(private val project: Project) : JPanel(BorderLayout()) {
         add(statusBar, BorderLayout.SOUTH)
 
         setupSubscriptions()
+        
+        // Set initial view mode based on service state
+        updateViewMode(stateService.getViewMode())
     }
 
     private fun mainWrapperPutClientProperty() {
@@ -104,10 +109,18 @@ class ApiMainDashboard(private val project: Project) : JPanel(BorderLayout()) {
         project.messageBus.connect().subscribe(ApiStateService.TOPIC, object : ApiStateService.ApiStateListener {
             override fun onEndpointsUpdated(endpoints: List<ApiNode>, totalScanned: Int, durationMs: Long) {
                 statusBar.setMessage("🔎 Found ${endpoints.size} endpoints in $durationMs ms.")
+                
+                // Update module list in filter section
+                val modules = endpoints.map { it.className }.distinct().sorted()
+                filterSection.updateModules(modules)
             }
 
             override fun onFilteredEndpointsUpdated(filtered: List<ApiNode>) {
                 renderData(filtered)
+            }
+
+            override fun onNodeSelected(node: ApiNode?) {
+                detailsSection.onNodeSelected(node)
             }
 
             override fun onLoadingStateChanged(isLoading: Boolean) {

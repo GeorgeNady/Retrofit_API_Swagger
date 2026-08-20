@@ -163,6 +163,11 @@ class DetailsSection : SidePanelSection {
             methodText.isVisible = true
             pathText.isVisible = true
             classText.isVisible = true
+            
+            // Fix: ensure these components wrap their text even if very long
+            nameText.revalidate()
+            pathText.revalidate()
+            classText.revalidate()
 
             annotationsLabel.isVisible = node.annotations.isNotEmpty()
             node.annotations.forEach { anno ->

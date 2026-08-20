@@ -45,8 +45,9 @@ class ApiStateService(private val project: Project) {
                     
                     ApplicationManager.getApplication().invokeLater {
                         allEndpoints = result.endpoints
-                        applyFilters()
+                        // Publish endpoints first so filters can be updated
                         project.messageBus.syncPublisher(TOPIC).onEndpointsUpdated(allEndpoints, result.filesScanned, result.durationMs)
+                        applyFilters()
                         publishLoading(false)
                     }
                 }

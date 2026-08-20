@@ -60,7 +60,11 @@ class RetrofitApiService @JvmOverloads constructor(
             val fileEndpoints = runReadActionBlocking {
                 if (!virtualFile.isValid) return@runReadActionBlocking emptyList()
                 val psiFile = psiManager.findFile(virtualFile) ?: return@runReadActionBlocking emptyList()
-                endpointParser.parse(psiFile)
+                val parsed = endpointParser.parse(psiFile)
+                if (parsed.isNotEmpty()) {
+                    thisLogger().info("Parsed ${parsed.size} endpoints from ${virtualFile.name}")
+                }
+                parsed
             }
 
             endpoints.addAll(fileEndpoints)
