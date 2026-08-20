@@ -8,14 +8,24 @@
             email="gorgonady.gn@gmail.com">
         George Nady
     </vendor>
-    <version>1.0.5</version>
+    <version>1.1.6</version>
     <description><![CDATA[
-        <p><b>Retrofit API Graph</b> visualizes your Retrofit API definitions in a graph-like interface.</p>
-        <p>Features:</p>
+        <p><b>Retrofit API Graph</b> is a professional tool for visualizing and managing your Android network layer. It provides a visual "Design Mode" similar to the Jetpack Navigation Editor, tailored for Retrofit APIs.</p>
+
+        <h3>🚀 Key Features</h3>
         <ul>
-            <li>Scan project for @GET, @POST, etc. annotations.</li>
-            <li>List endpoints grouped by interface.</li>
-            <li>Click to navigate to source code.</li>
+            <li><b>Interactive Node Graph:</b> Visualize your service-to-endpoint relationships with a draggable and zoomable canvas.</li>
+            <li><b>Dual View Modes:</b> Toggle between a high-level visual graph and a detailed, searchable card list.</li>
+            <li><b>Deep Inspection:</b> Automatically extracts annotations (including custom ones like @SupportCache), method signatures, and parameters.</li>
+            <li><b>Powerful Filters:</b> Live search by path or method name, and filter by HTTP method or module scope.</li>
+            <li><b>Design Tools:</b> Includes a floating design toolbar with a hand-pan tool, zoom controls, and fit-to-screen functionality.</li>
+        </ul>
+
+        <h3>🛠️ Built for Modern Android</h3>
+        <ul>
+            <li>Full support for Kotlin K2 mode.</li>
+            <li>Robust discovery in complex multi-module Gradle projects.</li>
+            <li>Themed UI that respects Darcula and Light modes.</li>
         </ul>
     ]]></description>
 
