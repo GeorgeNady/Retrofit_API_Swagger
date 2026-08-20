@@ -6,14 +6,13 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.components.service
 
-class SwitchViewModeAction : AnAction("Switch View Mode", "Cycle between Dual, List, and Graph views", AllIcons.Actions.Diff) {
+class SwitchViewModeAction : AnAction("Switch View Mode", "Toggle between List and Graph views", AllIcons.Actions.Diff) {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val stateService = project.service<ApiStateService>()
         val nextMode = when (stateService.getViewMode()) {
-            ApiStateService.ViewMode.DUAL -> ApiStateService.ViewMode.LIST
             ApiStateService.ViewMode.LIST -> ApiStateService.ViewMode.GRAPH
-            ApiStateService.ViewMode.GRAPH -> ApiStateService.ViewMode.DUAL
+            ApiStateService.ViewMode.GRAPH -> ApiStateService.ViewMode.LIST
         }
         stateService.setViewMode(nextMode)
     }

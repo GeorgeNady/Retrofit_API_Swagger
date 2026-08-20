@@ -8,16 +8,41 @@ import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
+import java.awt.Dimension
+import java.awt.Rectangle
 import javax.swing.BorderFactory
 import javax.swing.BoxLayout
 import javax.swing.JPanel
+import javax.swing.Scrollable
 
-class FeatureSidePanel(private val project: Project) : JBPanel<FeatureSidePanel>(BorderLayout()) {
+class FeatureSidePanel(project: Project) : JBPanel<FeatureSidePanel>(BorderLayout()) {
 
     private val sections = mutableListOf<SidePanelSection>()
-    private val contentPanel = JPanel().apply {
-        layout = BoxLayout(this, BoxLayout.Y_AXIS)
-        isOpaque = false
+
+    // CRITICAL FIX: Implement Scrollable so contentPanel NEVER expands past the scroll pane viewport width
+    private val contentPanel = object : JPanel(), Scrollable {
+        init {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            isOpaque = false
+        }
+
+        override fun getScrollableTracksViewportWidth(): Boolean = true
+
+        override fun getScrollableTracksViewportHeight(): Boolean = false
+
+        override fun getPreferredScrollableViewportSize(): Dimension = preferredSize
+
+        override fun getScrollableUnitIncrement(
+            visibleRect: Rectangle?,
+            orientation: Int,
+            direction: Int
+        ): Int = 10
+
+        override fun getScrollableBlockIncrement(
+            visibleRect: Rectangle?,
+            orientation: Int,
+            direction: Int
+        ): Int = 50
     }
 
     init {
@@ -25,19 +50,24 @@ class FeatureSidePanel(private val project: Project) : JBPanel<FeatureSidePanel>
             border = BorderFactory.createEmptyBorder()
             viewport.isOpaque = false
             isOpaque = false
+            // Disable horizontal scrollbar completely on the side panel
+            horizontalScrollBarPolicy = JBScrollPane.HORIZONTAL_SCROLLBAR_NEVER
         }
+
         add(scrollPane, BorderLayout.CENTER)
         border = JBUI.Borders.customLine(JBColor.border(), 0, 1, 0, 0)
 
-        project.messageBus.connect().subscribe(ApiStateService.TOPIC, object : ApiStateService.ApiStateListener {
-            override fun onNodeSelected(node: ApiNode?) {
-                notifyNodeSelected(node)
-            }
-        })
+        project.messageBus.connect()
+            .subscribe(ApiStateService.TOPIC, object : ApiStateService.ApiStateListener {
+                override fun onNodeSelected(node: ApiNode?) {
+                    notifyNodeSelected(node)
+                }
+            })
     }
 
     fun addSection(section: SidePanelSection) {
         sections.add(section)
+
         val sectionWrapper = JPanel(BorderLayout()).apply {
             isOpaque = false
             border = BorderFactory.createTitledBorder(
@@ -46,8 +76,10 @@ class FeatureSidePanel(private val project: Project) : JBPanel<FeatureSidePanel>
             )
             add(section.component, BorderLayout.CENTER)
         }
+
         contentPanel.add(sectionWrapper)
         contentPanel.revalidate()
+        contentPanel.repaint()
     }
 
     fun notifyNodeSelected(node: ApiNode?) {

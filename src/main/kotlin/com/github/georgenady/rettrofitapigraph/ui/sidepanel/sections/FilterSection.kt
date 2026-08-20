@@ -11,6 +11,7 @@ import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension
 import java.awt.GridLayout
+import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.DefaultListCellRenderer
 import javax.swing.JList
@@ -21,7 +22,9 @@ class FilterSection(
 ) : SidePanelSection {
 
     override val title: String = "Search & Filters"
-    
+
+    private var isUpdatingCombo = false
+
     private val searchField = SearchTextField().apply {
         addDocumentListener(object : com.intellij.ui.DocumentAdapter() {
             override fun textChanged(e: javax.swing.event.DocumentEvent) {
@@ -31,9 +34,11 @@ class FilterSection(
     }
 
     private val methodCheckboxes = mutableMapOf<String, JBCheckBox>()
-    private val methodPanel = JPanel(GridLayout(0, 2)).apply {
+    private val methodPanel = JPanel(GridLayout(0, 2, 4, 4)).apply {
+        isOpaque = false
         listOf("GET", "POST", "PUT", "DELETE", "PATCH").forEach { method ->
             val cb = JBCheckBox(method, true).apply {
+                isOpaque = false
                 addActionListener { updateFilter() }
             }
             methodCheckboxes[method] = cb
@@ -44,10 +49,8 @@ class FilterSection(
     private val moduleCombo = object : ComboBox<String>() {
         override fun getPreferredSize(): Dimension {
             val preferred = super.getPreferredSize()
-            // Compute font height + compact vertical padding (e.g., 4px top/bottom)
             val fontMetrics = getFontMetrics(font)
             val textHeight = fontMetrics.height + JBUI.scale(8)
-
             return Dimension(preferred.width, textHeight)
         }
 
@@ -56,11 +59,8 @@ class FilterSection(
         }
     }.apply {
         addItem("All Modules")
-
-        // Set compact padding inside the combo box container
         border = JBUI.Borders.empty(2, 6)
 
-        // Customize the inner cell renderer for tight vertical text margins
         setRenderer(object : DefaultListCellRenderer() {
             override fun getListCellRendererComponent(
                 list: JList<*>?,
@@ -69,59 +69,70 @@ class FilterSection(
                 isSelected: Boolean,
                 cellHasFocus: Boolean
             ): Component {
-                val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
-                if (component is javax.swing.JComponent) {
-                    component.border = JBUI.Borders.empty(2, 4)
+                val comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+                if (comp is javax.swing.JComponent) {
+                    comp.border = JBUI.Borders.empty(2, 4)
                 }
-                return component
+                return comp
             }
         })
 
-        addActionListener { updateFilter() }
+        addActionListener {
+            if (!isUpdatingCombo) {
+                updateFilter()
+            }
+        }
     }
 
-    override val component = JPanel().apply {
-        layout = BoxLayout(this, BoxLayout.Y_AXIS)
-        border = JBUI.Borders.empty(4, 10)
+    override val component = JPanel(BorderLayout()).apply {
         isOpaque = false
-        
-        // Ultra-compact search field wrapper
-        val searchWrapper = JPanel(BorderLayout()).apply {
+
+        val contentContainer = JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            border = JBUI.Borders.empty(8, 10)
             isOpaque = false
-            add(searchField, BorderLayout.CENTER)
-            val compactHeight = searchField.preferredSize.height
-            maximumSize = java.awt.Dimension(Int.MAX_VALUE, compactHeight)
-            preferredSize = java.awt.Dimension(preferredSize.width, compactHeight)
+
+            // Search Bar Wrapper
+            val searchWrapper = JPanel(BorderLayout()).apply {
+                isOpaque = false
+                add(searchField, BorderLayout.CENTER)
+                val compactHeight = searchField.preferredSize.height
+                maximumSize = Dimension(Int.MAX_VALUE, compactHeight)
+            }
+
+            methodPanel.maximumSize = Dimension(Int.MAX_VALUE, methodPanel.preferredSize.height)
+
+            add(searchWrapper)
+            add(Box.createVerticalStrut(8))
+            add(methodPanel)
+            add(Box.createVerticalStrut(8))
+            add(moduleCombo)
         }
 
-        methodPanel.maximumSize = Dimension(Int.MAX_VALUE, methodPanel.preferredSize.height)
-        methodPanel.isOpaque = false
-        
-        add(searchWrapper)
-        add(javax.swing.Box.createVerticalStrut(6))
-        add(methodPanel)
-        add(javax.swing.Box.createVerticalStrut(6))
-        add(moduleCombo)
-        
-        // Ensure everything is pinned to the top and doesn't scale vertically
-        add(javax.swing.Box.createVerticalGlue())
+        // Anchored too NORTH to keep heights fixed without vertical glue
+        add(contentContainer, BorderLayout.NORTH)
     }
 
     fun updateModules(modules: List<String>) {
-        moduleCombo.removeAllItems()
-        moduleCombo.addItem("All Modules")
-        modules.forEach { moduleCombo.addItem(it) }
+        isUpdatingCombo = true
+        try {
+            moduleCombo.removeAllItems()
+            moduleCombo.addItem("All Modules")
+            modules.distinct().sorted().forEach { moduleCombo.addItem(it) }
+        } finally {
+            isUpdatingCombo = false
+        }
     }
 
     private fun updateFilter() {
         val query = searchField.text.trim()
         val selectedMethods = methodCheckboxes.filter { it.value.isSelected }.keys
-        val selectedModule = if (moduleCombo.selectedIndex > 0) moduleCombo.selectedItem as String else null
-        
+        val selectedModule = if (moduleCombo.selectedIndex > 0) moduleCombo.selectedItem as? String else null
+
         onFilterChanged(ApiFilterModel(query, selectedMethods, selectedModule))
     }
 
     override fun onNodeSelected(node: ApiNode?) {
-        // No-op for filter section
+        // Filter section does not react to node selection
     }
 }

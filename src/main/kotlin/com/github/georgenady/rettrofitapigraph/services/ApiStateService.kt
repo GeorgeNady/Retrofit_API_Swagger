@@ -15,7 +15,7 @@ import com.intellij.util.messages.Topic
 @Service(Service.Level.PROJECT)
 class ApiStateService(private val project: Project) {
 
-    enum class ViewMode { DUAL, LIST, GRAPH }
+    enum class ViewMode { LIST, GRAPH }
 
     interface ApiStateListener {
         fun onEndpointsUpdated(endpoints: List<ApiNode>, totalScanned: Int, durationMs: Long) {}
@@ -33,7 +33,7 @@ class ApiStateService(private val project: Project) {
     private var filteredEndpoints: List<ApiNode> = emptyList()
     private var selectedNode: ApiNode? = null
     private var currentFilter = ApiFilterModel()
-    private var currentViewMode = ViewMode.DUAL
+    private var currentViewMode = ViewMode.LIST
 
     fun refresh() {
         DumbService.getInstance(project).runWhenSmart {

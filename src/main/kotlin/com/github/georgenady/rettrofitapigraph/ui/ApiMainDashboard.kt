@@ -13,9 +13,11 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.OnePixelSplitter
 import com.intellij.ui.components.JBLabel
+import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.AsyncProcessIcon
 import java.awt.BorderLayout
 import java.awt.CardLayout
+import java.awt.Dimension
 import javax.swing.JPanel
 import javax.swing.SwingConstants
 
@@ -37,13 +39,17 @@ class ApiMainDashboard(private val project: Project) : JPanel(BorderLayout()) {
         stateService.selectNode(selectedNode)
     }
 
-    // 3. Tools Side Panel
+    // 3. Tools Side Panel (Set a reasonable preferred width constraint)
     private val sidePanel = FeatureSidePanel(project).apply {
         val filterSection = FilterSection { newFilter ->
             stateService.setFilter(newFilter)
         }
         addSection(filterSection)
         addSection(DetailsSection())
+
+        // FIX 1: Allow side panel to collapse as small as 150px without pushing splitters
+        minimumSize = Dimension(JBUI.scale(150), 0)
+        preferredSize = Dimension(JBUI.scale(260), preferredSize.height)
     }
 
     private val emptyStateView = ApiEmptyStateView {
@@ -58,15 +64,23 @@ class ApiMainDashboard(private val project: Project) : JPanel(BorderLayout()) {
         add(centerPanel, BorderLayout.CENTER)
     }
 
-    // Layout Splitters
+    // Enable minimum size honors on OnePixelSplitter
     private val leftSplitter = OnePixelSplitter(false, 0.4f).apply {
         firstComponent = listPanel
         secondComponent = graphPanel
+        setHonorComponentsMinimumSize(true)
     }
 
-    private val mainSplitter = OnePixelSplitter(false, 0.8f).apply {
+    private val mainSplitter = object : OnePixelSplitter(false, 0.75f) {
+        override fun setProportion(proportion: Float) {
+            // Clamp proportion strictly between 50% and 85% to keep the side panel compact
+            val clamped = proportion.coerceIn(0.50f, 0.85f)
+            super.setProportion(clamped)
+        }
+    }.apply {
         firstComponent = leftSplitter
         secondComponent = sidePanel
+        setHonorComponentsMinimumSize(true)
     }
 
     init {
@@ -89,7 +103,7 @@ class ApiMainDashboard(private val project: Project) : JPanel(BorderLayout()) {
     private fun setupSubscriptions() {
         project.messageBus.connect().subscribe(ApiStateService.TOPIC, object : ApiStateService.ApiStateListener {
             override fun onEndpointsUpdated(endpoints: List<ApiNode>, totalScanned: Int, durationMs: Long) {
-                statusBar.setMessage("🔎 Found ${endpoints.size}, 🛜 endpoints, ⌛ in $durationMs ms.")
+                statusBar.setMessage("🔎 Found ${endpoints.size} endpoints in $durationMs ms.")
             }
 
             override fun onFilteredEndpointsUpdated(filtered: List<ApiNode>) {
@@ -110,11 +124,6 @@ class ApiMainDashboard(private val project: Project) : JPanel(BorderLayout()) {
 
     private fun updateViewMode(mode: ApiStateService.ViewMode) {
         when (mode) {
-            ApiStateService.ViewMode.DUAL -> {
-                leftSplitter.firstComponent = listPanel
-                leftSplitter.secondComponent = graphPanel
-                leftSplitter.proportion = 0.4f
-            }
             ApiStateService.ViewMode.LIST -> {
                 leftSplitter.firstComponent = listPanel
                 leftSplitter.secondComponent = null
@@ -144,7 +153,7 @@ class ApiMainDashboard(private val project: Project) : JPanel(BorderLayout()) {
     fun toggleSidePanel() {
         if (mainSplitter.secondComponent == null) {
             mainSplitter.secondComponent = sidePanel
-            mainSplitter.proportion = 0.8f
+            mainSplitter.proportion = 0.75f
         } else {
             mainSplitter.secondComponent = null
             mainSplitter.proportion = 1.0f
