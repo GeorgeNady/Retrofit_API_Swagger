@@ -1,6 +1,8 @@
 package com.github.georgenady.rettrofitapigraph.ui.sidepanel
 
 import com.github.georgenady.rettrofitapigraph.model.ApiNode
+import com.github.georgenady.rettrofitapigraph.services.ApiStateService
+import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.components.JBScrollPane
@@ -10,7 +12,7 @@ import javax.swing.BorderFactory
 import javax.swing.BoxLayout
 import javax.swing.JPanel
 
-class FeatureSidePanel : JBPanel<FeatureSidePanel>(BorderLayout()) {
+class FeatureSidePanel(private val project: Project) : JBPanel<FeatureSidePanel>(BorderLayout()) {
 
     private val sections = mutableListOf<SidePanelSection>()
     private val contentPanel = JPanel().apply {
@@ -26,6 +28,12 @@ class FeatureSidePanel : JBPanel<FeatureSidePanel>(BorderLayout()) {
         }
         add(scrollPane, BorderLayout.CENTER)
         border = JBUI.Borders.customLine(JBColor.border(), 0, 1, 0, 0)
+
+        project.messageBus.connect().subscribe(ApiStateService.TOPIC, object : ApiStateService.ApiStateListener {
+            override fun onNodeSelected(node: ApiNode?) {
+                notifyNodeSelected(node)
+            }
+        })
     }
 
     fun addSection(section: SidePanelSection) {

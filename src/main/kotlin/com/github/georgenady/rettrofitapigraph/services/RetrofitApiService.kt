@@ -67,7 +67,7 @@ class RetrofitApiService @JvmOverloads constructor(
         }
 
         val duration = System.currentTimeMillis() - startTime
-        thisLogger().info("✅ Scan finished: 🗒 Scanned $totalFilesCount files️, 🛜 found ${endpoints.size} endpoints in ⌛ ${duration}ms.")
+        thisLogger().info("✅ Scan finished: 🗒 Scanned $totalFilesCount files️, 🛜 found ${endpoints.size} endpoints, ⌛ in ${duration}ms.")
         return ScanResult(endpoints, totalFilesCount, duration, false)
     }
 

@@ -1,6 +1,6 @@
 package com.github.georgenady.rettrofitapigraph.actions
 
-import com.github.georgenady.rettrofitapigraph.toolWindow.MyToolWindow
+import com.github.georgenady.rettrofitapigraph.ui.ApiMainDashboard
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -11,8 +11,7 @@ class ToggleSidePanelAction : AnAction("Toggle Side Panel", "Show or hide the fe
         val project = e.project ?: return
         val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("RetrofitApiGraph") ?: return
         val content = toolWindow.contentManager.getContent(0) ?: return
-        val component = content.component
-        val myToolWindow = component.getClientProperty("MyToolWindow") as? MyToolWindow
-        myToolWindow?.toggleSidePanel()
+        val dashboard = content.component.getClientProperty("ApiMainDashboard") as? ApiMainDashboard
+        dashboard?.toggleSidePanel()
     }
 }

@@ -38,10 +38,16 @@
                 description="Show or hide the feature panel"
                 icon="AllIcons.General.Filter">
         </action>
+        <action id="RetrofitApiGraph.SwitchView"
+                class="com.github.georgenady.rettrofitapigraph.actions.SwitchViewModeAction"
+                text="Switch View Mode"
+                description="Toggle between Dual, List, and Graph views"
+                icon="AllIcons.Actions.Diff">
+        </action>
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.georgenady.rettrofitapigraph.factory.MyToolWindowFactory"
+        <toolWindow factoryClass="com.github.georgenady.rettrofitapigraph.factory.ApiMainToolWindowFactory"
                     id="RetrofitApiGraph"
                     name="Retrofit Api Graph"
                     anchor="right"
