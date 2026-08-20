@@ -14,7 +14,7 @@ dependencies {
     implementation("org.tinyjee.jgraphx:jgraphx:3.4.1.3")
 
     intellijPlatform {
-        // local("/Users/georgenady/Applications/Android Studio.app/Contents")
+        local("/Users/georgenady/Applications/Android Studio.app/Contents")
         bundledPlugin("org.jetbrains.kotlin")
         bundledPlugin("com.intellij.java")
         bundledPlugin("org.jetbrains.android")
