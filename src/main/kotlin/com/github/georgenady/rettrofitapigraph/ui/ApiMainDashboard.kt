@@ -152,14 +152,24 @@ class ApiMainDashboard(private val project: Project) : JPanel(BorderLayout()) {
         leftSplitter.repaint()
     }
 
-    private fun renderData(endpoints: List<ApiNode>) {
-        if (endpoints.isEmpty()) {
+    private fun renderData(filteredEndpoints: List<ApiNode>) {
+        val allEndpoints = stateService.getAllEndpoints()
+
+        if (allEndpoints.isEmpty()) {
             cardLayout.show(contentSwitcher, "EMPTY")
             return
         }
 
-        listPanel.render(endpoints)
-        graphPanel.render(endpoints)
+        if (filteredEndpoints.isEmpty()) {
+            // Revert to all APIs if the filter matched nothing
+            listPanel.render(allEndpoints)
+            graphPanel.render(allEndpoints)
+            statusBar.setMessage("No matches found. Showing all APIs.")
+        } else {
+            listPanel.render(filteredEndpoints)
+            graphPanel.render(filteredEndpoints)
+        }
+
         cardLayout.show(contentSwitcher, "MAIN")
     }
 
