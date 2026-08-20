@@ -62,6 +62,9 @@ class ApiGraphPanel(
                     </html>
                 """.trimIndent()
             }
+            if (value is String && value == "REFRESH_BUTTON") {
+                return MyBundle.message("empty.scan_again")
+            }
             return super.convertValueToString(cell)
         }
     }

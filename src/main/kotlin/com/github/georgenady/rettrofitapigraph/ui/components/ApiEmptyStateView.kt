@@ -28,9 +28,11 @@ class ApiEmptyStateView(
             insets = JBUI.insets(4)
         }
 
-        val titleLabel = JBLabel(MyBundle.message("empty.title"), SwingConstants.CENTER).apply {
+        val titleLabel = JBLabel(MyBundle.message("empty.title"), AllIcons.General.NotificationInfo, SwingConstants.CENTER).apply {
             font = font.deriveFont(Font.BOLD, 16f)
             foreground = JBColor.namedColor("Label.infoForeground", JBColor.GRAY)
+            verticalTextPosition = SwingConstants.BOTTOM
+            horizontalTextPosition = SwingConstants.CENTER
         }
 
         val subtitleLabel = JBLabel(MyBundle.message("empty.subtitle"), SwingConstants.CENTER).apply {

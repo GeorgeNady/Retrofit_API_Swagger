@@ -3,6 +3,7 @@ package com.github.georgenady.rettrofitapigraph.ui.sidepanel.sections
 import com.github.georgenady.rettrofitapigraph.MyBundle
 import com.github.georgenady.rettrofitapigraph.model.ApiNode
 import com.github.georgenady.rettrofitapigraph.ui.sidepanel.SidePanelSection
+import com.intellij.icons.AllIcons
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
@@ -18,6 +19,7 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JTextArea
 import javax.swing.Scrollable
+import javax.swing.SwingConstants
 
 class DetailsSection : SidePanelSection {
 
@@ -77,12 +79,24 @@ class DetailsSection : SidePanelSection {
         }
     }
 
-    private val nameText = ResponsiveWrappedTextArea(MyBundle.message("details.select_api"), Font.BOLD, 14f)
-    private val methodText = ResponsiveWrappedTextArea("", Font.PLAIN, 12f)
-    private val pathText = ResponsiveWrappedTextArea("", Font.PLAIN, 12f)
-    private val classText = ResponsiveWrappedTextArea("", Font.PLAIN, 12f)
+    private val nameText = JBLabel(MyBundle.message("details.select_api"), AllIcons.General.Information, SwingConstants.LEFT).apply {
+        font = font.deriveFont(Font.BOLD, 14f)
+        setCopyable(true)
+        setAllowAutoWrapping(true)
+    }
+    private val methodText = JBLabel("", AllIcons.Nodes.Method, SwingConstants.LEFT).apply {
+        setCopyable(true)
+    }
+    private val pathText = JBLabel("", AllIcons.Nodes.Tag, SwingConstants.LEFT).apply {
+        setCopyable(true)
+        setAllowAutoWrapping(true)
+    }
+    private val classText = JBLabel("", AllIcons.Nodes.Class, SwingConstants.LEFT).apply {
+        setCopyable(true)
+        setAllowAutoWrapping(true)
+    }
 
-    private val annotationsLabel = JBLabel(MyBundle.message("details.annotations")).apply {
+    private val annotationsLabel = JBLabel(MyBundle.message("details.annotations"), AllIcons.Nodes.Annotationtype, SwingConstants.LEFT).apply {
         font = font.deriveFont(Font.BOLD, 12f)
         alignmentX = JComponent.LEFT_ALIGNMENT
     }
@@ -92,7 +106,7 @@ class DetailsSection : SidePanelSection {
         alignmentX = JComponent.LEFT_ALIGNMENT
     }
 
-    private val parametersLabel = JBLabel(MyBundle.message("details.parameters")).apply {
+    private val parametersLabel = JBLabel(MyBundle.message("details.parameters"), AllIcons.Nodes.Parameter, SwingConstants.LEFT).apply {
         font = font.deriveFont(Font.BOLD, 12f)
         alignmentX = JComponent.LEFT_ALIGNMENT
     }
@@ -156,10 +170,14 @@ class DetailsSection : SidePanelSection {
             annotationsLabel.isVisible = false
             parametersLabel.isVisible = false
         } else {
-            nameText.text = node.methodName
-            methodText.text = MyBundle.message("details.method", node.httpMethod)
-            pathText.text = MyBundle.message("details.path", node.path)
-            classText.text = MyBundle.message("details.service", node.className)
+            val isDark = !JBColor.isBright()
+            val labelColor = if (isDark) "#DFE1E5" else "#1E1F22"
+            val subColor = "#888888"
+
+            nameText.text = "<html><body style='width: 180px'><div style='font-weight: bold; color: $labelColor; word-wrap: break-word;'>${node.methodName}</div></body></html>"
+            methodText.text = "<html>Method: <span style='font-weight: bold; color: $labelColor'>${node.httpMethod}</span></html>"
+            pathText.text = "<html>${MyBundle.message("details.path", "")}<span style='color: $subColor; word-wrap: break-word;'>${node.path}</span></html>"
+            classText.text = "<html>${MyBundle.message("details.service", "")}<span style='color: $subColor; word-wrap: break-word;'>${node.className}</span></html>"
 
             methodText.isVisible = true
             pathText.isVisible = true

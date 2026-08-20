@@ -25,7 +25,7 @@ class GraphOverlayToolbar(
         
         // Single separate panel for Hand Tool
         val handPanel = createGroupPanel().apply {
-            add(createButton(AllIcons.Toolwindows.ToolWindowPalette, "Pan Mode") {
+            add(createButton(AllIcons.Toolwindows.ToolWindowPalette, MyBundle.message("action.pan_mode")) {
                 isHandActive = !isHandActive
                 it.isContentAreaFilled = isHandActive
                 it.background = if (isHandActive) JBColor.namedColor("Button.startBackground", Color(0x4B, 0x50, 0x52)) else Color(0,0,0,0)
