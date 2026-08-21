@@ -6,7 +6,7 @@ plugins {
     id("org.jetbrains.intellij.platform")
 }
 
-version = "1.1.7"
+version = "1.1.8"
 
 dependencies {
     testImplementation("junit:junit:4.13.2")

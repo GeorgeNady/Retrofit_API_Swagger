@@ -1,7 +1,7 @@
 package com.github.georgenady.rettrofitapigraph.editor
 
-import com.github.georgenady.rettrofitapigraph.services.RetrofitApiService
-import com.github.georgenady.rettrofitapigraph.ui.graph.ApiGraphPanel
+import com.github.georgenady.rettrofitapigraph.domain.repository.ApiRepository
+import com.github.georgenady.rettrofitapigraph.presentation.graph.ApiGraphPanel
 import com.intellij.openapi.components.service
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
@@ -24,7 +24,7 @@ class RetrofitDesignEditor(
 
     init {
         // Fetch only the APIs for THIS specific file
-        val apiService = project.service<RetrofitApiService>()
+        val apiService = project.service<ApiRepository>()
         
         // You will need to add a method to your service to scan a single file:
         val fileEndpoints = apiService.findRetrofitEndpointsInFile(file)

@@ -1,7 +1,7 @@
 package com.github.georgenady.rettrofitapigraph.actions
 
 import com.github.georgenady.rettrofitapigraph.MyBundle
-import com.github.georgenady.rettrofitapigraph.services.ApiStateService
+import com.github.georgenady.rettrofitapigraph.presentation.viewmodel.ApiDashboardViewModel
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.AnAction
@@ -14,11 +14,11 @@ class SwitchViewModeAction : AnAction(
 ) {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        val stateService = project.service<ApiStateService>()
-        val nextMode = when (stateService.getViewMode()) {
-            ApiStateService.ViewMode.LIST -> ApiStateService.ViewMode.GRAPH
-            ApiStateService.ViewMode.GRAPH -> ApiStateService.ViewMode.LIST
+        val viewModel = project.service<ApiDashboardViewModel>()
+        val nextMode = when (viewModel.uiState.value.viewMode) {
+            ApiDashboardViewModel.ViewMode.LIST -> ApiDashboardViewModel.ViewMode.GRAPH
+            ApiDashboardViewModel.ViewMode.GRAPH -> ApiDashboardViewModel.ViewMode.LIST
         }
-        stateService.setViewMode(nextMode)
+        viewModel.setViewMode(nextMode)
     }
 }
