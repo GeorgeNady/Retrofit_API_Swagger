@@ -1,7 +1,7 @@
 package com.github.georgenady.rettrofitapigraph.actions
 
 import com.github.georgenady.rettrofitapigraph.MyBundle
-import com.github.georgenady.rettrofitapigraph.services.ApiStateService
+import com.github.georgenady.rettrofitapigraph.presentation.viewmodel.ApiDashboardViewModel
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -14,6 +14,6 @@ class RefreshApiGraphAction : AnAction(
 ) {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        project.service<ApiStateService>().refresh()
+        project.service<ApiDashboardViewModel>().refresh()
     }
 }

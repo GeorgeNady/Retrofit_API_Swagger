@@ -1,7 +1,7 @@
 package com.github.georgenady.rettrofitapigraph.actions
 
 import com.github.georgenady.rettrofitapigraph.MyBundle
-import com.github.georgenady.rettrofitapigraph.ui.ApiMainDashboard
+import com.github.georgenady.rettrofitapigraph.presentation.view.ApiMainDashboard
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
