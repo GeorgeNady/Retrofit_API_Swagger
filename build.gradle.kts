@@ -4,20 +4,22 @@ plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm")
     id("org.jetbrains.intellij.platform")
-    id("org.jetbrains.changelog")
 }
 
-version = "1.1.6"
+version = "1.1.7"
 
 dependencies {
     testImplementation("junit:junit:4.13.2")
     implementation("org.tinyjee.jgraphx:jgraphx:3.4.1.3")
 
     intellijPlatform {
-        local("/Users/georgenady/Applications/Android Studio.app/Contents")
+        // This base version covers both IntelliJ IDEA 2024.2.x and Android Studio Ladybug
+        intellijIdeaCommunity("2024.2.1")
+
+        // We only need Java and Kotlin PSI to parse Retrofit interfaces
         bundledPlugin("org.jetbrains.kotlin")
         bundledPlugin("com.intellij.java")
-        bundledPlugin("org.jetbrains.android")
+
         testFramework(TestFrameworkType.Platform)
         pluginVerifier()
         zipSigner()

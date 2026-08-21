@@ -8,7 +8,7 @@
             email="gorgonady.gn@gmail.com">
         George Nady
     </vendor>
-    <version>1.1.6</version>
+    <version>1.1.7</version>
     <description><![CDATA[
         <p><b>Retrofit API Graph</b> is a professional tool for visualizing and managing your Android network layer. It provides a visual "Design Mode" similar to the Jetpack Navigation Editor, tailored for Retrofit APIs.</p>
 
