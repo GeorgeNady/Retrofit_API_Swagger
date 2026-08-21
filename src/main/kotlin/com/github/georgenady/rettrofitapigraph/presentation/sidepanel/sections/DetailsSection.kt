@@ -69,13 +69,12 @@ class DetailsSection : SidePanelSection {
         ): Int = 50
 
         override fun getPreferredSize(): Dimension {
+            val pref = super.getPreferredSize()
             val parentWidth = parent?.width ?: 0
             if (parentWidth > 0) {
-                // Dynamically re-calculate height based on current parent width
-                setSize(parentWidth, Short.MAX_VALUE.toInt())
+                pref.width = parentWidth
             }
-            val pref = super.getPreferredSize()
-            return Dimension(if (parentWidth > 0) parentWidth else pref.width, pref.height)
+            return pref
         }
     }
 

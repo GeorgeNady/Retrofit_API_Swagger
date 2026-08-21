@@ -80,10 +80,12 @@ class ApiCardComponent(
             override fun mouseClicked(e: MouseEvent) {
                 onClick?.invoke(node)
                 node.psiElement?.let { element ->
-                    com.intellij.openapi.application.ReadAction.run<Throwable> {
-                        if (element is com.intellij.pom.Navigatable && element.canNavigate()) {
-                            element.navigate(true)
-                        }
+                    val navigatable = element as? com.intellij.pom.Navigatable
+                    val canNavigate = com.intellij.openapi.application.ReadAction.compute<Boolean, Throwable> {
+                        navigatable?.canNavigate() == true
+                    }
+                    if (canNavigate) {
+                        navigatable?.navigate(true)
                     }
                 }
             }

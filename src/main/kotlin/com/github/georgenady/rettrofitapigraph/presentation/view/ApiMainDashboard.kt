@@ -1,6 +1,7 @@
 package com.github.georgenady.rettrofitapigraph.presentation.view
 
 import com.github.georgenady.rettrofitapigraph.MyBundle
+import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
 import com.github.georgenady.rettrofitapigraph.presentation.viewmodel.ApiDashboardViewModel
 import com.github.georgenady.rettrofitapigraph.presentation.viewmodel.ApiDashboardUiState
 import com.github.georgenady.rettrofitapigraph.presentation.components.ApiCardListContainer
@@ -119,6 +120,9 @@ class ApiMainDashboard(private val project: Project) : JPanel(BorderLayout()) {
         super.removeNotify()
     }
 
+    private var lastRenderedEndpoints: List<ApiNode>? = null
+    private var lastSelectedNode: ApiNode? = null
+
     private fun updateUi(state: ApiDashboardUiState) {
         // Update Status Bar
         if (state.totalScanned > 0) {
@@ -128,11 +132,16 @@ class ApiMainDashboard(private val project: Project) : JPanel(BorderLayout()) {
         }
 
         // Update Modules in Filter Section
-        val modules = state.allEndpoints.map { it.className }.distinct().sorted()
-        filterSection.updateModules(modules)
+        if (lastRenderedEndpoints != state.allEndpoints) {
+            val modules = state.allEndpoints.map { it.className }.distinct().sorted()
+            filterSection.updateModules(modules)
+        }
 
-        // Update Details
-        detailsSection.onNodeSelected(state.selectedNode)
+        // Update Details (only if selection changed)
+        if (lastSelectedNode != state.selectedNode) {
+            detailsSection.onNodeSelected(state.selectedNode)
+            lastSelectedNode = state.selectedNode
+        }
 
         // Update View Mode
         updateViewMode(state.viewMode)
@@ -143,13 +152,16 @@ class ApiMainDashboard(private val project: Project) : JPanel(BorderLayout()) {
         } else if (state.allEndpoints.isEmpty()) {
             cardLayout.show(contentSwitcher, "EMPTY")
         } else {
-            if (state.filteredEndpoints.isEmpty()) {
-                listPanel.render(state.allEndpoints)
-                graphPanel.render(state.allEndpoints)
-                statusBar.setMessage(MyBundle.message("dashboard.no_matches"))
-            } else {
-                listPanel.render(state.filteredEndpoints)
-                graphPanel.render(state.filteredEndpoints)
+            val toRender = if (state.filteredEndpoints.isEmpty()) state.allEndpoints else state.filteredEndpoints
+            
+            if (lastRenderedEndpoints != toRender) {
+                listPanel.render(toRender)
+                graphPanel.render(toRender)
+                lastRenderedEndpoints = toRender
+                
+                if (state.filteredEndpoints.isEmpty() && state.allEndpoints.isNotEmpty()) {
+                    statusBar.setMessage(MyBundle.message("dashboard.no_matches"))
+                }
             }
             cardLayout.show(contentSwitcher, "MAIN")
         }
