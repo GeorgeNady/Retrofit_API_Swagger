@@ -1,11 +1,19 @@
 package com.github.georgenady.rettrofitapigraph.presentation.panels.swaggerPanel.components
 
+import com.github.georgenady.rettrofitapigraph.MyBundle
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
 import com.github.georgenady.rettrofitapigraph.presentation.components.BadgeLabel
 import com.github.georgenady.rettrofitapigraph.presentation.theme.SwaggerTheme
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.ide.CopyPasteManager
+import com.intellij.openapi.ui.popup.Balloon
+import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.pom.Navigatable
+import com.intellij.ui.ClickListener
 import com.intellij.ui.JBColor
+import com.intellij.ui.LightColors
+import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
 import java.awt.BasicStroke
@@ -18,6 +26,7 @@ import java.awt.Font
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.RenderingHints
+import java.awt.datatransfer.StringSelection
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.Box
@@ -76,6 +85,28 @@ class SwaggerApiCard(
                 foreground = JBColor(Color(0x3B, 0x41, 0x51), Color(0xE1, 0xE4, 0xEA))
             }
             add(pathLabel)
+
+            val copyIcon = JBLabel().apply {
+                icon = AllIcons.General.Copy
+                border = JBUI.Borders.empty(0, 12, 0, 0)
+                cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) // Changes cursor to a hand on hover
+
+                object : ClickListener() {
+                    override fun onClick(event: MouseEvent, clickCount: Int): Boolean {
+                        CopyPasteManager.getInstance().setContents(StringSelection(node.path))
+                        // 2. Show an inline balloon alerter
+                        val balloon = JBPopupFactory.getInstance()
+                            .createHtmlTextBalloonBuilder(MyBundle.message("message.path.copied"),
+                                AllIcons.General.GreenCheckmark, LightColors.BLUE, null)
+                            .setFadeoutTime(2000) // Disappears after 2 seconds
+                            .createBalloon()
+
+                        balloon.show(RelativePoint(event), Balloon.Position.above)
+                        return true
+                    }
+                }.installOn(this)
+            }
+            add(copyIcon)
         }
 
         // Assemble Column (Row 1 -> Spacing -> Divider -> Spacing -> Row 2)
