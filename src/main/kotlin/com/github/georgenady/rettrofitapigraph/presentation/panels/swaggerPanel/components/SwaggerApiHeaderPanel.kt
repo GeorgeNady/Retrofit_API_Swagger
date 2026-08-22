@@ -34,73 +34,73 @@ class SwaggerApiHeaderPanel(
 
     private val expandIcon = JBLabel(AllIcons.General.ArrowDown)
 
+    // ROW 1: Function / Method Name + Expand Icon
+    private val titleRow = JPanel(BorderLayout()).apply {
+        isOpaque = false
+        val descLabel = JBLabel(node.methodName).apply {
+            font = font.deriveFont(Font.BOLD, 13f)
+            foreground = JBColor(Color(0x60, 0x67, 0x79), Color(0xA9, 0xB7, 0xC6))
+        }
+        add(descLabel, BorderLayout.CENTER)
+        add(expandIcon, BorderLayout.EAST)
+    }
+
+    // DIVIDER
+    private val divider get() = JSeparator(JSeparator.HORIZONTAL).apply {
+        maximumSize = Dimension(Int.MAX_VALUE, 1)
+        foreground = JBColor(
+            Color(theme.borderColor.red, theme.borderColor.green, theme.borderColor.blue, 80),
+            Color(theme.borderColor.red, theme.borderColor.green, theme.borderColor.blue, 80)
+        )
+    }
+
+    private val pathLabel = JBLabel(node.path.ifEmpty { "/" }).apply {
+        border = JBUI.Borders.empty(0, 12, 0, 0)
+        font = Font(Font.MONOSPACED, Font.BOLD, 14)
+        foreground = JBColor(Color(0x3B, 0x41, 0x51), Color(0xE1, 0xE4, 0xEA))
+    }
+
+    // RESTORED: Copy Icon
+    private val copyIcon = JBLabel().apply {
+        icon = AllIcons.General.Copy
+        border = JBUI.Borders.empty(0, 12, 0, 0)
+        cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+
+        object : ClickListener() {
+            override fun onClick(event: MouseEvent, clickCount: Int): Boolean {
+                CopyPasteManager.getInstance().setContents(StringSelection(node.path))
+                val balloon = JBPopupFactory.getInstance()
+                    .createHtmlTextBalloonBuilder(
+                        MyBundle.message("message.path.copied"),
+                        AllIcons.Actions.Checked,
+                        LightColors.BLUE,
+                        null
+                    )
+                    .setFadeoutTime(2000)
+                    .createBalloon()
+
+                balloon.show(RelativePoint(event), Balloon.Position.above)
+                return true
+            }
+        }.installOn(this)
+    }
+
+    // ROW 2: HTTP Badge + Path + Copy Icon
+    private val pathRow = JPanel(BorderLayout()).apply {
+        isOpaque = false
+
+        val left = JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)).apply {
+            isOpaque = false
+            add(BadgeLabel(node.httpMethod, theme.badgeColor))
+        }
+        add(left, BorderLayout.WEST)
+        add(pathLabel, BorderLayout.CENTER)
+        add(copyIcon, BorderLayout.EAST)
+    }
+
     init {
         isOpaque = false
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
-
-        // ROW 1: Function / Method Name + Expand Icon
-        val titleRow = JPanel(BorderLayout()).apply {
-            isOpaque = false
-            val descLabel = JBLabel(node.methodName).apply {
-                font = font.deriveFont(Font.BOLD, 13f)
-                foreground = JBColor(Color(0x60, 0x67, 0x79), Color(0xA9, 0xB7, 0xC6))
-            }
-            add(descLabel, BorderLayout.CENTER)
-            add(expandIcon, BorderLayout.EAST)
-        }
-
-        // DIVIDER
-        val divider = JSeparator(JSeparator.HORIZONTAL).apply {
-            maximumSize = Dimension(Int.MAX_VALUE, 1)
-            foreground = JBColor(
-                Color(theme.borderColor.red, theme.borderColor.green, theme.borderColor.blue, 80),
-                Color(theme.borderColor.red, theme.borderColor.green, theme.borderColor.blue, 80)
-            )
-        }
-
-        // ROW 2: HTTP Badge + Path + Copy Icon
-        val pathRow = JPanel(BorderLayout()).apply {
-            isOpaque = false
-
-            val left = JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)).apply {
-                isOpaque = false
-                add(BadgeLabel(node.httpMethod, theme.badgeColor))
-            }
-            add(left, BorderLayout.WEST)
-
-            val pathLabel = JBLabel(node.path.ifEmpty { "/" }).apply {
-                border = JBUI.Borders.empty(0, 12, 0, 0)
-                font = Font(Font.MONOSPACED, Font.BOLD, 14)
-                foreground = JBColor(Color(0x3B, 0x41, 0x51), Color(0xE1, 0xE4, 0xEA))
-            }
-            add(pathLabel, BorderLayout.CENTER)
-
-            // RESTORED: Copy Icon
-            val copyIcon = JBLabel().apply {
-                icon = AllIcons.General.Copy
-                border = JBUI.Borders.empty(0, 12, 0, 0)
-                cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
-
-                object : ClickListener() {
-                    override fun onClick(event: MouseEvent, clickCount: Int): Boolean {
-                        CopyPasteManager.getInstance().setContents(StringSelection(node.path))
-                        val balloon = JBPopupFactory.getInstance()
-                            .createHtmlTextBalloonBuilder(
-                                MyBundle.message("message.path.copied"),
-                                AllIcons.Actions.Checked,
-                                LightColors.BLUE,
-                                null
-                            )
-                            .setFadeoutTime(2000)
-                            .createBalloon()
-
-                        balloon.show(RelativePoint(event), Balloon.Position.above)
-                        return true
-                    }
-                }.installOn(this)
-            }
-            add(copyIcon, BorderLayout.EAST)
-        }
 
         // Assemble with proper spacing around the divider
         add(titleRow)

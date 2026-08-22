@@ -13,6 +13,7 @@ import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
 import java.awt.Color
+import java.awt.Component
 import java.awt.Dimension
 import java.awt.Font
 import javax.swing.*
@@ -26,6 +27,7 @@ class SwaggerApiInteractionPanel(
     // DIVIDER
     private val divider get() = JSeparator(JSeparator.HORIZONTAL).apply {
         maximumSize = Dimension(Int.MAX_VALUE, 1)
+        alignmentX = Component.LEFT_ALIGNMENT // Keep left-aligned with stack
         foreground = JBColor(
             Color(theme.borderColor.red, theme.borderColor.green, theme.borderColor.blue, 80),
             Color(theme.borderColor.red, theme.borderColor.green, theme.borderColor.blue, 80)
@@ -35,19 +37,19 @@ class SwaggerApiInteractionPanel(
     private val parametersLabel = JBLabel("Parameters:", JBLabel.LEFT).apply {
         font = font.deriveFont(Font.BOLD)
         foreground = JBUI.CurrentTheme.ContextHelp.FOREGROUND
-        alignmentX = LEFT_ALIGNMENT
+        alignmentX = Component.LEFT_ALIGNMENT // Keep left-aligned with stack
     }
 
     private val parametersList = JPanel().apply {
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
         isOpaque = false
-        alignmentX = LEFT_ALIGNMENT
+        alignmentX = Component.LEFT_ALIGNMENT // Keep left-aligned with stack
     }
 
     private val responseLabel = JBLabel("Response:", JBLabel.LEFT).apply {
         font = font.deriveFont(Font.BOLD)
         foreground = JBUI.CurrentTheme.ContextHelp.FOREGROUND
-        alignmentX = LEFT_ALIGNMENT
+        alignmentX = Component.LEFT_ALIGNMENT // Keep left-aligned with stack
     }
 
     private val responseArea = JBTextArea().apply {
@@ -59,15 +61,21 @@ class SwaggerApiInteractionPanel(
     }
 
     private val tryItButton = JButton("Try It Out").apply {
-        alignmentX = RIGHT_ALIGNMENT
         addActionListener { executeRequest() }
     }
 
     init {
-        layout = BoxLayout(this, BoxLayout.Y_AXIS)
         isOpaque = false
-        isVisible = false // Hidden by default
+        layout = BoxLayout(this, BoxLayout.Y_AXIS)
+        isVisible = false
         border = JBUI.Borders.empty(10, 0, 0, 0)
+
+        // WRAPPER TRICK: Forces button to the right without breaking the vertical layout
+        val buttonWrapper = JPanel(BorderLayout()).apply {
+            isOpaque = false
+            alignmentX = Component.LEFT_ALIGNMENT // The wrapper aligns left with everything else
+            add(tryItButton, BorderLayout.EAST)   // The button sits on the right inside the wrapper
+        }
 
         add(divider)
         add(Box.createVerticalStrut(10))
@@ -75,7 +83,10 @@ class SwaggerApiInteractionPanel(
         add(Box.createVerticalStrut(5))
         add(parametersList)
         add(Box.createVerticalStrut(10))
-        add(tryItButton)
+
+        // Add the wrapper instead of the button directly
+        add(buttonWrapper)
+
         add(Box.createVerticalStrut(10))
         add(divider)
         add(Box.createVerticalStrut(10))
@@ -83,7 +94,7 @@ class SwaggerApiInteractionPanel(
         add(Box.createVerticalStrut(5))
         add(JScrollPane(responseArea).apply {
             preferredSize = Dimension(0, 150)
-            alignmentX = LEFT_ALIGNMENT
+            alignmentX = Component.LEFT_ALIGNMENT // Keep left-aligned with stack
         })
 
         setupParameters()
@@ -94,12 +105,13 @@ class SwaggerApiInteractionPanel(
         node.parameters.forEach { param ->
             val row = JPanel(BorderLayout()).apply {
                 isOpaque = false
+                alignmentX = Component.LEFT_ALIGNMENT // Keep left-aligned with stack
                 val label = JBLabel("${param.name}: ${param.type}").apply {
                     font = font.deriveFont(11f)
                     border = JBUI.Borders.emptyRight(10)
                 }
                 add(label, BorderLayout.WEST)
-                
+
                 val field = JBTextField().apply {
                     putClientProperty("parameter_name", param.name)
                 }
@@ -115,8 +127,14 @@ class SwaggerApiInteractionPanel(
                     font = Font(Font.MONOSPACED, Font.PLAIN, 10)
                 }
                 parametersList.add(Box.createVerticalStrut(4))
-                parametersList.add(JBLabel("Example Value | Schema:").apply { font = font.deriveFont(Font.ITALIC, 10f) })
-                parametersList.add(JScrollPane(mockArea).apply { preferredSize = Dimension(0, 80) })
+                parametersList.add(JBLabel("Example Value | Schema:").apply {
+                    font = font.deriveFont(Font.ITALIC, 10f)
+                    alignmentX = Component.LEFT_ALIGNMENT // Keep left-aligned with stack
+                })
+                parametersList.add(JScrollPane(mockArea).apply {
+                    preferredSize = Dimension(0, 80)
+                    alignmentX = Component.LEFT_ALIGNMENT // Keep left-aligned with stack
+                })
             }
             parametersList.add(Box.createVerticalStrut(4))
         }
@@ -125,8 +143,8 @@ class SwaggerApiInteractionPanel(
     private fun executeRequest() {
         val viewModel = project.service<MainToolViewModel>()
         var finalUrl = node.path
-        
-        components.filterIsInstance<JPanel>().forEach { row ->
+
+        parametersList.components.filterIsInstance<JPanel>().forEach { row ->
             val field = row.components.filterIsInstance<JBTextField>().firstOrNull()
             val value = field?.text ?: ""
             val name = field?.getClientProperty("parameter_name") as? String ?: ""

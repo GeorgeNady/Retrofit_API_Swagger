@@ -8,6 +8,7 @@ import com.intellij.pom.Navigatable
 import com.intellij.util.ui.JBUI
 import java.awt.BasicStroke
 import java.awt.BorderLayout
+import java.awt.Component
 import java.awt.Cursor
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -29,7 +30,10 @@ class SwaggerApiCard(
 
     // Dedicated components
     private val headerPanel = SwaggerApiHeaderPanel(node, theme)
-    private val interactionPanel = SwaggerApiInteractionPanel(project, node, theme)
+    private val interactionPanel = SwaggerApiInteractionPanel(project, node, theme).apply {
+        isOpaque = false
+        alignmentX = Component.LEFT_ALIGNMENT
+    }
 
     init {
         isOpaque = false
@@ -39,6 +43,10 @@ class SwaggerApiCard(
         val mainColumn = JPanel().apply {
             isOpaque = false
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
+
+            headerPanel.alignmentX = Component.LEFT_ALIGNMENT
+            interactionPanel.alignmentX = Component.LEFT_ALIGNMENT
+
             add(headerPanel)
             add(interactionPanel)
         }
