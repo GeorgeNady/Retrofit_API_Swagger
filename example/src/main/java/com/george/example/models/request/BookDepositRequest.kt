@@ -1,4 +1,4 @@
-package com.george.retrofitexample.models.request
+package com.george.example.models.request
 
 data class BookDepositRequest(
     val bookId: String,

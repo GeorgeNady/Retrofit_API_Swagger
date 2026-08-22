@@ -1,6 +1,6 @@
 import org.jetbrains.intellij.platform.gradle.extensions.intellijPlatform
 
-include(":retrofitExample")
+include(":example")
 
 
 rootProject.name = "IntelliJ Platform Plugin Template"

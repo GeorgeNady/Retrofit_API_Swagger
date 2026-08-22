@@ -1,4 +1,4 @@
-package com.george.retrofitexample.models.response
+package com.george.example.models.response
 
 data class UserResponse(
     val userId: String,

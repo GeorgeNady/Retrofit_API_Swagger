@@ -1,7 +1,7 @@
-package com.george.retrofitexample.service
+package com.george.example.service
 
-import com.george.retrofitexample.models.request.BookDepositRequest
-import com.george.retrofitexample.models.response.UserResponse
+import com.george.example.models.request.BookDepositRequest
+import com.george.example.models.response.UserResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
