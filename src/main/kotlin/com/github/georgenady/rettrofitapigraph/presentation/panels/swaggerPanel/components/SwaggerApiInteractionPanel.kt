@@ -25,9 +25,18 @@ class SwaggerApiInteractionPanel(
 ) : JPanel() {
 
     // DIVIDER
-    private val divider get() = JSeparator(JSeparator.HORIZONTAL).apply {
+    private val primaryDivider = JSeparator(JSeparator.HORIZONTAL).apply {
         maximumSize = Dimension(Int.MAX_VALUE, 1)
-        alignmentX = Component.LEFT_ALIGNMENT // Keep left-aligned with stack
+        alignmentX = Component.LEFT_ALIGNMENT
+        foreground = JBColor(
+            Color(theme.borderColor.red, theme.borderColor.green, theme.borderColor.blue),
+            Color(theme.borderColor.red, theme.borderColor.green, theme.borderColor.blue)
+        )
+    }
+
+    private val divider = JSeparator(JSeparator.HORIZONTAL).apply {
+        maximumSize = Dimension(Int.MAX_VALUE, 1)
+        alignmentX = Component.LEFT_ALIGNMENT
         foreground = JBColor(
             Color(theme.borderColor.red, theme.borderColor.green, theme.borderColor.blue, 80),
             Color(theme.borderColor.red, theme.borderColor.green, theme.borderColor.blue, 80)
@@ -37,19 +46,19 @@ class SwaggerApiInteractionPanel(
     private val parametersLabel = JBLabel("Parameters:", JBLabel.LEFT).apply {
         font = font.deriveFont(Font.BOLD)
         foreground = JBUI.CurrentTheme.ContextHelp.FOREGROUND
-        alignmentX = Component.LEFT_ALIGNMENT // Keep left-aligned with stack
+        alignmentX = Component.LEFT_ALIGNMENT
     }
 
     private val parametersList = JPanel().apply {
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
         isOpaque = false
-        alignmentX = Component.LEFT_ALIGNMENT // Keep left-aligned with stack
+        alignmentX = Component.LEFT_ALIGNMENT
     }
 
     private val responseLabel = JBLabel("Response:", JBLabel.LEFT).apply {
         font = font.deriveFont(Font.BOLD)
         foreground = JBUI.CurrentTheme.ContextHelp.FOREGROUND
-        alignmentX = Component.LEFT_ALIGNMENT // Keep left-aligned with stack
+        alignmentX = Component.LEFT_ALIGNMENT
     }
 
     private val responseArea = JBTextArea().apply {
@@ -70,23 +79,25 @@ class SwaggerApiInteractionPanel(
         isVisible = false
         border = JBUI.Borders.empty(10, 0, 0, 0)
 
-        // WRAPPER TRICK: Forces button to the right without breaking the vertical layout
         val buttonWrapper = JPanel(BorderLayout()).apply {
             isOpaque = false
-            alignmentX = Component.LEFT_ALIGNMENT // The wrapper aligns left with everything else
-            add(tryItButton, BorderLayout.EAST)   // The button sits on the right inside the wrapper
+            alignmentX = Component.LEFT_ALIGNMENT
+            add(tryItButton, BorderLayout.EAST)
         }
 
-        add(divider)
-        add(Box.createVerticalStrut(10))
-        add(parametersLabel)
-        add(Box.createVerticalStrut(5))
-        add(parametersList)
+        add(primaryDivider)
         add(Box.createVerticalStrut(10))
 
-        // Add the wrapper instead of the button directly
+        // CONDITIONAL CHECK: Only add parameters section if parameters exist
+        if (node.parameters.isNotEmpty()) {
+            add(parametersLabel)
+            add(Box.createVerticalStrut(5))
+            add(parametersList)
+            add(Box.createVerticalStrut(10))
+            setupParameters()
+        }
+
         add(buttonWrapper)
-
         add(Box.createVerticalStrut(10))
         add(divider)
         add(Box.createVerticalStrut(10))
@@ -94,48 +105,17 @@ class SwaggerApiInteractionPanel(
         add(Box.createVerticalStrut(5))
         add(JScrollPane(responseArea).apply {
             preferredSize = Dimension(0, 150)
-            alignmentX = Component.LEFT_ALIGNMENT // Keep left-aligned with stack
+            alignmentX = Component.LEFT_ALIGNMENT
         })
-
-        setupParameters()
     }
 
     private fun setupParameters() {
         parametersList.removeAll()
         node.parameters.forEach { param ->
-            val row = JPanel(BorderLayout()).apply {
-                isOpaque = false
-                alignmentX = Component.LEFT_ALIGNMENT // Keep left-aligned with stack
-                val label = JBLabel("${param.name}: ${param.type}").apply {
-                    font = font.deriveFont(11f)
-                    border = JBUI.Borders.emptyRight(10)
-                }
-                add(label, BorderLayout.WEST)
+            // Pass `node` as the second argument here!
+            val rowComponent = SwaggerApiParameterRow(project, node, param)
 
-                val field = JBTextField().apply {
-                    putClientProperty("parameter_name", param.name)
-                }
-                add(field, BorderLayout.CENTER)
-            }
-            parametersList.add(row)
-
-            if (param.location == ParameterLocation.BODY && param.fqn != null) {
-                val generateUseCase = com.github.georgenady.rettrofitapigraph.domain.usecase.GenerateJsonSchemaUseCase(project)
-                val mockJson = generateUseCase(param.fqn)
-                val mockArea = JBTextArea(mockJson).apply {
-                    rows = 5
-                    font = Font(Font.MONOSPACED, Font.PLAIN, 10)
-                }
-                parametersList.add(Box.createVerticalStrut(4))
-                parametersList.add(JBLabel("Example Value | Schema:").apply {
-                    font = font.deriveFont(Font.ITALIC, 10f)
-                    alignmentX = Component.LEFT_ALIGNMENT // Keep left-aligned with stack
-                })
-                parametersList.add(JScrollPane(mockArea).apply {
-                    preferredSize = Dimension(0, 80)
-                    alignmentX = Component.LEFT_ALIGNMENT // Keep left-aligned with stack
-                })
-            }
+            parametersList.add(rowComponent)
             parametersList.add(Box.createVerticalStrut(4))
         }
     }
@@ -144,16 +124,32 @@ class SwaggerApiInteractionPanel(
         val viewModel = project.service<MainToolViewModel>()
         var finalUrl = node.path
 
-        parametersList.components.filterIsInstance<JPanel>().forEach { row ->
-            val field = row.components.filterIsInstance<JBTextField>().firstOrNull()
-            val value = field?.text ?: ""
-            val name = field?.getClientProperty("parameter_name") as? String ?: ""
-            if (name.isNotEmpty()) {
+        // Cleanly extract data using our custom component's helper method
+        parametersList.components.filterIsInstance<SwaggerApiParameterRow>().forEach { row ->
+            val data = row.getParameterData()
+            if (data != null) {
+                val (name, value) = data
                 finalUrl = finalUrl.replace("{$name}", value)
             }
         }
+
         viewModel.executeApiCall(node, finalUrl, null)
     }
+
+//    private fun executeRequest() {
+//        val viewModel = project.service<MainToolViewModel>()
+//        var finalUrl = node.path
+//
+//        parametersList.components.filterIsInstance<JPanel>().forEach { row ->
+//            val field = row.components.filterIsInstance<JBTextField>().firstOrNull()
+//            val value = field?.text ?: ""
+//            val name = field?.getClientProperty("parameter_name") as? String ?: ""
+//            if (name.isNotEmpty()) {
+//                finalUrl = finalUrl.replace("{$name}", value)
+//            }
+//        }
+//        viewModel.executeApiCall(node, finalUrl, null)
+//    }
 
     fun updateResponse(text: String) {
         responseArea.text = text
