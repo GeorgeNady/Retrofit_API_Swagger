@@ -3,6 +3,7 @@ package com.github.georgenady.rettrofitapigraph.presentation.viewmodel
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiFilterModel
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
 import com.github.georgenady.rettrofitapigraph.domain.model.ScanOperation
+import com.github.georgenady.rettrofitapigraph.domain.model.enums.ViewMode
 import com.github.georgenady.rettrofitapigraph.domain.repository.ApiRepository
 import com.github.georgenady.rettrofitapigraph.domain.usecase.FilterEndpointsUseCase
 import com.github.georgenady.rettrofitapigraph.domain.usecase.ScanProjectEndpointsUseCase
@@ -22,9 +23,8 @@ import kotlinx.coroutines.launch
 @Service(Service.Level.PROJECT)
 class ApiDashboardViewModel(
     private val project: Project,
-    val cs: CoroutineScope
+    val viewModelScope: CoroutineScope
 ) {
-    enum class ViewMode { LIST, GRAPH }
 
     private val repository = project.service<ApiRepository>()
     private val scanProjectUseCase = ScanProjectEndpointsUseCase(repository)
@@ -38,7 +38,7 @@ class ApiDashboardViewModel(
 
     fun refresh() {
         scanJob?.cancel()
-        scanJob = cs.launch {
+        scanJob = viewModelScope.launch {
             scanProjectUseCase()
                 .catch { t ->
                     _uiState.update { it.copy(isLoading = false, errorMessage = t.message) }

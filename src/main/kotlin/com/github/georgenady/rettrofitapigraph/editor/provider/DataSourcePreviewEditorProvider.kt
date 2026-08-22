@@ -1,5 +1,7 @@
-package com.github.georgenady.rettrofitapigraph.editor
+package com.github.georgenady.rettrofitapigraph.editor.provider
 
+import com.github.georgenady.rettrofitapigraph.editor.DataSourceDesignEditor
+import com.github.georgenady.rettrofitapigraph.editor.model.DataSourceSplitEditor
 import com.intellij.openapi.fileEditor.AsyncFileEditorProvider
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorPolicy
@@ -9,7 +11,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 
-class RetrofitPreviewEditorProvider : AsyncFileEditorProvider, DumbAware {
+class DataSourcePreviewEditorProvider : AsyncFileEditorProvider, DumbAware {
 
     override fun accept(project: Project, file: VirtualFile): Boolean {
         val extension = file.extension
@@ -18,9 +20,9 @@ class RetrofitPreviewEditorProvider : AsyncFileEditorProvider, DumbAware {
         // Fast check to avoid parsing the AST on the UI thread for every file clicked.
         // We just read the raw text and check if it imports retrofit or uses annotations.
         val fileContent = String(file.contentsToByteArray())
-        return fileContent.contains("@GET") || 
-               fileContent.contains("@POST") || 
-               fileContent.contains("retrofit2.http")
+        return fileContent.contains("@GET", false) ||
+               fileContent.contains("@POST", false) ||
+               fileContent.contains("retrofit2.http", false)
     }
 
     override fun createEditor(project: Project, file: VirtualFile): FileEditor {
@@ -32,12 +34,12 @@ class RetrofitPreviewEditorProvider : AsyncFileEditorProvider, DumbAware {
             override fun build(): FileEditor {
                 // 1. Get the standard text editor (Code View)
                 val textEditor = TextEditorProvider.getInstance().createEditor(project, file) as TextEditor
-                
+
                 // 2. Create our custom graph editor (Design View)
-                val designEditor = RetrofitDesignEditor(project, file)
-                
+                val designEditor = DataSourceDesignEditor(project, file)
+
                 // 3. Combine them into the Split View
-                return RetrofitSplitEditor(textEditor, designEditor)
+                return DataSourceSplitEditor(textEditor, designEditor)
             }
         }
     }

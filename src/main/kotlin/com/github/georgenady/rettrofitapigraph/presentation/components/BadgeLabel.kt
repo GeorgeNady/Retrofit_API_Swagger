@@ -1,8 +1,12 @@
 package com.github.georgenady.rettrofitapigraph.presentation.components
 
 import com.intellij.ui.components.JBLabel
-import java.awt.*
-import javax.swing.SwingConstants
+import java.awt.Color
+import java.awt.Dimension
+import java.awt.Font
+import java.awt.Graphics
+import java.awt.Graphics2D
+import java.awt.RenderingHints
 
 class BadgeLabel(
     text: String,

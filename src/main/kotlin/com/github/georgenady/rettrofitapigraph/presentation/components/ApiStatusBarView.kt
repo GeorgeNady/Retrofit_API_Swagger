@@ -12,7 +12,11 @@ import javax.swing.SwingConstants
 
 class ApiStatusBarView : JPanel(BorderLayout()) {
 
-    private val statusLabel = JBLabel(MyBundle.message("dashboard.ready"), AllIcons.General.InspectionsOK, SwingConstants.LEFT).apply {
+    private val statusLabel = JBLabel(
+        MyBundle.message("dashboard.ready"),
+        AllIcons.General.InspectionsOK,
+        SwingConstants.LEFT
+    ).apply {
         border = JBUI.Borders.empty(6, 10)
         foreground = JBColor.namedColor("Label.infoForeground", JBColor.GRAY)
     }

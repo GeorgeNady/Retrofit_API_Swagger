@@ -1,8 +1,8 @@
-package com.github.georgenady.rettrofitapigraph.presentation.sidepanel.sections
+package com.github.georgenady.rettrofitapigraph.presentation.panels.sidePanel.sections
 
 import com.github.georgenady.rettrofitapigraph.MyBundle
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
-import com.github.georgenady.rettrofitapigraph.presentation.sidepanel.SidePanelSection
+import com.github.georgenady.rettrofitapigraph.presentation.panels.sidePanel.utils.SidePanelSection
 import com.intellij.icons.AllIcons
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
@@ -78,7 +78,11 @@ class DetailsSection : SidePanelSection {
         }
     }
 
-    private val nameText = JBLabel(MyBundle.message("details.select_api"), AllIcons.General.Information, SwingConstants.LEFT).apply {
+    private val nameText = JBLabel(
+        MyBundle.message("details.select_api"),
+        AllIcons.General.Information,
+        SwingConstants.LEFT
+    ).apply {
         font = font.deriveFont(Font.BOLD, 14f)
         setCopyable(true)
         isAllowAutoWrapping = true
@@ -95,7 +99,11 @@ class DetailsSection : SidePanelSection {
         isAllowAutoWrapping = true
     }
 
-    private val annotationsLabel = JBLabel(MyBundle.message("details.annotations"), AllIcons.Nodes.Annotationtype, SwingConstants.LEFT).apply {
+    private val annotationsLabel = JBLabel(
+        MyBundle.message("details.annotations"),
+        AllIcons.Nodes.Annotationtype,
+        SwingConstants.LEFT
+    ).apply {
         font = font.deriveFont(Font.BOLD, 12f)
         alignmentX = JComponent.LEFT_ALIGNMENT
     }
@@ -105,7 +113,11 @@ class DetailsSection : SidePanelSection {
         alignmentX = JComponent.LEFT_ALIGNMENT
     }
 
-    private val parametersLabel = JBLabel(MyBundle.message("details.parameters"), AllIcons.Nodes.Parameter, SwingConstants.LEFT).apply {
+    private val parametersLabel = JBLabel(
+        MyBundle.message("details.parameters"),
+        AllIcons.Nodes.Parameter,
+        SwingConstants.LEFT
+    ).apply {
         font = font.deriveFont(Font.BOLD, 12f)
         alignmentX = JComponent.LEFT_ALIGNMENT
     }
@@ -173,15 +185,27 @@ class DetailsSection : SidePanelSection {
             val labelColor = if (isDark) "#DFE1E5" else "#1E1F22"
             val subColor = "#888888"
 
-            nameText.text = "<html><body style='width: 180px'><div style='font-weight: bold; color: $labelColor; word-wrap: break-word;'>${node.methodName}</div></body></html>"
-            methodText.text = "<html>Method: <span style='font-weight: bold; color: $labelColor'>${node.httpMethod}</span></html>"
-            pathText.text = "<html>${MyBundle.message("details.path", "")}<span style='color: $subColor; word-wrap: break-word;'>${node.path}</span></html>"
-            classText.text = "<html>${MyBundle.message("details.service", "")}<span style='color: $subColor; word-wrap: break-word;'>${node.className}</span></html>"
+            nameText.text =
+                "<html><body style='width: 180px'><div style='font-weight: bold; color: $labelColor; word-wrap: break-word;'>${node.methodName}</div></body></html>"
+            methodText.text =
+                "<html>Method: <span style='font-weight: bold; color: $labelColor'>${node.httpMethod}</span></html>"
+            pathText.text = "<html>${
+                MyBundle.message(
+                    "details.path",
+                    ""
+                )
+            }<span style='color: $subColor; word-wrap: break-word;'>${node.path}</span></html>"
+            classText.text = "<html>${
+                MyBundle.message(
+                    "details.service",
+                    ""
+                )
+            }<span style='color: $subColor; word-wrap: break-word;'>${node.className}</span></html>"
 
             methodText.isVisible = true
             pathText.isVisible = true
             classText.isVisible = true
-            
+
             // Fix: ensure these components wrap their text even if very long
             nameText.revalidate()
             pathText.revalidate()

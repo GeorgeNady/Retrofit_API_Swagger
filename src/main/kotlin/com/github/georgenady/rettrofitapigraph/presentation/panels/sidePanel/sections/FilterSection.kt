@@ -1,10 +1,11 @@
-package com.github.georgenady.rettrofitapigraph.presentation.sidepanel.sections
+package com.github.georgenady.rettrofitapigraph.presentation.panels.sidePanel.sections
 
 import com.github.georgenady.rettrofitapigraph.MyBundle
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiFilterModel
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
-import com.github.georgenady.rettrofitapigraph.presentation.sidepanel.SidePanelSection
+import com.github.georgenady.rettrofitapigraph.presentation.panels.sidePanel.utils.SidePanelSection
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.SearchTextField
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.util.ui.JBUI
@@ -15,8 +16,10 @@ import java.awt.GridLayout
 import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.DefaultListCellRenderer
+import javax.swing.JComponent
 import javax.swing.JList
 import javax.swing.JPanel
+import javax.swing.event.DocumentEvent
 
 class FilterSection(
     private val onFilterChanged: (ApiFilterModel) -> Unit
@@ -27,8 +30,8 @@ class FilterSection(
     private var isUpdatingCombo = false
 
     private val searchField = SearchTextField().apply {
-        addDocumentListener(object : com.intellij.ui.DocumentAdapter() {
-            override fun textChanged(e: javax.swing.event.DocumentEvent) {
+        addDocumentListener(object : DocumentAdapter() {
+            override fun textChanged(e: DocumentEvent) {
                 updateFilter()
             }
         })
@@ -70,8 +73,9 @@ class FilterSection(
                 isSelected: Boolean,
                 cellHasFocus: Boolean
             ): Component {
-                val comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
-                if (comp is javax.swing.JComponent) {
+                val comp =
+                    super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+                if (comp is JComponent) {
                     comp.border = JBUI.Borders.empty(2, 4)
                 }
                 return comp
@@ -128,7 +132,8 @@ class FilterSection(
     private fun updateFilter() {
         val query = searchField.text.trim()
         val selectedMethods = methodCheckboxes.filter { it.value.isSelected }.keys
-        val selectedModule = if (moduleCombo.selectedIndex > 0) moduleCombo.selectedItem as? String else null
+        val selectedModule =
+            if (moduleCombo.selectedIndex > 0) moduleCombo.selectedItem as? String else null
 
         onFilterChanged(ApiFilterModel(query, selectedMethods, selectedModule))
     }

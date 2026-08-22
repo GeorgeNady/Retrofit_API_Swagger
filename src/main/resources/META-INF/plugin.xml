@@ -1,7 +1,7 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <id>com.github.georgenady.rettrofitapigraph</id>
-    <name>Retrofit Api Graph</name>
+    <id>com.github.georgenady.api_swagger</id>
+    <name>Api Swagger</name>
     <vendor>George Nady</vendor>
     <vendor
             url="https://github.com/GeorgeNady"
@@ -10,7 +10,7 @@
     </vendor>
     <version>1.1.8</version>
     <description><![CDATA[
-        <p><b>Retrofit API Graph</b> is a professional tool for visualizing and managing your Android network layer. It provides a visual "Design Mode" similar to the Jetpack Navigation Editor, tailored for Retrofit APIs.</p>
+        <p><b>Api Swagger</b> is a professional tool for visualizing and managing your Android network layer. It provides a visual "Design Mode" similar to the Jetpack Navigation Editor, tailored for Retrofit APIs.</p>
 
         <h3>🚀 Key Features</h3>
         <ul>
@@ -36,18 +36,18 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <actions>
-        <action id="RetrofitApiGraph.Refresh"
-                class="com.github.georgenady.rettrofitapigraph.actions.RefreshApiGraphAction"
-                text="Refresh API Graph"
+        <action id="ApiSwagger.Refresh"
+                class="com.github.georgenady.rettrofitapigraph.presentation.main.actions.RefreshAction"
+                text="Refresh APIs List"
                 description="Scan project for Retrofit endpoints"
                 icon="AllIcons.Actions.Refresh" />
-        <action id="RetrofitApiGraph.ToggleSidePanel"
-                class="com.github.georgenady.rettrofitapigraph.actions.ToggleSidePanelAction"
+        <action id="ApiSwagger.ToggleSidePanel"
+                class="com.github.georgenady.rettrofitapigraph.presentation.main.actions.ToggleSidePanelAction"
                 text="Toggle Side Panel"
                 description="Show or hide the feature panel"
                 icon="AllIcons.General.Filter" />
-        <action id="RetrofitApiGraph.SwitchView"
-                class="com.github.georgenady.rettrofitapigraph.actions.SwitchViewModeAction"
+        <action id="ApiSwagger.SwitchView"
+                class="com.github.georgenady.rettrofitapigraph.presentation.main.actions.SwitchViewModeAction"
                 text="Switch View Mode"
                 description="Toggle between List, and Graph views"
                 icon="AllIcons.Actions.Diff" />
@@ -58,13 +58,13 @@
                         serviceImplementation="com.github.georgenady.rettrofitapigraph.data.repository.ApiRepositoryImpl"/>
         <projectService serviceImplementation="com.github.georgenady.rettrofitapigraph.presentation.viewmodel.ApiDashboardViewModel"/>
 
-        <toolWindow factoryClass="com.github.georgenady.rettrofitapigraph.toolwindow.ApiMainToolWindowFactory"
-                    id="RetrofitApiGraph"
-                    name="Retrofit Api Graph"
+        <toolWindow factoryClass="com.github.georgenady.rettrofitapigraph.presentation.main.MainToolWindowFactory"
+                    id="ApiSwagger"
+                    name="Api Swagger"
                     anchor="right"
                     icon="AllIcons.Nodes.PpLib"/>
 
-        <fileEditorProvider implementation="com.github.georgenady.rettrofitapigraph.editor.RetrofitPreviewEditorProvider"/>
+        <fileEditorProvider implementation="com.github.georgenady.rettrofitapigraph.editor.provider.DataSourcePreviewEditorProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">

@@ -1,11 +1,23 @@
-package com.github.georgenady.rettrofitapigraph.presentation.components
+package com.github.georgenady.rettrofitapigraph.presentation.panels.swaggerPanel.components
 
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
+import com.github.georgenady.rettrofitapigraph.presentation.components.BadgeLabel
 import com.github.georgenady.rettrofitapigraph.presentation.theme.SwaggerTheme
+import com.intellij.openapi.application.ReadAction
+import com.intellij.pom.Navigatable
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
-import java.awt.*
+import java.awt.BasicStroke
+import java.awt.BorderLayout
+import java.awt.Color
+import java.awt.Cursor
+import java.awt.Dimension
+import java.awt.FlowLayout
+import java.awt.Font
+import java.awt.Graphics
+import java.awt.Graphics2D
+import java.awt.RenderingHints
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.Box
@@ -13,7 +25,7 @@ import javax.swing.BoxLayout
 import javax.swing.JPanel
 import javax.swing.JSeparator
 
-class ApiCardComponent(
+class SwaggerApiCard(
     val node: ApiNode,
     private val onClick: ((ApiNode) -> Unit)? = null
 ) : JPanel(BorderLayout()) {
@@ -80,8 +92,8 @@ class ApiCardComponent(
             override fun mouseClicked(e: MouseEvent) {
                 onClick?.invoke(node)
                 node.psiElement?.let { element ->
-                    val navigatable = element as? com.intellij.pom.Navigatable
-                    val canNavigate = com.intellij.openapi.application.ReadAction.compute<Boolean, Throwable> {
+                    val navigatable = element as? Navigatable
+                    val canNavigate = ReadAction.compute<Boolean, Throwable> {
                         navigatable?.canNavigate() == true
                     }
                     if (canNavigate) {

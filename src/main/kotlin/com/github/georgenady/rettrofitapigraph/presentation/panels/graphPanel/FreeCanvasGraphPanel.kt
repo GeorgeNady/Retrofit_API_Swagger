@@ -1,4 +1,4 @@
-package com.github.georgenady.rettrofitapigraph.presentation.graph
+package com.github.georgenady.rettrofitapigraph.presentation.panels.graphPanel
 
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
 import com.github.georgenady.rettrofitapigraph.presentation.theme.SwaggerTheme
@@ -14,11 +14,13 @@ import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Cursor
 import java.awt.FlowLayout
+import java.awt.Point
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.event.MouseWheelEvent
 import javax.swing.JButton
 import javax.swing.JPanel
+import javax.swing.SwingUtilities
 
 class FreeCanvasGraphPanel(
     private val project: Project,
@@ -130,7 +132,7 @@ class FreeCanvasGraphPanel(
             val targetScale = minOf(scaleX, scaleY) * 0.9
 
             graph.view.scale = targetScale.coerceIn(0.2, 3.0)
-            graphComponent.viewport.viewPosition = java.awt.Point(0, 0)
+            graphComponent.viewport.viewPosition = Point(0, 0)
         }
     }
 
@@ -156,7 +158,7 @@ class FreeCanvasGraphPanel(
             }
 
             override fun mousePressed(e: MouseEvent) {
-                if (javax.swing.SwingUtilities.isRightMouseButton(e) || javax.swing.SwingUtilities.isMiddleMouseButton(e)) {
+                if (SwingUtilities.isRightMouseButton(e) || SwingUtilities.isMiddleMouseButton(e)) {
                     graphComponent.isPanning = true
                 }
             }

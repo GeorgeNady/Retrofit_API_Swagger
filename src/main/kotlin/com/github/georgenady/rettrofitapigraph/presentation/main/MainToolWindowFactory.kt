@@ -1,6 +1,6 @@
-package com.github.georgenady.rettrofitapigraph.toolwindow
+package com.github.georgenady.rettrofitapigraph.presentation.main
 
-import com.github.georgenady.rettrofitapigraph.presentation.view.ApiMainDashboard
+import com.github.georgenady.rettrofitapigraph.domain.model.enums.ViewMode
 import com.github.georgenady.rettrofitapigraph.presentation.viewmodel.ApiDashboardViewModel
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
@@ -11,10 +11,10 @@ import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
 
-class ApiMainToolWindowFactory : ToolWindowFactory, DumbAware {
+class MainToolWindowFactory : ToolWindowFactory, DumbAware {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-        val dashboard = ApiMainDashboard(project)
+        val dashboard = MainToolWindow(project)
         val content = ContentFactory.getInstance().createContent(dashboard, null, false)
         toolWindow.contentManager.addContent(content)
 
@@ -24,15 +24,15 @@ class ApiMainToolWindowFactory : ToolWindowFactory, DumbAware {
 
         // Add actions to tool window header
         val actionManager = ActionManager.getInstance()
-        val refreshAction = actionManager.getAction("RetrofitApiGraph.Refresh")
-        val switchAction = actionManager.getAction("RetrofitApiGraph.SwitchView")
-        val toggleAction = actionManager.getAction("RetrofitApiGraph.ToggleSidePanel")
-        
+        val refreshAction = actionManager.getAction("ApiSwagger.Refresh")
+//        val switchAction = actionManager.getAction("ApiSwagger.SwitchView")
+        val toggleAction = actionManager.getAction("ApiSwagger.ToggleSidePanel")
+
         val actions = mutableListOf<AnAction>()
         refreshAction?.let { actions.add(it) }
-        switchAction?.let { actions.add(it) }
+//        switchAction?.let { actions.add(it) }
         toggleAction?.let { actions.add(it) }
-        
+
         if (actions.isNotEmpty()) {
             toolWindow.setTitleActions(actions)
         }

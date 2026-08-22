@@ -1,13 +1,14 @@
-package com.github.georgenady.rettrofitapigraph.actions
+package com.github.georgenady.rettrofitapigraph.presentation.main.actions
 
 import com.github.georgenady.rettrofitapigraph.MyBundle
+import com.github.georgenady.rettrofitapigraph.domain.model.enums.ViewMode
 import com.github.georgenady.rettrofitapigraph.presentation.viewmodel.ApiDashboardViewModel
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
 
-class RefreshApiGraphAction : AnAction(
+class RefreshAction : AnAction(
     MyBundle.message("action.refresh.text"),
     MyBundle.message("action.refresh.description"),
     AllIcons.Actions.Refresh

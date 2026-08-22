@@ -1,9 +1,11 @@
-package com.github.georgenady.rettrofitapigraph.presentation.graph
+package com.github.georgenady.rettrofitapigraph.presentation.panels.graphPanel
 
 import com.github.georgenady.rettrofitapigraph.MyBundle
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
 import com.github.georgenady.rettrofitapigraph.presentation.theme.SwaggerTheme
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.project.Project
+import com.intellij.pom.Navigatable
 import com.intellij.ui.JBColor
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout
 import com.mxgraph.swing.mxGraphComponent
@@ -19,7 +21,7 @@ import javax.swing.JLayeredPane
 import javax.swing.JPanel
 import javax.swing.SwingConstants
 
-class ApiGraphPanel(
+class GraphPanel(
     private val project: Project,
     private val onNodeSelected: (ApiNode?) -> Unit
 ) : JPanel(BorderLayout()) {
@@ -195,8 +197,8 @@ class ApiGraphPanel(
                     onNodeSelected(value)
                     if (e.clickCount == 2) {
                         value.psiElement?.let { element ->
-                            val navigatable = element as? com.intellij.pom.Navigatable
-                            val canNavigate = com.intellij.openapi.application.ReadAction.compute<Boolean, Throwable> {
+                            val navigatable = element as? Navigatable
+                            val canNavigate = ReadAction.compute<Boolean, Throwable> {
                                 navigatable?.canNavigate() == true
                             }
                             if (canNavigate) {

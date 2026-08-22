@@ -1,7 +1,8 @@
 package com.github.georgenady.rettrofitapigraph.editor
 
 import com.github.georgenady.rettrofitapigraph.domain.repository.ApiRepository
-import com.github.georgenady.rettrofitapigraph.presentation.graph.ApiGraphPanel
+import com.github.georgenady.rettrofitapigraph.presentation.panels.swaggerPanel.SwaggerPanel
+import com.github.georgenady.rettrofitapigraph.presentation.viewmodel.ApiDashboardViewModel
 import com.intellij.openapi.components.service
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
@@ -12,14 +13,15 @@ import com.intellij.openapi.vfs.VirtualFile
 import java.beans.PropertyChangeListener
 import javax.swing.JComponent
 
-class RetrofitDesignEditor(
+class DataSourceDesignEditor(
     private val project: Project,
     private val file: VirtualFile
 ) : UserDataHolderBase(), FileEditor {
 
-    // Reuse your existing Graph Panel here
-    private val graphPanel = ApiGraphPanel(project) { selectedNode ->
-        // Handle navigation if needed
+    private val viewModel = project.service<ApiDashboardViewModel>()
+
+    private val listPanel = SwaggerPanel(project) { selectedNode ->
+        viewModel.selectNode(selectedNode)
     }
 
     init {
@@ -29,12 +31,12 @@ class RetrofitDesignEditor(
         // You will need to add a method to your service to scan a single file:
         val fileEndpoints = apiService.findRetrofitEndpointsInFile(file)
         
-        graphPanel.render(fileEndpoints)
+        listPanel.render(fileEndpoints)
     }
 
-    override fun getComponent(): JComponent = graphPanel
+    override fun getComponent(): JComponent = listPanel
     
-    override fun getPreferredFocusedComponent(): JComponent = graphPanel
+    override fun getPreferredFocusedComponent(): JComponent = listPanel
     
     override fun getName(): String = "Design"
     

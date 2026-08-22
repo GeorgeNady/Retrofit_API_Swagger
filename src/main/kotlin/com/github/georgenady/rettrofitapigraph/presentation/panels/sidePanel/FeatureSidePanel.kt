@@ -1,6 +1,7 @@
-package com.github.georgenady.rettrofitapigraph.presentation.sidepanel
+package com.github.georgenady.rettrofitapigraph.presentation.panels.sidePanel
 
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
+import com.github.georgenady.rettrofitapigraph.presentation.panels.sidePanel.utils.SidePanelSection
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBPanel

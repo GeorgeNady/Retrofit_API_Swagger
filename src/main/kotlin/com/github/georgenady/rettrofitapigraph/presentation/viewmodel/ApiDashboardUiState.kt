@@ -1,7 +1,7 @@
 package com.github.georgenady.rettrofitapigraph.presentation.viewmodel
 
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
-import com.github.georgenady.rettrofitapigraph.presentation.viewmodel.ApiDashboardViewModel.ViewMode
+import com.github.georgenady.rettrofitapigraph.domain.model.enums.ViewMode
 
 data class ApiDashboardUiState(
     val isLoading: Boolean = false,

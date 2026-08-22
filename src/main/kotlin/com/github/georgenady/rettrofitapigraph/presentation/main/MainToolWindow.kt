@@ -1,23 +1,23 @@
-package com.github.georgenady.rettrofitapigraph.presentation.view
+package com.github.georgenady.rettrofitapigraph.presentation.main
 
 import com.github.georgenady.rettrofitapigraph.MyBundle
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
-import com.github.georgenady.rettrofitapigraph.presentation.viewmodel.ApiDashboardViewModel
-import com.github.georgenady.rettrofitapigraph.presentation.viewmodel.ApiDashboardUiState
-import com.github.georgenady.rettrofitapigraph.presentation.components.ApiCardListContainer
+import com.github.georgenady.rettrofitapigraph.domain.model.enums.ViewMode
+import com.github.georgenady.rettrofitapigraph.presentation.panels.swaggerPanel.SwaggerPanel
 import com.github.georgenady.rettrofitapigraph.presentation.components.ApiEmptyStateView
 import com.github.georgenady.rettrofitapigraph.presentation.components.ApiStatusBarView
-import com.github.georgenady.rettrofitapigraph.presentation.graph.ApiGraphPanel
-import com.github.georgenady.rettrofitapigraph.presentation.sidepanel.FeatureSidePanel
-import com.github.georgenady.rettrofitapigraph.presentation.sidepanel.sections.DetailsSection
-import com.github.georgenady.rettrofitapigraph.presentation.sidepanel.sections.FilterSection
+import com.github.georgenady.rettrofitapigraph.presentation.panels.graphPanel.GraphPanel
+import com.github.georgenady.rettrofitapigraph.presentation.panels.sidePanel.FeatureSidePanel
+import com.github.georgenady.rettrofitapigraph.presentation.panels.sidePanel.sections.DetailsSection
+import com.github.georgenady.rettrofitapigraph.presentation.panels.sidePanel.sections.FilterSection
+import com.github.georgenady.rettrofitapigraph.presentation.viewmodel.ApiDashboardUiState
+import com.github.georgenady.rettrofitapigraph.presentation.viewmodel.ApiDashboardViewModel
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.OnePixelSplitter
 import com.intellij.ui.components.JBLabel
-import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.AsyncProcessIcon
-import kotlinx.coroutines.CoroutineScope
+import com.intellij.util.ui.JBUI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
@@ -28,11 +28,11 @@ import java.awt.Dimension
 import javax.swing.JPanel
 import javax.swing.SwingConstants
 
-class ApiMainDashboard(private val project: Project) : JPanel(BorderLayout()) {
+class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
 
     private val viewModel = project.service<ApiDashboardViewModel>()
     private var subscriptionJob: Job? = null
-    
+
     private val cardLayout = CardLayout()
     private val contentSwitcher = JPanel(cardLayout)
     private val statusBar = ApiStatusBarView()
@@ -44,12 +44,12 @@ class ApiMainDashboard(private val project: Project) : JPanel(BorderLayout()) {
     private val detailsSection = DetailsSection()
 
     // 1. API List Panel
-    private val listPanel = ApiCardListContainer { selectedNode ->
+    private val listPanel = SwaggerPanel(project) { selectedNode ->
         viewModel.selectNode(selectedNode)
     }
 
     // 2. API Graph Panel
-    private val graphPanel = ApiGraphPanel(project) { selectedNode ->
+    private val graphPanel = GraphPanel(project) { selectedNode ->
         viewModel.selectNode(selectedNode)
     }
 
@@ -69,7 +69,10 @@ class ApiMainDashboard(private val project: Project) : JPanel(BorderLayout()) {
         isOpaque = false
         val centerPanel = JPanel(BorderLayout()).apply { isOpaque = false }
         centerPanel.add(AsyncProcessIcon("Scanning"), BorderLayout.NORTH)
-        centerPanel.add(JBLabel(MyBundle.message("dashboard.scanning"), SwingConstants.CENTER), BorderLayout.SOUTH)
+        centerPanel.add(
+            JBLabel(MyBundle.message("dashboard.scanning"), SwingConstants.CENTER),
+            BorderLayout.SOUTH
+        )
         add(centerPanel, BorderLayout.CENTER)
     }
 
@@ -107,7 +110,7 @@ class ApiMainDashboard(private val project: Project) : JPanel(BorderLayout()) {
     override fun addNotify() {
         super.addNotify()
         // Use the scope from the ViewModel
-        subscriptionJob = viewModel.cs.launch(Dispatchers.Main) {
+        subscriptionJob = viewModel.viewModelScope.launch(Dispatchers.Main) {
             viewModel.uiState.collectLatest { state ->
                 updateUi(state)
             }
@@ -126,7 +129,13 @@ class ApiMainDashboard(private val project: Project) : JPanel(BorderLayout()) {
     private fun updateUi(state: ApiDashboardUiState) {
         // Update Status Bar
         if (state.totalScanned > 0) {
-            statusBar.setMessage(MyBundle.message("dashboard.found_endpoints", state.allEndpoints.size, state.durationMs))
+            statusBar.setMessage(
+                MyBundle.message(
+                    "dashboard.found_endpoints",
+                    state.allEndpoints.size,
+                    state.durationMs
+                )
+            )
         } else if (state.errorMessage != null) {
             statusBar.setMessage("Error: ${state.errorMessage}")
         }
@@ -152,32 +161,34 @@ class ApiMainDashboard(private val project: Project) : JPanel(BorderLayout()) {
         } else if (state.allEndpoints.isEmpty()) {
             cardLayout.show(contentSwitcher, "EMPTY")
         } else {
-            val toRender = if (state.filteredEndpoints.isEmpty()) state.allEndpoints else state.filteredEndpoints
-            
+            val toRender =
+                if (state.filteredEndpoints.isEmpty()) state.allEndpoints else state.filteredEndpoints
+
             if (lastRenderedEndpoints != toRender) {
                 listPanel.render(toRender)
                 graphPanel.render(toRender)
                 lastRenderedEndpoints = toRender
-                
+
                 if (state.filteredEndpoints.isEmpty() && state.allEndpoints.isNotEmpty()) {
                     statusBar.setMessage(MyBundle.message("dashboard.no_matches"))
                 }
             }
             cardLayout.show(contentSwitcher, "MAIN")
         }
-        
+
         revalidate()
         repaint()
     }
 
-    private fun updateViewMode(mode: ApiDashboardViewModel.ViewMode) {
+    private fun updateViewMode(mode: ViewMode) {
         when (mode) {
-            ApiDashboardViewModel.ViewMode.LIST -> {
+            ViewMode.LIST -> {
                 leftSplitter.firstComponent = listPanel
                 leftSplitter.secondComponent = null
                 leftSplitter.proportion = 1.0f
             }
-            ApiDashboardViewModel.ViewMode.GRAPH -> {
+
+            ViewMode.GRAPH -> {
                 leftSplitter.firstComponent = null
                 leftSplitter.secondComponent = graphPanel
                 leftSplitter.proportion = 0.0f

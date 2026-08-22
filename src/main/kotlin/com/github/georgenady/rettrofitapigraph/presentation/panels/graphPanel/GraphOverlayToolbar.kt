@@ -1,4 +1,4 @@
-package com.github.georgenady.rettrofitapigraph.presentation.graph
+package com.github.georgenady.rettrofitapigraph.presentation.panels.graphPanel
 
 import com.github.georgenady.rettrofitapigraph.MyBundle
 import com.intellij.icons.AllIcons

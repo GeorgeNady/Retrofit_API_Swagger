@@ -1,14 +1,19 @@
-package com.github.georgenady.rettrofitapigraph.presentation.components
+package com.github.georgenady.rettrofitapigraph.presentation.panels.swaggerPanel
 
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
+import com.github.georgenady.rettrofitapigraph.presentation.panels.swaggerPanel.components.SwaggerServiceGroup
+import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
+import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JPanel
+import kotlin.collections.iterator
 
-class ApiCardListContainer(
+class SwaggerPanel(
+    private val project: Project,
     private val onCardClick: ((ApiNode) -> Unit)? = null
 ) : JPanel(BorderLayout()) {
 
@@ -19,7 +24,7 @@ class ApiCardListContainer(
 
     init {
         val scrollPane = JBScrollPane(listPanel).apply {
-            border = javax.swing.BorderFactory.createEmptyBorder()
+            border = BorderFactory.createEmptyBorder()
         }
         add(scrollPane, BorderLayout.CENTER)
     }
@@ -31,7 +36,7 @@ class ApiCardListContainer(
         val groupedEndpoints = endpoints.groupBy { it.className }
 
         for ((className, serviceEndpoints) in groupedEndpoints) {
-            val groupPanel = ApiServiceGroupPanel(className, serviceEndpoints, onCardClick)
+            val groupPanel = SwaggerServiceGroup(className, serviceEndpoints, onCardClick)
             listPanel.add(groupPanel)
             listPanel.add(Box.createVerticalStrut(12)) // Spacing between service groups
         }
