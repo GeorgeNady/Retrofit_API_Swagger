@@ -1,7 +1,5 @@
 package com.github.georgenady.rettrofitapigraph.presentation.main
 
-import com.github.georgenady.rettrofitapigraph.domain.model.enums.ViewMode
-import com.github.georgenady.rettrofitapigraph.presentation.viewmodel.ApiDashboardViewModel
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.components.service
@@ -38,7 +36,7 @@ class MainToolWindowFactory : ToolWindowFactory, DumbAware {
         }
 
         // Initial scan
-        project.service<ApiDashboardViewModel>().refresh()
+        project.service<MainToolViewModel>().refresh()
     }
 
     override fun shouldBeAvailable(project: Project) = true

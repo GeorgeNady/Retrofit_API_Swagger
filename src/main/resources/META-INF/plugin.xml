@@ -56,7 +56,8 @@
     <extensions defaultExtensionNs="com.intellij">
         <projectService serviceInterface="com.github.georgenady.rettrofitapigraph.domain.repository.ApiRepository"
                         serviceImplementation="com.github.georgenady.rettrofitapigraph.data.repository.ApiRepositoryImpl"/>
-        <projectService serviceImplementation="com.github.georgenady.rettrofitapigraph.presentation.viewmodel.ApiDashboardViewModel"/>
+        <projectService serviceImplementation="com.github.georgenady.rettrofitapigraph.presentation.main.MainToolViewModel"/>
+        <applicationService serviceImplementation="com.github.georgenady.rettrofitapigraph.presentation.panels.swaggerPanel.SwaggerPanelViewModel"/>
 
         <toolWindow factoryClass="com.github.georgenady.rettrofitapigraph.presentation.main.MainToolWindowFactory"
                     id="ApiSwagger"

@@ -6,12 +6,11 @@ import com.github.georgenady.rettrofitapigraph.domain.model.enums.ViewMode
 import com.github.georgenady.rettrofitapigraph.presentation.panels.swaggerPanel.SwaggerPanel
 import com.github.georgenady.rettrofitapigraph.presentation.components.ApiEmptyStateView
 import com.github.georgenady.rettrofitapigraph.presentation.components.ApiStatusBarView
+import com.github.georgenady.rettrofitapigraph.presentation.components.LoadingView
 import com.github.georgenady.rettrofitapigraph.presentation.panels.graphPanel.GraphPanel
 import com.github.georgenady.rettrofitapigraph.presentation.panels.sidePanel.FeatureSidePanel
 import com.github.georgenady.rettrofitapigraph.presentation.panels.sidePanel.sections.DetailsSection
 import com.github.georgenady.rettrofitapigraph.presentation.panels.sidePanel.sections.FilterSection
-import com.github.georgenady.rettrofitapigraph.presentation.viewmodel.ApiDashboardUiState
-import com.github.georgenady.rettrofitapigraph.presentation.viewmodel.ApiDashboardViewModel
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.OnePixelSplitter
@@ -30,7 +29,7 @@ import javax.swing.SwingConstants
 
 class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
 
-    private val viewModel = project.service<ApiDashboardViewModel>()
+    private val viewModel = project.service<MainToolViewModel>()
     private var subscriptionJob: Job? = null
 
     private val cardLayout = CardLayout()
@@ -44,7 +43,7 @@ class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
     private val detailsSection = DetailsSection()
 
     // 1. API List Panel
-    private val listPanel = SwaggerPanel(project) { selectedNode ->
+    private val listPanel = SwaggerPanel(project, viewModel.viewModelScope) { selectedNode ->
         viewModel.selectNode(selectedNode)
     }
 
@@ -65,16 +64,7 @@ class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
         viewModel.refresh()
     }
 
-    private val loadingPanel = JPanel(BorderLayout()).apply {
-        isOpaque = false
-        val centerPanel = JPanel(BorderLayout()).apply { isOpaque = false }
-        centerPanel.add(AsyncProcessIcon("Scanning"), BorderLayout.NORTH)
-        centerPanel.add(
-            JBLabel(MyBundle.message("dashboard.scanning"), SwingConstants.CENTER),
-            BorderLayout.SOUTH
-        )
-        add(centerPanel, BorderLayout.CENTER)
-    }
+    private val loadingPanel = LoadingView()
 
     private val leftSplitter = OnePixelSplitter(false, 0.4f).apply {
         firstComponent = listPanel
@@ -126,7 +116,7 @@ class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
     private var lastRenderedEndpoints: List<ApiNode>? = null
     private var lastSelectedNode: ApiNode? = null
 
-    private fun updateUi(state: ApiDashboardUiState) {
+    private fun updateUi(state: MainToolUiState) {
         // Update Status Bar
         if (state.totalScanned > 0) {
             statusBar.setMessage(
@@ -162,7 +152,7 @@ class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
             cardLayout.show(contentSwitcher, "EMPTY")
         } else {
             val toRender =
-                if (state.filteredEndpoints.isEmpty()) state.allEndpoints else state.filteredEndpoints
+                state.filteredEndpoints.ifEmpty { state.allEndpoints }
 
             if (lastRenderedEndpoints != toRender) {
                 listPanel.render(toRender)

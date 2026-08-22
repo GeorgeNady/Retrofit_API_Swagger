@@ -9,6 +9,7 @@ import com.github.georgenady.rettrofitapigraph.domain.model.ScanOperation
 import com.github.georgenady.rettrofitapigraph.domain.model.ScanResult
 import com.github.georgenady.rettrofitapigraph.domain.repository.ApiRepository
 import com.intellij.openapi.application.readAction
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.DumbService
@@ -65,9 +66,11 @@ class ApiRepositoryImpl(
     override fun findRetrofitEndpointsInFile(virtualFile: VirtualFile): List<ApiNode> {
         if (DumbService.isDumb(project)) return emptyList()
 
-        val psiManager = PsiManager.getInstance(project)
-        val psiFile = psiManager.findFile(virtualFile) ?: return emptyList()
-
-        return endpointParser.parse(psiFile)
+        return runReadAction {
+            if (!virtualFile.isValid) return@runReadAction emptyList()
+            val psiManager = PsiManager.getInstance(project)
+            val psiFile = psiManager.findFile(virtualFile) ?: return@runReadAction emptyList()
+            endpointParser.parse(psiFile)
+        }
     }
 }

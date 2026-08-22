@@ -1,4 +1,4 @@
-package com.github.georgenady.rettrofitapigraph.presentation.viewmodel
+package com.github.georgenady.rettrofitapigraph.presentation.main
 
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiFilterModel
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @Service(Service.Level.PROJECT)
-class ApiDashboardViewModel(
+class MainToolViewModel(
     private val project: Project,
     val viewModelScope: CoroutineScope
 ) {
@@ -30,8 +30,8 @@ class ApiDashboardViewModel(
     private val scanProjectUseCase = ScanProjectEndpointsUseCase(repository)
     private val filterUseCase = FilterEndpointsUseCase()
 
-    private val _uiState = MutableStateFlow(ApiDashboardUiState())
-    val uiState: StateFlow<ApiDashboardUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(MainToolUiState())
+    val uiState: StateFlow<MainToolUiState> = _uiState.asStateFlow()
 
     private var currentFilter = ApiFilterModel()
     private var scanJob: Job? = null

@@ -56,13 +56,13 @@ class SwaggerApiCard(
         }
 
         // ROW 1: Function / Method Name
-        val row1FunctionPanel = JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)).apply {
+        val row1FunctionPanel = JPanel(BorderLayout()).apply {
             isOpaque = false
             val descLabel = JBLabel(node.methodName).apply {
                 font = font.deriveFont(Font.BOLD, 13f)
                 foreground = JBColor(Color(0x60, 0x67, 0x79), Color(0xA9, 0xB7, 0xC6))
             }
-            add(descLabel)
+            add(descLabel, BorderLayout.CENTER)
         }
 
         // DIVIDER
@@ -74,31 +74,35 @@ class SwaggerApiCard(
             )
         }
 
-        // ROW 2: HTTP Badge + Path
-        val row2PathPanel = JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)).apply {
+        // ROW 2: HTTP Badge + Path + Copy
+        val row2PathPanel = JPanel(BorderLayout()).apply {
             isOpaque = false
-            add(BadgeLabel(node.httpMethod, theme.badgeColor))
+            
+            val leftPanel = JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)).apply {
+                isOpaque = false
+                add(BadgeLabel(node.httpMethod, theme.badgeColor))
+            }
+            add(leftPanel, BorderLayout.WEST)
 
             val pathLabel = JBLabel(node.path.ifEmpty { "/" }).apply {
                 border = JBUI.Borders.empty(0, 12, 0, 0)
                 font = Font(Font.MONOSPACED, Font.BOLD, 14)
                 foreground = JBColor(Color(0x3B, 0x41, 0x51), Color(0xE1, 0xE4, 0xEA))
             }
-            add(pathLabel)
+            add(pathLabel, BorderLayout.CENTER)
 
             val copyIcon = JBLabel().apply {
                 icon = AllIcons.General.Copy
                 border = JBUI.Borders.empty(0, 12, 0, 0)
-                cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) // Changes cursor to a hand on hover
+                cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
 
                 object : ClickListener() {
                     override fun onClick(event: MouseEvent, clickCount: Int): Boolean {
                         CopyPasteManager.getInstance().setContents(StringSelection(node.path))
-                        // 2. Show an inline balloon alerter
                         val balloon = JBPopupFactory.getInstance()
                             .createHtmlTextBalloonBuilder(MyBundle.message("message.path.copied"),
                                 AllIcons.General.GreenCheckmark, LightColors.BLUE, null)
-                            .setFadeoutTime(2000) // Disappears after 2 seconds
+                            .setFadeoutTime(2000)
                             .createBalloon()
 
                         balloon.show(RelativePoint(event), Balloon.Position.above)
@@ -106,7 +110,7 @@ class SwaggerApiCard(
                     }
                 }.installOn(this)
             }
-            add(copyIcon)
+            add(copyIcon, BorderLayout.EAST)
         }
 
         // Assemble Column (Row 1 -> Spacing -> Divider -> Spacing -> Row 2)

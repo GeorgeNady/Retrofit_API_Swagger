@@ -1,9 +1,9 @@
-package com.github.georgenady.rettrofitapigraph.presentation.viewmodel
+package com.github.georgenady.rettrofitapigraph.presentation.main
 
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
 import com.github.georgenady.rettrofitapigraph.domain.model.enums.ViewMode
 
-data class ApiDashboardUiState(
+data class MainToolUiState(
     val isLoading: Boolean = false,
     val progressMessage: String? = null,
     val progressFraction: Double = 0.0,

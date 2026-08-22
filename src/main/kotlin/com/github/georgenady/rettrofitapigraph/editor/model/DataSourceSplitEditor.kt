@@ -11,7 +11,6 @@ class DataSourceSplitEditor(
     myEditor = textEditor,
     myPreview = designEditor,
     name = "Api Swagger",
-    layout = Layout.SHOW_EDITOR_AND_PREVIEW,
     defaultLayout = Layout.SHOW_EDITOR_AND_PREVIEW,
     isVerticalSplit = true,
 )
