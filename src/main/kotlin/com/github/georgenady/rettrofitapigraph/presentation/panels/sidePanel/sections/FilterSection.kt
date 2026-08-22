@@ -5,12 +5,16 @@ import com.github.georgenady.rettrofitapigraph.data.parser.utils.RetrofitConstan
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiFilterModel
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
 import com.github.georgenady.rettrofitapigraph.presentation.panels.sidePanel.utils.SidePanelSection
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.ui.addExtension
 import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.SearchTextField
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
+import com.intellij.ui.components.fields.ExtendableTextComponent
+import com.intellij.ui.components.fields.ExtendableTextField
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
 import java.awt.Component
@@ -106,9 +110,16 @@ class FilterSection(
         alignmentX = Component.LEFT_ALIGNMENT
     }
 
-
-    private val customAnnotationsField = JBTextField().apply {
+    private val customAnnotationsField = ExtendableTextField().apply {
         emptyText.text = MyBundle.message("filter.annotations.empty_text")
+
+        val annotationIcon = ExtendableTextComponent.Extension.create(
+            AllIcons.Gutter.ExtAnnotation,
+            MyBundle.message("filter.annotations.icon.tooltip"),
+            null
+        )
+        addExtension(annotationIcon)
+
         document.addDocumentListener(object : DocumentAdapter() {
             override fun textChanged(e: DocumentEvent) {
                 updateFilter()
