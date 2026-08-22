@@ -115,6 +115,7 @@ class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
 
     private var lastRenderedEndpoints: List<ApiNode>? = null
     private var lastSelectedNode: ApiNode? = null
+    private var lastResults: Map<String, String> = emptyMap()
 
     private fun updateUi(state: MainToolUiState) {
         // Update Status Bar
@@ -154,10 +155,15 @@ class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
             val toRender =
                 state.filteredEndpoints.ifEmpty { state.allEndpoints }
 
-            if (lastRenderedEndpoints != toRender) {
-                listPanel.render(toRender)
+            if (lastRenderedEndpoints != toRender || lastResults != state.requestResults || state.expandedNode != null) {
+                listPanel.render(toRender, state.requestResults, state.expandedNode)
                 graphPanel.render(toRender)
                 lastRenderedEndpoints = toRender
+                lastResults = state.requestResults
+
+                if (state.expandedNode != null) {
+                    viewModel.clearExpansion()
+                }
 
                 if (state.filteredEndpoints.isEmpty() && state.allEndpoints.isNotEmpty()) {
                     statusBar.setMessage(MyBundle.message("dashboard.no_matches"))

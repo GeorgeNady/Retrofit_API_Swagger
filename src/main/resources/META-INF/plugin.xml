@@ -58,6 +58,7 @@
                         serviceImplementation="com.github.georgenady.rettrofitapigraph.data.repository.ApiRepositoryImpl"/>
         <projectService serviceImplementation="com.github.georgenady.rettrofitapigraph.presentation.main.MainToolViewModel"/>
         <applicationService serviceImplementation="com.github.georgenady.rettrofitapigraph.presentation.panels.swaggerPanel.SwaggerPanelViewModel"/>
+        <applicationService serviceImplementation="com.github.georgenady.rettrofitapigraph.data.service.SwaggerSettingsService"/>
 
         <toolWindow factoryClass="com.github.georgenady.rettrofitapigraph.presentation.main.MainToolWindowFactory"
                     id="ApiSwagger"
@@ -66,6 +67,11 @@
                     icon="AllIcons.Nodes.PpLib"/>
 
         <fileEditorProvider implementation="com.github.georgenady.rettrofitapigraph.editor.provider.DataSourcePreviewEditorProvider"/>
+
+        <codeInsight.lineMarkerProvider language="UAST" implementationClass="com.github.georgenady.rettrofitapigraph.presentation.main.RetrofitGutterIconProvider"/>
+
+        <localInspection language="UAST" displayName="Retrofit parameter validation" groupName="Retrofit" enabledByDefault="true" level="ERROR"
+                         implementationClass="com.github.georgenady.rettrofitapigraph.presentation.main.RetrofitValidationInspection"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">

@@ -88,7 +88,37 @@ class MainToolViewModel(
         _uiState.update { it.copy(selectedNode = node) }
     }
 
+    fun expandNode(node: ApiNode) {
+        _uiState.update { it.copy(selectedNode = node, expandedNode = node) }
+    }
+
+    fun clearExpansion() {
+        _uiState.update { it.copy(expandedNode = null) }
+    }
+
     fun setViewMode(mode: ViewMode) {
         _uiState.update { it.copy(viewMode = mode) }
+    }
+
+    fun executeApiCall(node: ApiNode, url: String, body: String?) {
+        viewModelScope.launch {
+            val executeUseCase = com.github.georgenady.rettrofitapigraph.domain.usecase.ExecuteHttpRequestUseCase()
+            val settings = com.github.georgenady.rettrofitapigraph.data.service.SwaggerSettingsService.getInstance()
+            
+            val result = executeUseCase.invoke(
+                url = url,
+                method = node.httpMethod,
+                headers = settings.state.defaultHeaders,
+                body = body
+            )
+
+            val responseText = result.getOrElse { "Error: ${it.message}" }
+            
+            _uiState.update { state ->
+                val newResults = state.requestResults.toMutableMap()
+                newResults["${node.className}.${node.methodName}"] = responseText
+                state.copy(requestResults = newResults)
+            }
+        }
     }
 }

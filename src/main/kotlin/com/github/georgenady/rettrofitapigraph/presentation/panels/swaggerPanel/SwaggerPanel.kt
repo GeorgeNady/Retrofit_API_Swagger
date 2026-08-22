@@ -4,6 +4,7 @@ import com.github.georgenady.rettrofitapigraph.MyBundle
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
 import com.github.georgenady.rettrofitapigraph.domain.usecase.GroupEndpointsByServiceUseCase
 import com.github.georgenady.rettrofitapigraph.presentation.panels.swaggerPanel.components.SwaggerServiceGroup
+import com.github.georgenady.rettrofitapigraph.presentation.panels.swaggerPanel.components.SwaggerApiCard
 import com.github.georgenady.rettrofitapigraph.presentation.panels.swaggerPanel.SwaggerPanelViewModel
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*
@@ -104,14 +105,36 @@ class SwaggerPanel(
         listPanel.repaint()
     }
 
-    fun render(endpoints: List<ApiNode>) {
+    fun render(
+        endpoints: List<ApiNode>,
+        results: Map<String, String> = emptyMap(),
+        expandedNode: ApiNode? = null
+    ) {
         listPanel.removeAll()
 
         val groupedEndpoints = groupUseCase(endpoints)
 
         for ((className, serviceEndpoints) in groupedEndpoints) {
-            val groupPanel = SwaggerServiceGroup(className, serviceEndpoints, onCardClick)
+            val groupPanel = SwaggerServiceGroup(project, className, serviceEndpoints, onCardClick)
             listPanel.add(groupPanel)
+            
+            // Update individual cards with results
+            groupPanel.components.filterIsInstance<SwaggerApiCard>().forEach { card ->
+                val sig = "${card.node.className}.${card.node.methodName}"
+                results[sig]?.let { card.updateResponse(it) }
+
+                if (expandedNode != null && card.node == expandedNode) {
+                    card.setExpanded(true)
+                    
+                    // Delay scrolling to ensure layout is ready
+                    javax.swing.SwingUtilities.invokeLater {
+                        val rect = card.bounds
+                        rect.y += groupPanel.bounds.y
+                        listPanel.scrollRectToVisible(rect)
+                    }
+                }
+            }
+
             listPanel.add(Box.createVerticalStrut(12))
         }
 

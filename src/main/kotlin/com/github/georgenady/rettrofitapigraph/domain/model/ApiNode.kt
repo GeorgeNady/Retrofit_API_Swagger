@@ -11,5 +11,6 @@ data class ApiNode(
     val supportsCache: Boolean = false,
     val invalidatesKeys: List<String> = emptyList(),
     val annotations: List<AnnotationDetail> = emptyList(),
-    val parameters: List<ParameterDetail> = emptyList()
+    val parameters: List<ParameterDetail> = emptyList(),
+    val returnTypeFqn: String? = null
 )
