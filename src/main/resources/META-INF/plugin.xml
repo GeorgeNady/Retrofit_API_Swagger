@@ -64,7 +64,7 @@
                     id="ApiSwagger"
                     name="Api Swagger"
                     anchor="right"
-                    icon="AllIcons.Nodes.PpLib"/>
+                    icon="/icons/pluginIcon.svg" />
 
         <fileEditorProvider implementation="com.github.georgenady.rettrofitapigraph.editor.provider.DataSourcePreviewEditorProvider"/>
 
