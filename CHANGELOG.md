@@ -1,6 +1,6 @@
 <!-- Keep a Changelog guide -> https://keepachangelog.com -->
 
-# Api Swagger Changelog
+# Retrofit API Swagger Changelog
 
 ## [1.1.8] - 2026-08-23
 ### Added

@@ -1,8 +1,8 @@
-# Api Swagger
+# Retrofit API Swagger
 
 ![Build](https://github.com/GeorgeNady/android_api_graph/workflows/Build/badge.svg)
 
-**Api Swagger** is a high-performance visual toolkit for Android developers to visualize, manage, and test Retrofit API definitions. It provides a visual "Design Mode" similar to the Jetpack Navigation Editor, directly inside your favorite IDE.
+**Retrofit API Swagger** is a high-performance visual toolkit for Android developers to visualize, manage, and test Retrofit API definitions. It provides a visual "Design Mode" similar to the Jetpack Navigation Editor, directly inside your favorite IDE.
 
 ## 🚀 Key Features
 
@@ -16,7 +16,7 @@
 
 ## 📖 How to Use
 
-1. **Open Tool Window**: Find the **Api Swagger** tab on the right side of your IDE to see the project-wide dashboard.
+1. **Open Tool Window**: Find the **Retrofit API Swagger** tab on the right side of your IDE to see the project-wide dashboard.
 2. **Design View**: Open a Retrofit interface file. Click the **Design** tab at the top of the editor to enter the split view.
 3. **Quick Navigation**: Click the executable icon in the gutter next to any Retrofit method to jump directly to its Design view.
 4. **Interactive Graph**: Switch to **Graph Mode** in the tool window to see a high-level architectural view of your network layer.
@@ -25,7 +25,7 @@
 ## 🛠 Installation
 
 - Using the IDE built-in plugin system:
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "Api Swagger"</kbd> > <kbd>Install</kbd>
+  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "Retrofit API Swagger"</kbd> > <kbd>Install</kbd>
 
 - Manually:
   Download the [latest release](https://github.com/GeorgeNady/android_api_graph/releases/latest) and install using <kbd>Install plugin from disk...</kbd>
