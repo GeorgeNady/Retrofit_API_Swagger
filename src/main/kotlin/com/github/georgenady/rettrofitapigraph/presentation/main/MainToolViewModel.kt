@@ -9,9 +9,13 @@ import com.github.georgenady.rettrofitapigraph.domain.usecase.FilterEndpointsUse
 import com.github.georgenady.rettrofitapigraph.domain.usecase.ScanProjectEndpointsUseCase
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,6 +23,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 @Service(Service.Level.PROJECT)
 class MainToolViewModel(
@@ -38,43 +43,58 @@ class MainToolViewModel(
 
     fun refresh() {
         scanJob?.cancel()
-        scanJob = viewModelScope.launch {
-            scanProjectUseCase()
-                .catch { t ->
-                    _uiState.update { it.copy(isLoading = false, errorMessage = t.message) }
-                }
-                .onCompletion {
-                    _uiState.update { it.copy(isLoading = false) }
-                }
-                .collect { op ->
-                    when (op) {
-                        is ScanOperation.Started -> {
-                            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+        val task = object : Task.Backgroundable(project, "Scanning retrofit endpoints", true) {
+            override fun run(indicator: ProgressIndicator) {
+                runBlocking {
+                    scanProjectUseCase()
+                        .catch { t ->
+                            _uiState.update { it.copy(isLoading = false, errorMessage = t.message) }
                         }
-                        is ScanOperation.InProgress -> {
-                            _uiState.update { 
-                                it.copy(
-                                    progressFraction = op.fraction,
-                                    progressMessage = op.currentFile
-                                )
+                        .onCompletion {
+                            _uiState.update { it.copy(isLoading = false) }
+                        }
+                        .collect { op ->
+                            if (indicator.isCanceled) {
+                                cancel()
+                                return@collect
+                            }
+                            when (op) {
+                                is ScanOperation.Started -> {
+                                    indicator.isIndeterminate = false
+                                    _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+                                }
+                                is ScanOperation.InProgress -> {
+                                    indicator.fraction = op.fraction
+                                    indicator.text = "Scanning ${op.currentCount}/${op.totalCount} files..."
+                                    indicator.text2 = op.currentFile
+                                    _uiState.update { 
+                                        it.copy(
+                                            progressFraction = op.fraction,
+                                            progressMessage = op.currentFile,
+                                            currentScanned = op.currentCount,
+                                            totalFilesToScan = op.totalCount
+                                        )
+                                    }
+                                }
+                                is ScanOperation.Completed -> {
+                                    _uiState.update { 
+                                        it.copy(
+                                            allEndpoints = op.result.endpoints,
+                                            totalScanned = op.result.filesScanned,
+                                            durationMs = op.result.durationMs,
+                                            filteredEndpoints = filterUseCase(op.result.endpoints, currentFilter)
+                                        )
+                                    }
+                                }
+                                is ScanOperation.Failed -> {
+                                    _uiState.update { it.copy(errorMessage = op.throwable.message) }
+                                }
                             }
                         }
-                        is ScanOperation.Completed -> {
-                            _uiState.update { 
-                                it.copy(
-                                    allEndpoints = op.result.endpoints,
-                                    totalScanned = op.result.filesScanned,
-                                    durationMs = op.result.durationMs,
-                                    filteredEndpoints = filterUseCase(op.result.endpoints, currentFilter)
-                                )
-                            }
-                        }
-                        is ScanOperation.Failed -> {
-                            _uiState.update { it.copy(errorMessage = op.throwable.message) }
-                        }
-                    }
                 }
+            }
         }
+        ProgressManager.getInstance().run(task)
     }
 
     fun setFilter(filter: ApiFilterModel) {

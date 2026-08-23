@@ -13,6 +13,8 @@ data class MainToolUiState(
     val expandedNode: ApiNode? = null,
     val viewMode: ViewMode = ViewMode.LIST,
     val totalScanned: Int = 0,
+    val currentScanned: Int = 0,
+    val totalFilesToScan: Int = 0,
     val durationMs: Long = 0,
     val errorMessage: String? = null,
     val requestResults: Map<String, String> = emptyMap() // Map of method signature to response

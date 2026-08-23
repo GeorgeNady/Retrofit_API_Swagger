@@ -48,7 +48,7 @@ class ApiRepositoryImpl(
             yield() // Cooperative cancellation
             
             val fraction = if (totalFilesCount > 0) (index.toDouble() / totalFilesCount) else 1.0
-            emit(ScanOperation.InProgress(fraction, virtualFile.name))
+            emit(ScanOperation.InProgress(fraction, virtualFile.name, index + 1, totalFilesCount))
 
             val fileEndpoints = readAction {
                 if (!virtualFile.isValid) return@readAction emptyList()

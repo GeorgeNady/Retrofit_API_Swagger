@@ -146,6 +146,11 @@ class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
         // Render Data
         if (state.isLoading) {
             cardLayout.show(contentSwitcher, "LOADING")
+            if (state.totalFilesToScan > 0) {
+                statusBar.setMessage("Scanning: ${state.currentScanned}/${state.totalFilesToScan} files...")
+            } else {
+                statusBar.setMessage(MyBundle.message("dashboard.scanning"))
+            }
         } else if (state.allEndpoints.isEmpty()) {
             cardLayout.show(contentSwitcher, "EMPTY")
         } else {
