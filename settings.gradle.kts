@@ -3,7 +3,7 @@ import org.jetbrains.intellij.platform.gradle.extensions.intellijPlatform
 include(":example")
 
 
-rootProject.name = "IntelliJ Platform Plugin Template"
+rootProject.name = "Retrofit_API_Swagger"
 
 pluginManagement {
     plugins {
