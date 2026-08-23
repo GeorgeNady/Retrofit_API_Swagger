@@ -5,12 +5,16 @@ import com.github.georgenady.rettrofitapigraph.data.parser.utils.RetrofitConstan
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiFilterModel
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
 import com.github.georgenady.rettrofitapigraph.presentation.panels.sidePanel.utils.SidePanelSection
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.ui.addExtension
 import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.SearchTextField
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
+import com.intellij.ui.components.fields.ExtendableTextComponent
+import com.intellij.ui.components.fields.ExtendableTextField
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
 import java.awt.Component
@@ -43,6 +47,7 @@ class FilterSection(
     private val methodCheckboxes = mutableMapOf<String, JBCheckBox>()
     private val methodPanel = JPanel(GridLayout(0, 2, 4, 4)).apply {
         isOpaque = false
+        alignmentX = Component.LEFT_ALIGNMENT
         RetrofitConstants.HTTP_METHODS.forEach { method ->
             val checkBox = JBCheckBox(method, true).apply {
                 isOpaque = false
@@ -51,6 +56,12 @@ class FilterSection(
             methodCheckboxes[method] = checkBox
             add(checkBox)
         }
+    }
+
+    private val moduleComboLabel = JBLabel(MyBundle.message("filter.moduleCompo.label")).apply {
+        font = font.deriveFont(font.size - 1f)
+        foreground = JBUI.CurrentTheme.ContextHelp.FOREGROUND
+        alignmentX = Component.LEFT_ALIGNMENT
     }
 
     private val moduleCombo = object : ComboBox<String>() {
@@ -67,6 +78,7 @@ class FilterSection(
     }.apply {
         addItem(MyBundle.message("filter.all_modules"))
         border = JBUI.Borders.empty(2, 6)
+        alignmentX = Component.LEFT_ALIGNMENT
 
         setRenderer(object : DefaultListCellRenderer() {
             override fun getListCellRendererComponent(
@@ -92,14 +104,22 @@ class FilterSection(
         }
     }
 
-    private val customAnnotationsLabel = JBLabel("Annotations (comma-separated):").apply {
+    private val customAnnotationsLabel = JBLabel(MyBundle.message("filter.annotations.label"), JBLabel.LEFT).apply {
         font = font.deriveFont(font.size - 1f)
         foreground = JBUI.CurrentTheme.ContextHelp.FOREGROUND
+        alignmentX = Component.LEFT_ALIGNMENT
     }
 
+    private val customAnnotationsField = ExtendableTextField().apply {
+        emptyText.text = MyBundle.message("filter.annotations.empty_text")
 
-    private val customAnnotationsField = JBTextField().apply {
-        emptyText.text = "e.g. SupportCache, InvalidateCache"
+        val annotationIcon = ExtendableTextComponent.Extension.create(
+            AllIcons.Gutter.ExtAnnotation,
+            MyBundle.message("filter.annotations.icon.tooltip"),
+            null
+        )
+        addExtension(annotationIcon)
+
         document.addDocumentListener(object : DocumentAdapter() {
             override fun textChanged(e: DocumentEvent) {
                 updateFilter()
@@ -121,20 +141,24 @@ class FilterSection(
                 add(searchField, BorderLayout.CENTER)
                 val compactHeight = searchField.preferredSize.height
                 maximumSize = Dimension(Int.MAX_VALUE, compactHeight)
+                alignmentX = Component.LEFT_ALIGNMENT
             }
 
             val annotationsWrapper = JPanel(BorderLayout()).apply {
                 isOpaque = false
                 add(customAnnotationsField, BorderLayout.CENTER)
                 maximumSize = Dimension(Int.MAX_VALUE, customAnnotationsField.preferredSize.height)
+                alignmentX = Component.LEFT_ALIGNMENT
             }
 
             methodPanel.maximumSize = Dimension(Int.MAX_VALUE, methodPanel.preferredSize.height)
 
             add(searchWrapper)
-            add(Box.createVerticalStrut(8))
+            add(Box.createVerticalStrut(10))
             add(methodPanel)
-            add(Box.createVerticalStrut(8))
+            add(Box.createVerticalStrut(10))
+            add(moduleComboLabel)
+            add(Box.createVerticalStrut(4))
             add(moduleCombo)
             add(Box.createVerticalStrut(10))
             add(customAnnotationsLabel)

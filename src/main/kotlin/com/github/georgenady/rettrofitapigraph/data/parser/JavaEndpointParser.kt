@@ -1,14 +1,8 @@
 package com.github.georgenady.rettrofitapigraph.data.parser
 
 import com.github.georgenady.rettrofitapigraph.data.parser.utils.RetrofitConstants
-import com.github.georgenady.rettrofitapigraph.domain.model.AnnotationDetail
-import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
-import com.github.georgenady.rettrofitapigraph.domain.model.ParameterDetail
-import com.intellij.psi.PsiAnnotation
-import com.intellij.psi.PsiClass
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiJavaFile
-import com.intellij.psi.PsiMethod
+import com.github.georgenady.rettrofitapigraph.domain.model.*
+import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 
 class JavaEndpointParser : FileEndpointParser {
@@ -60,11 +54,27 @@ class JavaEndpointParser : FileEndpointParser {
 
         if (httpMethod == null) return null
 
-        val parameters = if (httpMethod != "GET") {
-            method.parameterList.parameters.map { 
-                ParameterDetail(it.name, it.type.presentableText)
+        val parameters = method.parameterList.parameters.map { param ->
+            var location = ParameterLocation.QUERY
+            
+            for (anno in param.annotations) {
+                val shortName = anno.qualifiedName?.substringAfterLast(".")
+                location = when (shortName) {
+                    "Path" -> ParameterLocation.PATH
+                    "Query", "QueryMap" -> ParameterLocation.QUERY
+                    "Header", "HeaderMap" -> ParameterLocation.HEADER
+                    "Body" -> ParameterLocation.BODY
+                    else -> location
+                }
             }
-        } else emptyList()
+
+            ParameterDetail(
+                name = param.name,
+                type = param.type.presentableText,
+                location = location,
+                fqn = (param.type as? PsiClassType)?.resolve()?.qualifiedName
+            )
+        }
 
         return ApiNode(
             methodName = method.name,
@@ -74,7 +84,8 @@ class JavaEndpointParser : FileEndpointParser {
             psiElement = method,
             supportsCache = supportsCache,
             annotations = allAnnotations,
-            parameters = parameters
+            parameters = parameters,
+            returnTypeFqn = (method.returnType as? PsiClassType)?.resolve()?.qualifiedName
         )
     }
 

@@ -1,15 +1,10 @@
 package com.github.georgenady.rettrofitapigraph.data.parser
 
 import com.github.georgenady.rettrofitapigraph.data.parser.utils.RetrofitConstants
-import com.github.georgenady.rettrofitapigraph.domain.model.AnnotationDetail
-import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
-import com.github.georgenady.rettrofitapigraph.domain.model.ParameterDetail
+import com.github.georgenady.rettrofitapigraph.domain.model.*
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.psi.KtAnnotationEntry
-import org.jetbrains.kotlin.psi.KtClassOrObject
-import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.psi.KtNamedFunction
+import org.jetbrains.kotlin.psi.*
 
 class KotlinEndpointParser : FileEndpointParser {
 
@@ -63,11 +58,27 @@ class KotlinEndpointParser : FileEndpointParser {
         val parentClass = PsiTreeUtil.getParentOfType(function, KtClassOrObject::class.java)
         val className = parentClass?.name ?: file.name.substringBeforeLast(".")
 
-        val parameters = if (httpMethod != "GET") {
-            function.valueParameters.map { 
-                ParameterDetail(it.name ?: "unnamed", it.typeReference?.text ?: "Any")
+        val parameters = function.valueParameters.map { param ->
+            var location = ParameterLocation.QUERY
+            
+            for (anno in param.annotationEntries) {
+                val shortName = anno.shortName?.asString()
+                location = when (shortName) {
+                    "Path" -> ParameterLocation.PATH
+                    "Query", "QueryMap" -> ParameterLocation.QUERY
+                    "Header", "HeaderMap" -> ParameterLocation.HEADER
+                    "Body" -> ParameterLocation.BODY
+                    else -> location
+                }
             }
-        } else emptyList()
+
+            ParameterDetail(
+                name = param.name ?: "unnamed",
+                type = param.typeReference?.text ?: "Any",
+                location = location,
+                fqn = null // Simplified for now to fix build
+            )
+        }
 
         return ApiNode(
             methodName = function.name ?: "unknownMethod",
@@ -77,7 +88,8 @@ class KotlinEndpointParser : FileEndpointParser {
             psiElement = function,
             supportsCache = supportsCache,
             annotations = allAnnotations,
-            parameters = parameters
+            parameters = parameters,
+            returnTypeFqn = null // Simplified for now to fix build
         )
     }
 

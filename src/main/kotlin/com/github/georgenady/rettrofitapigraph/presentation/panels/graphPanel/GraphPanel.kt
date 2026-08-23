@@ -2,8 +2,10 @@ package com.github.georgenady.rettrofitapigraph.presentation.panels.graphPanel
 
 import com.github.georgenady.rettrofitapigraph.MyBundle
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
+import com.github.georgenady.rettrofitapigraph.presentation.main.MainToolViewModel
 import com.github.georgenady.rettrofitapigraph.presentation.theme.SwaggerTheme
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.pom.Navigatable
 import com.intellij.ui.JBColor
@@ -12,6 +14,10 @@ import com.mxgraph.swing.mxGraphComponent
 import com.mxgraph.util.mxConstants
 import com.mxgraph.util.mxUtils
 import com.mxgraph.view.mxGraph
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import java.awt.*
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
@@ -22,9 +28,13 @@ import javax.swing.JPanel
 import javax.swing.SwingConstants
 
 class GraphPanel(
-    private val project: Project,
-    private val onNodeSelected: (ApiNode?) -> Unit
+    private val project: Project
 ) : JPanel(BorderLayout()) {
+
+    private val viewModel = project.service<MainToolViewModel>()
+    private var subscriptionJob: Job? = null
+    private var lastRenderedEndpoints: List<ApiNode>? = null
+    private val vertexCache = mutableMapOf<String, Any>()
 
     private val graph = object : mxGraph() {
         override fun isCellSelectable(cell: Any?): Boolean {
@@ -99,6 +109,26 @@ class GraphPanel(
         })
         
         setupInteractivity()
+    }
+
+    override fun addNotify() {
+        super.addNotify()
+        subscriptionJob = viewModel.viewModelScope.launch(Dispatchers.Main) {
+            viewModel.uiState.collectLatest { state ->
+                syncSelection(state.selectedNode)
+            }
+        }
+    }
+
+    override fun removeNotify() {
+        subscriptionJob?.cancel()
+        subscriptionJob = null
+        super.removeNotify()
+    }
+
+    private fun syncSelection(selectedNode: ApiNode?) {
+        val cell = vertexCache[selectedNode?.signature]
+        graph.setSelectionCell(cell)
     }
 
     private fun setupGraphDefaults() {
@@ -194,30 +224,36 @@ class GraphPanel(
                 val cell = graphComponent.getCellAt(e.x, e.y)
                 val value = if (cell != null) graph.model.getValue(cell) else null
                 if (value is ApiNode) {
-                    onNodeSelected(value)
+                    viewModel.selectNode(value)
                     if (e.clickCount == 2) {
                         value.psiElement?.let { element ->
-                            val navigatable = element as? Navigatable
+                            val navigable = element as? Navigatable
                             val canNavigate = ReadAction.compute<Boolean, Throwable> {
-                                navigatable?.canNavigate() == true
+                                navigable?.canNavigate() == true
                             }
                             if (canNavigate) {
-                                navigatable?.navigate(true)
+                                navigable?.navigate(true)
                             }
                         }
                     }
                 } else {
-                    onNodeSelected(null)
+                    viewModel.selectNode(null)
                 }
             }
         })
     }
 
     fun render(endpoints: List<ApiNode>) {
+        if (lastRenderedEndpoints == endpoints) {
+            return
+        }
+        lastRenderedEndpoints = endpoints
+        
         val parent = graph.defaultParent
         graph.model.beginUpdate()
         try {
             graph.removeCells(graph.getChildVertices(parent))
+            vertexCache.clear()
 
             if (endpoints.isEmpty()) {
                 val msg = MyBundle.message("empty.nothing_found")
@@ -249,6 +285,7 @@ class GraphPanel(
                     
                     val style = "fillColor=$bgColor;strokeColor=$borderColor;fontColor=$textColor;arcSize=10"
                     val methodVertex = graph.insertVertex(parent, null, node, 0.0, 0.0, 180.0, 55.0, style)
+                    vertexCache[node.signature] = methodVertex
                     graph.updateCellSize(methodVertex)
                     graph.insertEdge(parent, null, "", classVertex, methodVertex)
                 }

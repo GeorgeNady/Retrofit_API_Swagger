@@ -36,6 +36,13 @@ object SwaggerTheme {
         badgeColor = Color(0x50, 0xE3, 0xC2)
     )
 
+    // New Grey Theme for OPTIONS, HEAD, and custom @HTTP methods
+    val GREY_DEFAULT = HttpMethodTheme(
+        backgroundColor = JBColor(Color(0xEB, 0xED, 0xF0), Color(0x2B, 0x2D, 0x30)),
+        borderColor = JBColor(Color(0x8C, 0x92, 0x9D), Color(0x5C, 0x61, 0x66)),
+        badgeColor = Color(0x8C, 0x92, 0x9D)
+    )
+
     fun getThemeForMethod(method: String): HttpMethodTheme {
         return when (method.uppercase()) {
             "GET" -> GET
@@ -43,7 +50,10 @@ object SwaggerTheme {
             "PUT" -> PUT
             "DELETE" -> DELETE
             "PATCH" -> PATCH
-            else -> GET
+            "OPTIONS" -> GREY_DEFAULT
+            "HEAD" -> GREY_DEFAULT
+            // Defaults to Grey for unknown or generic HTTP methods
+            else -> GREY_DEFAULT
         }
     }
 }

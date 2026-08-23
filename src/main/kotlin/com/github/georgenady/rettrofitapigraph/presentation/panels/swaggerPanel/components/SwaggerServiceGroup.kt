@@ -1,20 +1,20 @@
 package com.github.georgenady.rettrofitapigraph.presentation.panels.swaggerPanel.components
 
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
+import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
-import java.awt.Container
 import java.awt.Font
 import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JPanel
 
 class SwaggerServiceGroup(
+    private val project: Project,
     val className: String,
     endpoints: List<ApiNode>,
-    onCardClick: ((ApiNode) -> Unit)? = null
 ) : JPanel(BorderLayout()) {
 
     init {
@@ -39,7 +39,7 @@ class SwaggerServiceGroup(
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
 
             for (node in endpoints) {
-                add(SwaggerApiCard(node, onCardClick))
+                add(SwaggerApiCard(project, node))
                 add(Box.createVerticalStrut(6)) // Spacing between cards inside group
             }
         }

@@ -6,12 +6,11 @@ import com.github.georgenady.rettrofitapigraph.domain.model.enums.ViewMode
 import com.github.georgenady.rettrofitapigraph.presentation.panels.swaggerPanel.SwaggerPanel
 import com.github.georgenady.rettrofitapigraph.presentation.components.ApiEmptyStateView
 import com.github.georgenady.rettrofitapigraph.presentation.components.ApiStatusBarView
+import com.github.georgenady.rettrofitapigraph.presentation.components.LoadingView
 import com.github.georgenady.rettrofitapigraph.presentation.panels.graphPanel.GraphPanel
 import com.github.georgenady.rettrofitapigraph.presentation.panels.sidePanel.FeatureSidePanel
 import com.github.georgenady.rettrofitapigraph.presentation.panels.sidePanel.sections.DetailsSection
 import com.github.georgenady.rettrofitapigraph.presentation.panels.sidePanel.sections.FilterSection
-import com.github.georgenady.rettrofitapigraph.presentation.viewmodel.ApiDashboardUiState
-import com.github.georgenady.rettrofitapigraph.presentation.viewmodel.ApiDashboardViewModel
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.OnePixelSplitter
@@ -30,7 +29,7 @@ import javax.swing.SwingConstants
 
 class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
 
-    private val viewModel = project.service<ApiDashboardViewModel>()
+    private val viewModel = project.service<MainToolViewModel>()
     private var subscriptionJob: Job? = null
 
     private val cardLayout = CardLayout()
@@ -44,14 +43,12 @@ class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
     private val detailsSection = DetailsSection()
 
     // 1. API List Panel
-    private val listPanel = SwaggerPanel(project) { selectedNode ->
-        viewModel.selectNode(selectedNode)
-    }
+    private val listPanel = SwaggerPanel(
+        project = project,
+    )
 
     // 2. API Graph Panel
-    private val graphPanel = GraphPanel(project) { selectedNode ->
-        viewModel.selectNode(selectedNode)
-    }
+    private val graphPanel = GraphPanel(project)
 
     // 3. Tools Side Panel
     private val sidePanel = FeatureSidePanel(project).apply {
@@ -65,16 +62,7 @@ class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
         viewModel.refresh()
     }
 
-    private val loadingPanel = JPanel(BorderLayout()).apply {
-        isOpaque = false
-        val centerPanel = JPanel(BorderLayout()).apply { isOpaque = false }
-        centerPanel.add(AsyncProcessIcon("Scanning"), BorderLayout.NORTH)
-        centerPanel.add(
-            JBLabel(MyBundle.message("dashboard.scanning"), SwingConstants.CENTER),
-            BorderLayout.SOUTH
-        )
-        add(centerPanel, BorderLayout.CENTER)
-    }
+    private val loadingPanel = LoadingView()
 
     private val leftSplitter = OnePixelSplitter(false, 0.4f).apply {
         firstComponent = listPanel
@@ -126,7 +114,7 @@ class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
     private var lastRenderedEndpoints: List<ApiNode>? = null
     private var lastSelectedNode: ApiNode? = null
 
-    private fun updateUi(state: ApiDashboardUiState) {
+    private fun updateUi(state: MainToolUiState) {
         // Update Status Bar
         if (state.totalScanned > 0) {
             statusBar.setMessage(
@@ -158,21 +146,28 @@ class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
         // Render Data
         if (state.isLoading) {
             cardLayout.show(contentSwitcher, "LOADING")
+            if (state.totalFilesToScan > 0) {
+                statusBar.setMessage("Scanning: ${state.currentScanned}/${state.totalFilesToScan} files...")
+            } else {
+                statusBar.setMessage(MyBundle.message("dashboard.scanning"))
+            }
         } else if (state.allEndpoints.isEmpty()) {
             cardLayout.show(contentSwitcher, "EMPTY")
         } else {
-            val toRender =
-                if (state.filteredEndpoints.isEmpty()) state.allEndpoints else state.filteredEndpoints
+            val toRender = state.filteredEndpoints.ifEmpty { state.allEndpoints }
+            val endpointsChanged = lastRenderedEndpoints != toRender
 
-            if (lastRenderedEndpoints != toRender) {
+            // ONLY RENDER LIST IF ENDPOINTS CHANGED
+            if (endpointsChanged) {
                 listPanel.render(toRender)
                 graphPanel.render(toRender)
                 lastRenderedEndpoints = toRender
-
-                if (state.filteredEndpoints.isEmpty() && state.allEndpoints.isNotEmpty()) {
-                    statusBar.setMessage(MyBundle.message("dashboard.no_matches"))
-                }
             }
+
+            if (state.filteredEndpoints.isEmpty() && state.allEndpoints.isNotEmpty()) {
+                statusBar.setMessage(MyBundle.message("dashboard.no_matches"))
+            }
+            
             cardLayout.show(contentSwitcher, "MAIN")
         }
 

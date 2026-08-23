@@ -1,5 +1,8 @@
 import org.jetbrains.intellij.platform.gradle.extensions.intellijPlatform
 
+include(":example")
+
+
 rootProject.name = "IntelliJ Platform Plugin Template"
 
 pluginManagement {

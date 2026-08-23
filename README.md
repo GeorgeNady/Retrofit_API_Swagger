@@ -1,45 +1,34 @@
-# android_api_graph
+# Api Swagger
 
 ![Build](https://github.com/GeorgeNady/android_api_graph/workflows/Build/badge.svg)
-[![Version](https://img.shields.io/jetbrains/plugin/v/MARKETPLACE_ID.svg)](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID)
-[![Downloads](https://img.shields.io/jetbrains/plugin/d/MARKETPLACE_ID.svg)](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID)
 
-## Template ToDo list
-- [x] Create a new [IntelliJ Platform Plugin Template][template] project.
-- [ ] Get familiar with the [template documentation][template].
-- [ ] Adjust the [group](./gradle.properties), as well as the [id](./src/main/resources/META-INF/plugin.xml), [name](./src/main/resources/META-INF/plugin.xml), and [sources package](./src/main/kotlin).
-- [ ] Adjust the plugin [description](./src/main/resources/META-INF/plugin.xml) (see [Tips][docs:plugin-description]) and this README to describe what your plugin does.
-- [ ] Review the [Legal Agreements](https://plugins.jetbrains.com/docs/marketplace/legal-agreements.html?from=IJPluginTemplate).
-- [ ] [Publish a plugin manually](https://plugins.jetbrains.com/docs/intellij/publishing-plugin.html?from=IJPluginTemplate) for the first time.
-- [ ] Set the `MARKETPLACE_ID` in the above README badges. You can obtain it once the plugin is published to JetBrains Marketplace.
-- [ ] Set the [Plugin Signing](https://plugins.jetbrains.com/docs/intellij/plugin-signing.html?from=IJPluginTemplate) related [secrets](https://github.com/JetBrains/intellij-platform-plugin-template#environment-variables).
-- [ ] Set the [Deployment Token](https://plugins.jetbrains.com/docs/marketplace/plugin-upload.html?from=IJPluginTemplate).
-- [ ] Click the <kbd>Watch</kbd> button on the top of the [IntelliJ Platform Plugin Template][template] to be notified about releases containing new features and fixes.
+**Api Swagger** is a high-performance visual toolkit for Android developers to visualize, manage, and test Retrofit API definitions. It provides a visual "Design Mode" similar to the Jetpack Navigation Editor, directly inside your favorite IDE.
 
-This Fancy IntelliJ Platform Plugin is going to be your implementation of the brilliant ideas that you have.
+## 🚀 Key Features
 
-## Installation
+- **Reactive Architecture**: Built on SOLID principles for maximum stability and performance. No UI freezes, even with hundreds of endpoints.
+- **Split Editor (Design View)**: Open any Retrofit interface and see a visual representation of your endpoints side-by-side with your code.
+- **Interactive Graph**: Visualize service-to-endpoint relationships with a draggable and zoomable canvas.
+- **Deep Inspection**: Automatic extraction of annotations, parameters, and return types.
+- **Direct Navigation**: Use gutter icons next to your Retrofit methods to jump instantly to the visual editor.
+- **Native IDE Integration**: Real-time background scanning progress in the IDE status bar.
+- **Request Testing**: Built-in "Try It Out" functionality to test endpoints with auto-generated JSON mocks.
+
+## 📖 How to Use
+
+1. **Open Tool Window**: Find the **Api Swagger** tab on the right side of your IDE to see the project-wide dashboard.
+2. **Design View**: Open a Retrofit interface file. Click the **Design** tab at the top of the editor to enter the split view.
+3. **Quick Navigation**: Click the executable icon in the gutter next to any Retrofit method to jump directly to its Design view.
+4. **Interactive Graph**: Switch to **Graph Mode** in the tool window to see a high-level architectural view of your network layer.
+5. **Search & Filter**: Use the side panel to filter by HTTP method, module, or specific annotations.
+
+## 🛠 Installation
 
 - Using the IDE built-in plugin system:
-
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "android_api_graph"</kbd> >
-  <kbd>Install</kbd>
-
-- Using JetBrains Marketplace:
-
-  Go to [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID) and install it by clicking the <kbd>Install to ...</kbd> button in case your IDE is running.
-
-  You can also download the [latest release](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID/versions) from JetBrains Marketplace and install it manually using
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
+  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "Api Swagger"</kbd> > <kbd>Install</kbd>
 
 - Manually:
-
-  Download the [latest release](https://github.com/GeorgeNady/android_api_graph/releases/latest) and install it manually using
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
-
+  Download the [latest release](https://github.com/GeorgeNady/android_api_graph/releases/latest) and install using <kbd>Install plugin from disk...</kbd>
 
 ---
-Plugin based on the [IntelliJ Platform Plugin Template][template].
-
-[template]: https://github.com/JetBrains/intellij-platform-plugin-template
-[docs:plugin-description]: https://plugins.jetbrains.com/docs/intellij/plugin-user-experience.html#plugin-description-and-presentation
+Plugin based on the [IntelliJ Platform Plugin Template](https://github.com/JetBrains/intellij-platform-plugin-template).

@@ -2,7 +2,7 @@ package com.github.georgenady.rettrofitapigraph.presentation.main.actions
 
 import com.github.georgenady.rettrofitapigraph.MyBundle
 import com.github.georgenady.rettrofitapigraph.domain.model.enums.ViewMode
-import com.github.georgenady.rettrofitapigraph.presentation.viewmodel.ApiDashboardViewModel
+import com.github.georgenady.rettrofitapigraph.presentation.main.MainToolViewModel
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.AnAction
@@ -15,7 +15,7 @@ class SwitchViewModeAction : AnAction(
 ) {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        val viewModel = project.service<ApiDashboardViewModel>()
+        val viewModel = project.service<MainToolViewModel>()
         val nextMode = when (viewModel.uiState.value.viewMode) {
             ViewMode.LIST -> ViewMode.GRAPH
             ViewMode.GRAPH -> ViewMode.LIST

@@ -1,104 +1,121 @@
 package com.github.georgenady.rettrofitapigraph.presentation.panels.swaggerPanel.components
 
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
-import com.github.georgenady.rettrofitapigraph.presentation.components.BadgeLabel
+import com.github.georgenady.rettrofitapigraph.presentation.main.MainToolViewModel
 import com.github.georgenady.rettrofitapigraph.presentation.theme.SwaggerTheme
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.components.service
+import com.intellij.openapi.project.Project
 import com.intellij.pom.Navigatable
-import com.intellij.ui.JBColor
-import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
-import java.awt.BasicStroke
-import java.awt.BorderLayout
-import java.awt.Color
-import java.awt.Cursor
-import java.awt.Dimension
-import java.awt.FlowLayout
-import java.awt.Font
-import java.awt.Graphics
-import java.awt.Graphics2D
-import java.awt.RenderingHints
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JPanel
-import javax.swing.JSeparator
 
 class SwaggerApiCard(
+    private val project: Project,
     val node: ApiNode,
-    private val onClick: ((ApiNode) -> Unit)? = null
 ) : JPanel(BorderLayout()) {
+
+    private val viewModel = project.service<MainToolViewModel>()
+    private var subscriptionJob: Job? = null
 
     private val theme = SwaggerTheme.getThemeForMethod(node.httpMethod)
     private var isHovered = false
+    private var isExpanded = false
+
+    // Dedicated components
+    private val headerPanel = SwaggerApiHeaderPanel(project, node, theme)
+    private val interactionPanel = SwaggerApiInteractionPanel(project, node, theme).apply {
+        isOpaque = false
+        alignmentX = Component.LEFT_ALIGNMENT
+    }
 
     init {
         isOpaque = false
         cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
-
-        // Outer Container Padding (12px)
         border = JBUI.Borders.empty(12)
 
-        // Main Column Container (Vertical Stack)
-        val columnPanel = JPanel().apply {
+        val mainColumn = JPanel().apply {
             isOpaque = false
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
+
+            headerPanel.alignmentX = Component.LEFT_ALIGNMENT
+            interactionPanel.alignmentX = Component.LEFT_ALIGNMENT
+
+            add(headerPanel)
+            add(interactionPanel)
         }
 
-        // ROW 1: Function / Method Name
-        val row1FunctionPanel = JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)).apply {
-            isOpaque = false
-            val descLabel = JBLabel(node.methodName).apply {
-                font = font.deriveFont(Font.BOLD, 13f)
-                foreground = JBColor(Color(0x60, 0x67, 0x79), Color(0xA9, 0xB7, 0xC6))
+        add(mainColumn, BorderLayout.CENTER)
+
+        setupMouseListeners()
+    }
+
+    override fun addNotify() {
+        super.addNotify()
+        subscriptionJob = viewModel.viewModelScope.launch(Dispatchers.Main) {
+            // Observe Expansion
+            launch {
+                viewModel.uiState
+                    .map { it.expandedNode?.signature == node.signature }
+                    .distinctUntilChanged()
+                    .collect { shouldExpand ->
+                        setExpanded(shouldExpand)
+                        if (shouldExpand) {
+                            scrollToVisible()
+                        }
+                    }
             }
-            add(descLabel)
-        }
-
-        // DIVIDER
-        val divider = JSeparator(JSeparator.HORIZONTAL).apply {
-            maximumSize = Dimension(Int.MAX_VALUE, 1)
-            foreground = JBColor(
-                Color(theme.borderColor.red, theme.borderColor.green, theme.borderColor.blue, 80),
-                Color(theme.borderColor.red, theme.borderColor.green, theme.borderColor.blue, 80)
-            )
-        }
-
-        // ROW 2: HTTP Badge + Path
-        val row2PathPanel = JPanel(FlowLayout(FlowLayout.LEFT, 0, 0)).apply {
-            isOpaque = false
-            add(BadgeLabel(node.httpMethod, theme.badgeColor))
-
-            val pathLabel = JBLabel(node.path.ifEmpty { "/" }).apply {
-                border = JBUI.Borders.empty(0, 12, 0, 0)
-                font = Font(Font.MONOSPACED, Font.BOLD, 14)
-                foreground = JBColor(Color(0x3B, 0x41, 0x51), Color(0xE1, 0xE4, 0xEA))
+            
+            // Observe Results
+            launch {
+                val sig = "${node.className}.${node.methodName}"
+                viewModel.uiState
+                    .map { it.requestResults[sig] }
+                    .distinctUntilChanged()
+                    .collect { result ->
+                        result?.let { updateResponse(it) }
+                    }
             }
-            add(pathLabel)
         }
+    }
 
-        // Assemble Column (Row 1 -> Spacing -> Divider -> Spacing -> Row 2)
-        columnPanel.add(row1FunctionPanel)
-        columnPanel.add(Box.createVerticalStrut(6))
-        columnPanel.add(divider)
-        columnPanel.add(Box.createVerticalStrut(8))
-        columnPanel.add(row2PathPanel)
+    override fun removeNotify() {
+        subscriptionJob?.cancel()
+        subscriptionJob = null
+        super.removeNotify()
+    }
 
-        add(columnPanel, BorderLayout.CENTER)
+    private fun scrollToVisible() {
+        javax.swing.SwingUtilities.invokeLater {
+            val rect = bounds
+            var curr: Container? = parent
+            while (curr != null && curr !is javax.swing.JViewport) {
+                val p = curr.parent
+                if (p != null) {
+                    rect.x += curr.bounds.x
+                    rect.y += curr.bounds.y
+                }
+                curr = p
+            }
+            (curr as? javax.swing.JViewport)?.scrollRectToVisible(rect)
+        }
+    }
 
-        // Mouse Navigation Listener
+    private fun setupMouseListeners() {
         addMouseListener(object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent) {
-                onClick?.invoke(node)
-                node.psiElement?.let { element ->
-                    val navigatable = element as? Navigatable
-                    val canNavigate = ReadAction.compute<Boolean, Throwable> {
-                        navigatable?.canNavigate() == true
-                    }
-                    if (canNavigate) {
-                        navigatable?.navigate(true)
-                    }
+            override fun mousePressed(e: MouseEvent) {
+                if (!e.isConsumed) {
+                    viewModel.selectNode(node)
+                    navigateToSource()
                 }
             }
 
@@ -114,16 +131,36 @@ class SwaggerApiCard(
         })
     }
 
+    fun updateResponse(text: String) {
+        interactionPanel.updateResponse(text)
+    }
+
+    fun setExpanded(expanded: Boolean) {
+        isExpanded = expanded
+        interactionPanel.setExpanded(expanded)
+        headerPanel.updateExpandState(expanded)
+        revalidate()
+        repaint()
+    }
+
+    private fun navigateToSource() {
+        node.psiElement?.let { element ->
+            val navigable = element as? Navigatable
+            val canNavigate = ReadAction.compute<Boolean, Throwable> {
+                navigable?.canNavigate() == true
+            }
+            if (canNavigate) {
+                navigable?.navigate(true)
+            }
+        }
+    }
+
     override fun paintComponent(g: Graphics) {
         val g2 = g.create() as Graphics2D
         try {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-
-            // Draw Background Surface
             g2.color = theme.backgroundColor
             g2.fillRoundRect(0, 0, width - 1, height - 1, 10, 10)
-
-            // Draw Border
             g2.color = if (isHovered) theme.badgeColor else theme.borderColor
             g2.stroke = BasicStroke(if (isHovered) 1.5f else 1.0f)
             g2.drawRoundRect(0, 0, width - 1, height - 1, 10, 10)
@@ -131,10 +168,5 @@ class SwaggerApiCard(
             g2.dispose()
         }
         super.paintComponent(g)
-    }
-
-    override fun getPreferredSize(): Dimension {
-        val preferred = super.getPreferredSize()
-        return Dimension(preferred.width, preferred.height)
     }
 }
