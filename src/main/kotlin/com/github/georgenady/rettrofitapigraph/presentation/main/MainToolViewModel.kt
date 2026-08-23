@@ -1,10 +1,12 @@
 package com.github.georgenady.rettrofitapigraph.presentation.main
 
+import com.github.georgenady.rettrofitapigraph.data.service.SwaggerSettingsService
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiFilterModel
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
 import com.github.georgenady.rettrofitapigraph.domain.model.ScanOperation
 import com.github.georgenady.rettrofitapigraph.domain.model.enums.ViewMode
 import com.github.georgenady.rettrofitapigraph.domain.repository.ApiRepository
+import com.github.georgenady.rettrofitapigraph.domain.usecase.ExecuteHttpRequestUseCase
 import com.github.georgenady.rettrofitapigraph.domain.usecase.FilterEndpointsUseCase
 import com.github.georgenady.rettrofitapigraph.domain.usecase.ScanProjectEndpointsUseCase
 import com.intellij.openapi.components.Service
@@ -129,8 +131,8 @@ class MainToolViewModel(
 
     fun executeApiCall(node: ApiNode, url: String, body: String?) {
         viewModelScope.launch {
-            val executeUseCase = com.github.georgenady.rettrofitapigraph.domain.usecase.ExecuteHttpRequestUseCase()
-            val settings = com.github.georgenady.rettrofitapigraph.data.service.SwaggerSettingsService.getInstance()
+            val executeUseCase = ExecuteHttpRequestUseCase()
+            val settings = SwaggerSettingsService.getInstance()
             
             val result = executeUseCase.invoke(
                 url = url,

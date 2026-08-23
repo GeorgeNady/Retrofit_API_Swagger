@@ -2,6 +2,20 @@
 
 # Api Swagger Changelog
 
+## [1.1.8] - 2026-08-23
+### Added
+- **Reactive UI Architecture**: Full refactoring to a decoupled reactive model (SOLID). Individual API cards now manage their own state, significantly improving stability.
+- **Zero-Freeze Performance**: Optimized the rendering pipeline to eliminate UI thread blocking. Expanding or selecting endpoints is now instantaneous.
+- **Split Editor Integration**: Introducing the **Design View**. View your Retrofit interfaces and visual API cards side-by-side in the editor.
+- **Gutter Icon Navigation**: Enhanced gutter icons to jump directly to the Split Editor's Design view.
+- **Native Progress Integration**: Real-time scanning progress now appears in the IDE status bar with file counts and cancellation support.
+- **Lazy Data Loading**: Heavy JSON schema generation is now performed asynchronously only when a card is expanded.
+- **Stable Signatures**: Implemented unique identity signatures for API nodes to ensure consistent state across background re-scans.
+
+### Fixed
+- **Reliable Expansion**: Fixed the "arrow down" toggle responsiveness by improving hit areas and switching to robust mouse-event handling.
+- **Accordion Jitter**: Smoothed out the accordion-style expansion logic across multiple UI panels.
+
 ## [1.1.6] - 2026-08-20
 ### Added
 - **Unified Dashboard**: All-in-one interface with resizable side-by-side panels.

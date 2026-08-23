@@ -35,6 +35,17 @@
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
+    <change-notes><![CDATA[
+        <h4>1.1.8</h4>
+        <ul>
+            <li><b>Reactive Architecture:</b> Full refactoring to a decoupled reactive model (SOLID).</li>
+            <li><b>Zero-Freeze UI:</b> Optimized rendering pipeline eliminates IDE thread blocking during interaction.</li>
+            <li><b>Design View:</b> Integrated Split Editor for side-by-side code and visual API management.</li>
+            <li><b>Native Progress:</b> Scanning progress now integrated with the IDE status bar.</li>
+            <li><b>Reliability:</b> Stable signatures for endpoints and improved mouse interaction models.</li>
+        </ul>
+    ]]></change-notes>
+
     <actions>
         <action id="ApiSwagger.Refresh"
                 class="com.github.georgenady.rettrofitapigraph.presentation.main.actions.RefreshAction"
