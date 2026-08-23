@@ -88,8 +88,15 @@ class MainToolViewModel(
         _uiState.update { it.copy(selectedNode = node) }
     }
 
+    fun toggleExpansion(node: ApiNode) {
+        _uiState.update {
+            val newExpanded = if (it.expandedNode == node) null else node
+            it.copy(expandedNode = newExpanded)
+        }
+    }
+
     fun expandNode(node: ApiNode) {
-        _uiState.update { it.copy(selectedNode = node, expandedNode = node) }
+        _uiState.update { it.copy(expandedNode = node) }
     }
 
     fun clearExpansion() {

@@ -34,6 +34,13 @@ class SwaggerApiParameterRow(
     private val param: ParameterDetail
 ) : JPanel() {
 
+    private var isDataLoaded = false
+    private val mockArea = JBTextArea("Loading example...").apply {
+        rows = 5
+        font = Font(Font.MONOSPACED, Font.PLAIN, 10)
+        isEditable = false
+    }
+
     private val inputField = JBTextField().apply {
         putClientProperty("parameter_name", param.name)
         alignmentX = Component.LEFT_ALIGNMENT
@@ -76,14 +83,6 @@ class SwaggerApiParameterRow(
         add(Box.createVerticalStrut(8))
 
         if (param.location == ParameterLocation.BODY && param.fqn != null) {
-            val generateUseCase = com.github.georgenady.rettrofitapigraph.domain.usecase.GenerateJsonSchemaUseCase(project)
-            val mockJson = generateUseCase(param.fqn)
-
-            val mockArea = JBTextArea(mockJson).apply {
-                rows = 5
-                font = Font(Font.MONOSPACED, Font.PLAIN, 10)
-            }
-
             val schemaLabel = JBLabel("Example Value | Schema:").apply {
                 font = font.deriveFont(Font.ITALIC, 10f)
                 alignmentX = Component.LEFT_ALIGNMENT
@@ -98,6 +97,26 @@ class SwaggerApiParameterRow(
             add(Box.createVerticalStrut(2))
             add(schemaScroll)
             add(Box.createVerticalStrut(8))
+        }
+    }
+
+    fun loadDataAsync() {
+        if (isDataLoaded || param.location != ParameterLocation.BODY || param.fqn == null) return
+        isDataLoaded = true
+
+        val viewModel = project.service<MainToolViewModel>()
+        viewModel.viewModelScope.launch(Dispatchers.Default) {
+            val generateUseCase = com.github.georgenady.rettrofitapigraph.domain.usecase.GenerateJsonSchemaUseCase(project)
+            val mockJson = try {
+                generateUseCase(param.fqn!!)
+            } catch (e: Exception) {
+                "Error generating schema: ${e.message}"
+            }
+
+            withContext(Dispatchers.Main) {
+                mockArea.text = mockJson
+                mockArea.isEditable = true
+            }
         }
     }
 

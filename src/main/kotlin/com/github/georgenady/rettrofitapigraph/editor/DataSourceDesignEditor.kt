@@ -15,6 +15,8 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.beans.PropertyChangeListener
 import javax.swing.JComponent
 
@@ -25,9 +27,9 @@ class DataSourceDesignEditor(
 
     private val viewModel = project.service<MainToolViewModel>()
 
-    private val listPanel = SwaggerPanel(project, viewModel.viewModelScope) { selectedNode ->
-        viewModel.selectNode(selectedNode)
-    }
+    private val listPanel = SwaggerPanel(
+        project = project
+    )
 
     init {
         setupReactiveRefresh()
@@ -52,12 +54,20 @@ class DataSourceDesignEditor(
                 }
             }
         })
+
+        // Subscribe to ViewModel state for expansion and results
+        viewModel.viewModelScope.launch(Dispatchers.Main) {
+            viewModel.uiState.collect { state ->
+                refreshData(apiService)
+            }
+        }
     }
 
     private fun refreshData(apiService: ApiRepository) {
         if (!file.isValid) return
         val endpoints = apiService.findRetrofitEndpointsInFile(file)
-        listPanel.render(endpoints)
+        val state = viewModel.uiState.value
+        listPanel.render(endpoints, state.requestResults, state.expandedNode)
     }
 
     override fun getComponent(): JComponent = listPanel

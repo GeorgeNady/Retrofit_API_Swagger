@@ -43,14 +43,12 @@ class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
     private val detailsSection = DetailsSection()
 
     // 1. API List Panel
-    private val listPanel = SwaggerPanel(project, viewModel.viewModelScope) { selectedNode ->
-        viewModel.selectNode(selectedNode)
-    }
+    private val listPanel = SwaggerPanel(
+        project = project,
+    )
 
     // 2. API Graph Panel
-    private val graphPanel = GraphPanel(project) { selectedNode ->
-        viewModel.selectNode(selectedNode)
-    }
+    private val graphPanel = GraphPanel(project)
 
     // 3. Tools Side Panel
     private val sidePanel = FeatureSidePanel(project).apply {
@@ -115,6 +113,7 @@ class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
 
     private var lastRenderedEndpoints: List<ApiNode>? = null
     private var lastSelectedNode: ApiNode? = null
+    private var lastExpandedNode: ApiNode? = null
     private var lastResults: Map<String, String> = emptyMap()
 
     private fun updateUi(state: MainToolUiState) {
@@ -152,23 +151,28 @@ class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
         } else if (state.allEndpoints.isEmpty()) {
             cardLayout.show(contentSwitcher, "EMPTY")
         } else {
-            val toRender =
-                state.filteredEndpoints.ifEmpty { state.allEndpoints }
+            val toRender = state.filteredEndpoints.ifEmpty { state.allEndpoints }
+            val endpointsChanged = lastRenderedEndpoints != toRender
+            val resultsChanged = lastResults != state.requestResults
+            val expansionChanged = lastExpandedNode != state.expandedNode
 
-            if (lastRenderedEndpoints != toRender || lastResults != state.requestResults || state.expandedNode != null) {
+            // ONLY RENDER LIST IF ENDPOINTS, RESULTS OR EXPANSION CHANGED
+            if (endpointsChanged || resultsChanged || expansionChanged) {
                 listPanel.render(toRender, state.requestResults, state.expandedNode)
+                lastResults = state.requestResults
+                lastExpandedNode = state.expandedNode
+            }
+
+            // ONLY RENDER GRAPH IF ENDPOINTS CHANGED (Expensive!)
+            if (endpointsChanged) {
                 graphPanel.render(toRender)
                 lastRenderedEndpoints = toRender
-                lastResults = state.requestResults
-
-                if (state.expandedNode != null) {
-                    viewModel.clearExpansion()
-                }
-
-                if (state.filteredEndpoints.isEmpty() && state.allEndpoints.isNotEmpty()) {
-                    statusBar.setMessage(MyBundle.message("dashboard.no_matches"))
-                }
             }
+
+            if (state.filteredEndpoints.isEmpty() && state.allEndpoints.isNotEmpty()) {
+                statusBar.setMessage(MyBundle.message("dashboard.no_matches"))
+            }
+            
             cardLayout.show(contentSwitcher, "MAIN")
         }
 

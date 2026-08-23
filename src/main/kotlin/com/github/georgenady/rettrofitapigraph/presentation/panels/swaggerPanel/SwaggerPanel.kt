@@ -3,6 +3,7 @@ package com.github.georgenady.rettrofitapigraph.presentation.panels.swaggerPanel
 import com.github.georgenady.rettrofitapigraph.MyBundle
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
 import com.github.georgenady.rettrofitapigraph.domain.usecase.GroupEndpointsByServiceUseCase
+import com.github.georgenady.rettrofitapigraph.presentation.main.MainToolViewModel
 import com.github.georgenady.rettrofitapigraph.presentation.panels.swaggerPanel.components.SwaggerServiceGroup
 import com.github.georgenady.rettrofitapigraph.presentation.panels.swaggerPanel.components.SwaggerApiCard
 import com.github.georgenady.rettrofitapigraph.presentation.panels.swaggerPanel.SwaggerPanelViewModel
@@ -25,8 +26,6 @@ import javax.swing.JPanel
 
 class SwaggerPanel(
     private val project: Project,
-    private val scope: CoroutineScope,
-    private val onCardClick: ((ApiNode) -> Unit)? = null
 ) : JPanel(BorderLayout()) {
 
     private val swaggerViewModel = service<SwaggerPanelViewModel>()
@@ -34,6 +33,9 @@ class SwaggerPanel(
     private var subscriptionJob: Job? = null
     
     private var isScrollModeEnabled = false
+    private val cardCache = mutableMapOf<String, SwaggerApiCard>()
+    private var lastEndpoints: List<ApiNode>? = null
+    private var lastExpandedNode: ApiNode? = null
 
     private val listPanel = object : JPanel(), javax.swing.Scrollable {
         init {
@@ -81,6 +83,7 @@ class SwaggerPanel(
 
     override fun addNotify() {
         super.addNotify()
+        val scope = project.service<MainToolViewModel>().viewModelScope
         subscriptionJob = scope.launch(Dispatchers.Main) {
             swaggerViewModel.uiState.collectLatest { state ->
                 isScrollModeEnabled = state.isScrollModeEnabled
@@ -110,35 +113,64 @@ class SwaggerPanel(
         results: Map<String, String> = emptyMap(),
         expandedNode: ApiNode? = null
     ) {
+        val expansionChanged = lastExpandedNode != expandedNode
+        
+        if (lastEndpoints == endpoints && lastEndpoints != null) {
+            updateExistingCards(results, expandedNode, expansionChanged)
+            lastExpandedNode = expandedNode
+            return
+        }
+
+        lastEndpoints = endpoints
+        lastExpandedNode = expandedNode
         listPanel.removeAll()
+        cardCache.clear()
 
         val groupedEndpoints = groupUseCase(endpoints)
 
         for ((className, serviceEndpoints) in groupedEndpoints) {
-            val groupPanel = SwaggerServiceGroup(project, className, serviceEndpoints, onCardClick)
+            val groupPanel = SwaggerServiceGroup(project, className, serviceEndpoints)
             listPanel.add(groupPanel)
             
-            // Update individual cards with results
+            // Collect cards for the cache
             groupPanel.components.filterIsInstance<SwaggerApiCard>().forEach { card ->
                 val sig = "${card.node.className}.${card.node.methodName}"
-                results[sig]?.let { card.updateResponse(it) }
-
-                if (expandedNode != null && card.node == expandedNode) {
-                    card.setExpanded(true)
-                    
-                    // Delay scrolling to ensure layout is ready
-                    javax.swing.SwingUtilities.invokeLater {
-                        val rect = card.bounds
-                        rect.y += groupPanel.bounds.y
-                        listPanel.scrollRectToVisible(rect)
-                    }
-                }
+                cardCache[sig] = card
             }
 
             listPanel.add(Box.createVerticalStrut(12))
         }
 
+        updateExistingCards(results, expandedNode, expansionChanged)
+        
         listPanel.revalidate()
         listPanel.repaint()
+    }
+
+    private fun updateExistingCards(results: Map<String, String>, expandedNode: ApiNode?, expansionChanged: Boolean) {
+        for (card in cardCache.values) {
+            val sig = "${card.node.className}.${card.node.methodName}"
+            
+            // Update response if available
+            results[sig]?.let { card.updateResponse(it) }
+
+            // Update expansion state
+            val shouldBeExpanded = expandedNode != null && card.node == expandedNode
+            card.setExpanded(shouldBeExpanded)
+
+            if (shouldBeExpanded && expansionChanged) {
+                // Delay scrolling to ensure layout is ready
+                javax.swing.SwingUtilities.invokeLater {
+                    val rect = card.bounds
+                    var parent = card.parent
+                    while (parent != null && parent != listPanel) {
+                        rect.x += parent.bounds.x
+                        rect.y += parent.bounds.y
+                        parent = parent.parent
+                    }
+                    listPanel.scrollRectToVisible(rect)
+                }
+            }
+        }
     }
 }

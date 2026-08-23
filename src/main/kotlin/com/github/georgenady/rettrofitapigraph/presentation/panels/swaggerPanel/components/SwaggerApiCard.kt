@@ -1,8 +1,10 @@
 package com.github.georgenady.rettrofitapigraph.presentation.panels.swaggerPanel.components
 
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
+import com.github.georgenady.rettrofitapigraph.presentation.main.MainToolViewModel
 import com.github.georgenady.rettrofitapigraph.presentation.theme.SwaggerTheme
 import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.pom.Navigatable
 import com.intellij.util.ui.JBUI
@@ -21,15 +23,16 @@ import javax.swing.JPanel
 class SwaggerApiCard(
     private val project: Project,
     val node: ApiNode,
-    private val onClick: ((ApiNode) -> Unit)? = null
 ) : JPanel(BorderLayout()) {
+
+    private val viewModel = project.service<MainToolViewModel>()
 
     private val theme = SwaggerTheme.getThemeForMethod(node.httpMethod)
     private var isHovered = false
     private var isExpanded = false
 
     // Dedicated components
-    private val headerPanel = SwaggerApiHeaderPanel(node, theme)
+    private val headerPanel = SwaggerApiHeaderPanel(project, node, theme)
     private val interactionPanel = SwaggerApiInteractionPanel(project, node, theme).apply {
         isOpaque = false
         alignmentX = Component.LEFT_ALIGNMENT
@@ -61,9 +64,9 @@ class SwaggerApiCard(
             override fun mouseClicked(e: MouseEvent) {
                 // Clicking in the top right corner triggers expansion
                 if (e.x > width - 40 && e.y < 40) {
-                    setExpanded(!isExpanded)
+                    viewModel.toggleExpansion(node)
                 } else {
-                    onClick?.invoke(node)
+                    viewModel.selectNode(node)
                     navigateToSource()
                 }
             }

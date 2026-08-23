@@ -15,7 +15,6 @@ class SwaggerServiceGroup(
     private val project: Project,
     val className: String,
     endpoints: List<ApiNode>,
-    onCardClick: ((ApiNode) -> Unit)? = null
 ) : JPanel(BorderLayout()) {
 
     init {
@@ -40,7 +39,7 @@ class SwaggerServiceGroup(
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
 
             for (node in endpoints) {
-                add(SwaggerApiCard(project, node, onCardClick))
+                add(SwaggerApiCard(project, node))
                 add(Box.createVerticalStrut(6)) // Spacing between cards inside group
             }
         }

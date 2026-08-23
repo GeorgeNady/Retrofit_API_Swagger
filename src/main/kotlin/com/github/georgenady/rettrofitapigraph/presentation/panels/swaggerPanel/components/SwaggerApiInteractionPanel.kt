@@ -157,5 +157,8 @@ class SwaggerApiInteractionPanel(
 
     fun setExpanded(expanded: Boolean) {
         isVisible = expanded
+        if (expanded) {
+            parametersList.components.filterIsInstance<SwaggerApiParameterRow>().forEach { it.loadDataAsync() }
+        }
     }
 }

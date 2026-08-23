@@ -3,9 +3,12 @@ package com.github.georgenady.rettrofitapigraph.presentation.panels.swaggerPanel
 import com.github.georgenady.rettrofitapigraph.MyBundle
 import com.github.georgenady.rettrofitapigraph.domain.model.ApiNode
 import com.github.georgenady.rettrofitapigraph.presentation.components.BadgeLabel
+import com.github.georgenady.rettrofitapigraph.presentation.main.MainToolViewModel
 import com.github.georgenady.rettrofitapigraph.presentation.theme.HttpMethodTheme
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.components.service
 import com.intellij.openapi.ide.CopyPasteManager
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.Balloon
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.ui.ClickListener
@@ -28,11 +31,22 @@ import javax.swing.JPanel
 import javax.swing.JSeparator
 
 class SwaggerApiHeaderPanel(
+    private val project: Project,
     private val node: ApiNode,
     private val theme: HttpMethodTheme
 ) : JPanel() {
 
-    private val expandIcon = JBLabel(AllIcons.General.ArrowDown)
+    private val viewModel = project.service<MainToolViewModel>()
+    private val expandIcon = JBLabel(AllIcons.General.ArrowDown).apply {
+        cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+        
+        object : ClickListener() {
+            override fun onClick(event: MouseEvent, clickCount: Int): Boolean {
+                viewModel.toggleExpansion(node)
+                return true
+            }
+        }.installOn(this)
+    }
 
     // ROW 1: Function / Method Name + Expand Icon
     private val titleRow = JPanel(BorderLayout()).apply {

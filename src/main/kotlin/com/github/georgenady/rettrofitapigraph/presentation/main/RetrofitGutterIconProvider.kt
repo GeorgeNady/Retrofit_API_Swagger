@@ -5,8 +5,9 @@ import com.intellij.codeInsight.daemon.LineMarkerInfo
 import com.intellij.codeInsight.daemon.LineMarkerProvider
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.components.service
+import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.fileEditor.TextEditorWithPreview
 import com.intellij.openapi.editor.markup.GutterIconRenderer
-import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiNameIdentifierOwner
@@ -39,8 +40,16 @@ class RetrofitGutterIconProvider : LineMarkerProvider {
                 val targetNode = nodes.find { it.psiElement == element || it.methodName == element.name }
                 
                 if (targetNode != null) {
+                    viewModel.selectNode(targetNode)
                     viewModel.expandNode(targetNode)
-                    ToolWindowManager.getInstance(project).getToolWindow("ApiSwagger")?.show()
+                    
+                    val fileEditorManager = FileEditorManager.getInstance(project)
+                    fileEditorManager.openFile(virtualFile, true)
+                    
+                    val editors = fileEditorManager.getEditors(virtualFile)
+                    editors.filterIsInstance<TextEditorWithPreview>().forEach { splitEditor ->
+                        splitEditor.setLayout(TextEditorWithPreview.Layout.SHOW_EDITOR_AND_PREVIEW)
+                    }
                 }
             },
             GutterIconRenderer.Alignment.LEFT,
