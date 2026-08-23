@@ -113,8 +113,6 @@ class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
 
     private var lastRenderedEndpoints: List<ApiNode>? = null
     private var lastSelectedNode: ApiNode? = null
-    private var lastExpandedNode: ApiNode? = null
-    private var lastResults: Map<String, String> = emptyMap()
 
     private fun updateUi(state: MainToolUiState) {
         // Update Status Bar
@@ -153,18 +151,10 @@ class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
         } else {
             val toRender = state.filteredEndpoints.ifEmpty { state.allEndpoints }
             val endpointsChanged = lastRenderedEndpoints != toRender
-            val resultsChanged = lastResults != state.requestResults
-            val expansionChanged = lastExpandedNode != state.expandedNode
 
-            // ONLY RENDER LIST IF ENDPOINTS, RESULTS OR EXPANSION CHANGED
-            if (endpointsChanged || resultsChanged || expansionChanged) {
-                listPanel.render(toRender, state.requestResults, state.expandedNode)
-                lastResults = state.requestResults
-                lastExpandedNode = state.expandedNode
-            }
-
-            // ONLY RENDER GRAPH IF ENDPOINTS CHANGED (Expensive!)
+            // ONLY RENDER LIST IF ENDPOINTS CHANGED
             if (endpointsChanged) {
+                listPanel.render(toRender)
                 graphPanel.render(toRender)
                 lastRenderedEndpoints = toRender
             }

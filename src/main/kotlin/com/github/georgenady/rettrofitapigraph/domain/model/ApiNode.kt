@@ -13,4 +13,6 @@ data class ApiNode(
     val annotations: List<AnnotationDetail> = emptyList(),
     val parameters: List<ParameterDetail> = emptyList(),
     val returnTypeFqn: String? = null
-)
+) {
+    val signature: String get() = "$className.$methodName[$httpMethod]($path)"
+}

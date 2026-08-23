@@ -24,6 +24,7 @@ import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.Font
 import java.awt.datatransfer.StringSelection
+import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.Box
 import javax.swing.BoxLayout
@@ -39,13 +40,14 @@ class SwaggerApiHeaderPanel(
     private val viewModel = project.service<MainToolViewModel>()
     private val expandIcon = JBLabel(AllIcons.General.ArrowDown).apply {
         cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+        border = JBUI.Borders.empty(4) // Increase hit area
         
-        object : ClickListener() {
-            override fun onClick(event: MouseEvent, clickCount: Int): Boolean {
+        addMouseListener(object : MouseAdapter() {
+            override fun mousePressed(e: MouseEvent) {
                 viewModel.toggleExpansion(node)
-                return true
+                e.consume()
             }
-        }.installOn(this)
+        })
     }
 
     // ROW 1: Function / Method Name + Expand Icon

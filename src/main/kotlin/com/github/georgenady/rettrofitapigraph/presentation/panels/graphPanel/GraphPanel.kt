@@ -34,7 +34,7 @@ class GraphPanel(
     private val viewModel = project.service<MainToolViewModel>()
     private var subscriptionJob: Job? = null
     private var lastRenderedEndpoints: List<ApiNode>? = null
-    private val vertexCache = mutableMapOf<ApiNode, Any>()
+    private val vertexCache = mutableMapOf<String, Any>()
 
     private val graph = object : mxGraph() {
         override fun isCellSelectable(cell: Any?): Boolean {
@@ -127,7 +127,7 @@ class GraphPanel(
     }
 
     private fun syncSelection(selectedNode: ApiNode?) {
-        val cell = vertexCache[selectedNode]
+        val cell = vertexCache[selectedNode?.signature]
         graph.setSelectionCell(cell)
     }
 
@@ -285,7 +285,7 @@ class GraphPanel(
                     
                     val style = "fillColor=$bgColor;strokeColor=$borderColor;fontColor=$textColor;arcSize=10"
                     val methodVertex = graph.insertVertex(parent, null, node, 0.0, 0.0, 180.0, 55.0, style)
-                    vertexCache[node] = methodVertex
+                    vertexCache[node.signature] = methodVertex
                     graph.updateCellSize(methodVertex)
                     graph.insertEdge(parent, null, "", classVertex, methodVertex)
                 }

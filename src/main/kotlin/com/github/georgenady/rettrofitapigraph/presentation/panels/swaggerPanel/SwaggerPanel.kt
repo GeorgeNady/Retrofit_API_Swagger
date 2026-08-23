@@ -33,9 +33,7 @@ class SwaggerPanel(
     private var subscriptionJob: Job? = null
     
     private var isScrollModeEnabled = false
-    private val cardCache = mutableMapOf<String, SwaggerApiCard>()
     private var lastEndpoints: List<ApiNode>? = null
-    private var lastExpandedNode: ApiNode? = null
 
     private val listPanel = object : JPanel(), javax.swing.Scrollable {
         init {
@@ -109,68 +107,24 @@ class SwaggerPanel(
     }
 
     fun render(
-        endpoints: List<ApiNode>,
-        results: Map<String, String> = emptyMap(),
-        expandedNode: ApiNode? = null
+        endpoints: List<ApiNode>
     ) {
-        val expansionChanged = lastExpandedNode != expandedNode
-        
-        if (lastEndpoints == endpoints && lastEndpoints != null) {
-            updateExistingCards(results, expandedNode, expansionChanged)
-            lastExpandedNode = expandedNode
+        if (lastEndpoints == endpoints) {
             return
         }
 
         lastEndpoints = endpoints
-        lastExpandedNode = expandedNode
         listPanel.removeAll()
-        cardCache.clear()
 
         val groupedEndpoints = groupUseCase(endpoints)
 
         for ((className, serviceEndpoints) in groupedEndpoints) {
             val groupPanel = SwaggerServiceGroup(project, className, serviceEndpoints)
             listPanel.add(groupPanel)
-            
-            // Collect cards for the cache
-            groupPanel.components.filterIsInstance<SwaggerApiCard>().forEach { card ->
-                val sig = "${card.node.className}.${card.node.methodName}"
-                cardCache[sig] = card
-            }
-
             listPanel.add(Box.createVerticalStrut(12))
         }
 
-        updateExistingCards(results, expandedNode, expansionChanged)
-        
         listPanel.revalidate()
         listPanel.repaint()
-    }
-
-    private fun updateExistingCards(results: Map<String, String>, expandedNode: ApiNode?, expansionChanged: Boolean) {
-        for (card in cardCache.values) {
-            val sig = "${card.node.className}.${card.node.methodName}"
-            
-            // Update response if available
-            results[sig]?.let { card.updateResponse(it) }
-
-            // Update expansion state
-            val shouldBeExpanded = expandedNode != null && card.node == expandedNode
-            card.setExpanded(shouldBeExpanded)
-
-            if (shouldBeExpanded && expansionChanged) {
-                // Delay scrolling to ensure layout is ready
-                javax.swing.SwingUtilities.invokeLater {
-                    val rect = card.bounds
-                    var parent = card.parent
-                    while (parent != null && parent != listPanel) {
-                        rect.x += parent.bounds.x
-                        rect.y += parent.bounds.y
-                        parent = parent.parent
-                    }
-                    listPanel.scrollRectToVisible(rect)
-                }
-            }
-        }
     }
 }

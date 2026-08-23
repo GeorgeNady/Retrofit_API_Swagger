@@ -2,7 +2,6 @@ package com.github.georgenady.rettrofitapigraph.editor
 
 import com.github.georgenady.rettrofitapigraph.domain.repository.ApiRepository
 import com.github.georgenady.rettrofitapigraph.presentation.panels.swaggerPanel.SwaggerPanel
-import com.github.georgenady.rettrofitapigraph.presentation.main.MainToolViewModel
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.fileEditor.FileEditor
@@ -15,8 +14,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.beans.PropertyChangeListener
 import javax.swing.JComponent
 
@@ -24,8 +21,6 @@ class DataSourceDesignEditor(
     private val project: Project,
     private val file: VirtualFile
 ) : UserDataHolderBase(), FileEditor, DumbAware {
-
-    private val viewModel = project.service<MainToolViewModel>()
 
     private val listPanel = SwaggerPanel(
         project = project
@@ -54,20 +49,12 @@ class DataSourceDesignEditor(
                 }
             }
         })
-
-        // Subscribe to ViewModel state for expansion and results
-        viewModel.viewModelScope.launch(Dispatchers.Main) {
-            viewModel.uiState.collect { state ->
-                refreshData(apiService)
-            }
-        }
     }
 
     private fun refreshData(apiService: ApiRepository) {
         if (!file.isValid) return
         val endpoints = apiService.findRetrofitEndpointsInFile(file)
-        val state = viewModel.uiState.value
-        listPanel.render(endpoints, state.requestResults, state.expandedNode)
+        listPanel.render(endpoints)
     }
 
     override fun getComponent(): JComponent = listPanel

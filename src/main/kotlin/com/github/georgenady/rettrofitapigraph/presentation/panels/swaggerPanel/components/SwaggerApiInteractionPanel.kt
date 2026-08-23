@@ -24,6 +24,9 @@ class SwaggerApiInteractionPanel(
     private val theme: HttpMethodTheme
 ) : JPanel() {
 
+    val viewModel = project.service<MainToolViewModel>()
+
+
     // DIVIDER
     private val primaryDivider = JSeparator(JSeparator.HORIZONTAL).apply {
         maximumSize = Dimension(Int.MAX_VALUE, 1)
@@ -121,7 +124,6 @@ class SwaggerApiInteractionPanel(
     }
 
     private fun executeRequest() {
-        val viewModel = project.service<MainToolViewModel>()
         var finalUrl = node.path
 
         // Cleanly extract data using our custom component's helper method
@@ -135,21 +137,6 @@ class SwaggerApiInteractionPanel(
 
         viewModel.executeApiCall(node, finalUrl, null)
     }
-
-//    private fun executeRequest() {
-//        val viewModel = project.service<MainToolViewModel>()
-//        var finalUrl = node.path
-//
-//        parametersList.components.filterIsInstance<JPanel>().forEach { row ->
-//            val field = row.components.filterIsInstance<JBTextField>().firstOrNull()
-//            val value = field?.text ?: ""
-//            val name = field?.getClientProperty("parameter_name") as? String ?: ""
-//            if (name.isNotEmpty()) {
-//                finalUrl = finalUrl.replace("{$name}", value)
-//            }
-//        }
-//        viewModel.executeApiCall(node, finalUrl, null)
-//    }
 
     fun updateResponse(text: String) {
         responseArea.text = text

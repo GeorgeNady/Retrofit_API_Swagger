@@ -90,7 +90,7 @@ class MainToolViewModel(
 
     fun toggleExpansion(node: ApiNode) {
         _uiState.update {
-            val newExpanded = if (it.expandedNode == node) null else node
+            val newExpanded = if (it.expandedNode?.signature == node.signature) null else node
             it.copy(expandedNode = newExpanded)
         }
     }
