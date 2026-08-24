@@ -133,16 +133,27 @@ class MainToolViewModel(
         viewModelScope.launch {
             val executeUseCase = ExecuteHttpRequestUseCase()
             val settings = SwaggerSettingsService.getInstance()
-            
+
+            // --- Step 3: Construct the Full URL ---
+            val baseUrl = settings.state.baseUrl.removeSuffix("/")
+            val endpointPath = url.removePrefix("/")
+
+            // Combine them cleanly (Fallback to just url if baseUrl is empty)
+            val fullUrl = if (baseUrl.isNotBlank()) {
+                "$baseUrl/$endpointPath"
+            } else {
+                url
+            }
+
             val result = executeUseCase.invoke(
-                url = url,
+                url = fullUrl, // Pass the combined fullUrl here
                 method = node.httpMethod,
                 headers = settings.state.defaultHeaders,
                 body = body
             )
 
             val responseText = result.getOrElse { "Error: ${it.message}" }
-            
+
             _uiState.update { state ->
                 val newResults = state.requestResults.toMutableMap()
                 newResults["${node.className}.${node.methodName}"] = responseText

@@ -7,6 +7,7 @@ import com.intellij.openapi.components.*
 class SwaggerSettingsService : PersistentStateComponent<SwaggerSettingsService.State> {
 
     data class State(
+        var baseUrl: String = "https://api.example.com", // Added Base URL field
         var defaultHeaders: HashMap<String, String> = hashMapOf("Content-Type" to "application/json")
     )
 
