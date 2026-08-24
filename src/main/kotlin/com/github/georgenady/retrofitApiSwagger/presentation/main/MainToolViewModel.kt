@@ -132,21 +132,18 @@ class MainToolViewModel(
     fun executeApiCall(node: ApiNode, url: String, body: String?) {
         viewModelScope.launch {
             val executeUseCase = ExecuteHttpRequestUseCase()
-            val settings = SwaggerSettingsService.getInstance()
 
             // --- Step 3: Construct the Full URL ---
+            // Pass the project instance here
+            val settings = SwaggerSettingsService.getInstance(project)
+
             val baseUrl = settings.state.baseUrl.removeSuffix("/")
             val endpointPath = url.removePrefix("/")
 
-            // Combine them cleanly (Fallback to just url if baseUrl is empty)
-            val fullUrl = if (baseUrl.isNotBlank()) {
-                "$baseUrl/$endpointPath"
-            } else {
-                url
-            }
+            val fullUrl = if (baseUrl.isNotBlank()) "$baseUrl/$endpointPath" else url
 
             val result = executeUseCase.invoke(
-                url = fullUrl, // Pass the combined fullUrl here
+                url = fullUrl,
                 method = node.httpMethod,
                 headers = settings.state.defaultHeaders,
                 body = body

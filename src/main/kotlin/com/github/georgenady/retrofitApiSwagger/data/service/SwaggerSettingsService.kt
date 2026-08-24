@@ -1,9 +1,10 @@
 package com.github.georgenady.retrofitApiSwagger.data.service
 
 import com.intellij.openapi.components.*
+import com.intellij.openapi.project.Project
 
-@State(name = "SwaggerSettings", storages = [Storage("swagger_settings.xml")])
-@Service(Service.Level.APP)
+@State(name = "SwaggerSettings", storages = [Storage("retrofit_api_swagger_settings.xml")])
+@Service(Service.Level.PROJECT)
 class SwaggerSettingsService : PersistentStateComponent<SwaggerSettingsService.State> {
 
     data class State(
@@ -32,6 +33,7 @@ class SwaggerSettingsService : PersistentStateComponent<SwaggerSettingsService.S
     }
 
     companion object {
-        fun getInstance(): SwaggerSettingsService = service()
+        // Accepts Project to retrieve the per-project service instance
+        fun getInstance(project: Project): SwaggerSettingsService = project.service()
     }
 }

@@ -2,6 +2,7 @@ package com.github.georgenady.retrofitApiSwagger.core.configuration
 
 import com.github.georgenady.retrofitApiSwagger.data.service.SwaggerSettingsService
 import com.intellij.openapi.options.Configurable
+import com.intellij.openapi.project.Project
 import com.intellij.ui.TitledSeparator
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBLabel
@@ -14,7 +15,11 @@ import java.awt.Dimension
 import javax.swing.JComponent
 import javax.swing.JPanel
 
-class SwaggerSettingsConfigurable : Configurable {
+class SwaggerSettingsConfigurable(
+    private val project: Project
+) : Configurable {
+
+    private val settingsService get() = SwaggerSettingsService.getInstance(project)
 
     // --- Base URL UI ---
     private var baseUrlField: JBTextField? = null
@@ -44,10 +49,9 @@ class SwaggerSettingsConfigurable : Configurable {
     override fun getDisplayName(): String = "Retrofit API Swagger"
 
     override fun createComponent(): JComponent {
-        val settings = SwaggerSettingsService.getInstance().state
 
         // Base URL Input
-        baseUrlField = JBTextField(settings.baseUrl)
+        baseUrlField = JBTextField(settingsService.state.baseUrl)
 
         // Headers Table Setup
         table.setShowGrid(true)
@@ -93,7 +97,7 @@ class SwaggerSettingsConfigurable : Configurable {
     }
 
     override fun isModified(): Boolean {
-        val savedState = SwaggerSettingsService.getInstance().state
+        val savedState = settingsService.state
 
         // Check if Base URL changed
         val currentBaseUrl = baseUrlField?.text?.trim() ?: ""
@@ -108,22 +112,21 @@ class SwaggerSettingsConfigurable : Configurable {
     }
 
     override fun apply() {
-        val service = SwaggerSettingsService.getInstance()
 
         // Save Base URL
-        service.state.baseUrl = baseUrlField?.text?.trim() ?: ""
+        settingsService.state.baseUrl = baseUrlField?.text?.trim() ?: ""
 
         // Save Headers
-        service.clearHeaders()
+        settingsService.clearHeaders()
         tableModel.items.forEach { entry ->
             if (entry.key.isNotBlank()) {
-                service.addDefaultHeader(entry.key, entry.value)
+                settingsService.addDefaultHeader(entry.key, entry.value)
             }
         }
     }
 
     override fun reset() {
-        val savedState = SwaggerSettingsService.getInstance().state
+        val savedState = settingsService.state
 
         // Reset Base URL
         baseUrlField?.text = savedState.baseUrl
