@@ -13,6 +13,8 @@ import com.intellij.openapi.vfs.VirtualFile
 
 class DataSourcePreviewEditorProvider : AsyncFileEditorProvider, DumbAware {
 
+    override fun getEditorTypeId(): String = "retrofit-swagger-design-editor"
+
     override fun accept(project: Project, file: VirtualFile): Boolean {
         val extension = file.extension
         if (extension != "kt" && extension != "java") return false
@@ -44,8 +46,6 @@ class DataSourcePreviewEditorProvider : AsyncFileEditorProvider, DumbAware {
         }
     }
 
-    override fun getEditorTypeId(): String = "retrofit-api-preview-editor"
-
     // PLACE_AFTER_DEFAULT_EDITOR ensures our split view wraps the default text view
-    override fun getPolicy(): FileEditorPolicy = FileEditorPolicy.PLACE_AFTER_DEFAULT_EDITOR
+    override fun getPolicy(): FileEditorPolicy = FileEditorPolicy.PLACE_BEFORE_DEFAULT_EDITOR
 }

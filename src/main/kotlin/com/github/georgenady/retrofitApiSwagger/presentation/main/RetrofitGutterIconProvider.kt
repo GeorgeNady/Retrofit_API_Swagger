@@ -45,7 +45,7 @@ class RetrofitGutterIconProvider : LineMarkerProvider {
                     
                     val fileEditorManager = FileEditorManager.getInstance(project)
                     fileEditorManager.openFile(virtualFile, true)
-                    
+                    fileEditorManager.setSelectedEditor(virtualFile, "retrofit-swagger-design-editor")
                     val editors = fileEditorManager.getEditors(virtualFile)
                     editors.filterIsInstance<TextEditorWithPreview>().forEach { splitEditor ->
                         splitEditor.setLayout(TextEditorWithPreview.Layout.SHOW_EDITOR_AND_PREVIEW)
