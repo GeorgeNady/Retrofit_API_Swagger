@@ -1,4 +1,5 @@
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
     id("java")
@@ -6,19 +7,30 @@ plugins {
     id("org.jetbrains.intellij.platform")
 }
 
-version = "1.1.8"
+version = "1.1.9"
+
+kotlin {
+    compilerOptions {
+        apiVersion.set(KotlinVersion.KOTLIN_2_0)
+        languageVersion.set(KotlinVersion.KOTLIN_2_0)
+
+        // ADD THIS LINE:
+        // Instructs Kotlin to use native JVM 8 default interface methods
+        // instead of generating synthetic bridge methods that trigger the verifier.
+        freeCompilerArgs.add("-Xjvm-default=all")
+    }
+}
 
 dependencies {
     testImplementation("junit:junit:4.13.2")
     implementation("org.tinyjee.jgraphx:jgraphx:3.4.1.3")
 
     intellijPlatform {
-        // This base version covers both IntelliJ IDEA 2024.2.x and Android Studio Ladybug
-        intellijIdeaCommunity("2024.2.1")
+        androidStudio("2024.2.1.12")
 
-        // We only need Java and Kotlin PSI to parse Retrofit interfaces
         bundledPlugin("org.jetbrains.kotlin")
         bundledPlugin("com.intellij.java")
+        bundledPlugin("org.jetbrains.android")
 
         testFramework(TestFrameworkType.Platform)
         pluginVerifier()
@@ -26,15 +38,19 @@ dependencies {
     }
 }
 
+intellijPlatform {
+    pluginVerification {
+        ides {
+            // Automatically tells the verifier to ONLY test against
+            // the Android Studio Ladybug version you defined above.
+            current()
+        }
+    }
+}
+
 tasks {
     patchPluginXml {
-        // Set the minimum supported IDE version (e.g., 2024.1+)
-        sinceBuild.set("241")
-
-        // Bumping to 261.* or leaving it unset allows installation on 2026 builds
-        untilBuild.set("261.*")
-
-        // OPTIONAL: To completely disable the upper version limit so it works on any future Studio/IntelliJ update:
-        // untilBuild.set(provider { null })
+        sinceBuild.set("242") // Matches 2024.2
+        untilBuild.set(provider { null }) // Open-ended for all future releases
     }
 }

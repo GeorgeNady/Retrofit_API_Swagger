@@ -6,7 +6,7 @@
     <vendor email="gorgonady.gn@gmail.com" url="https://github.com/GeorgeNady">
         George Nady
     </vendor>
-    <version>1.1.8</version>
+    <version>1.1.9</version>
     <description><![CDATA[
         <p><b>Retrofit API Swagger</b> is a professional tool for visualizing and managing your Android network layer. It provides a visual "Design Mode" similar to the Jetpack Navigation Editor, tailored for Retrofit APIs.</p>
 
@@ -30,10 +30,18 @@
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.java</depends>
     <depends>org.jetbrains.kotlin</depends>
+    <depends>com.intellij.modules.androidstudio</depends>
+    <depends>org.jetbrains.android</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <change-notes><![CDATA[
+        <h4>1.1.9</h4>
+        <ul>
+            <li><b>Android Studio Only:</b> Restricted plugin compatibility specifically to Android Studio as requested by JetBrains Marketplace.</li>
+            <li><b>UI Fixes:</b> Resolved issues with link nodes behavior and vertical list display (nodes correctly shown as a list).</li>
+            <li><b>Kotlin 2.0:</b> Improved compatibility for Kotlin K2 mode with native JVM default methods.</li>
+        </ul>
         <h4>1.1.8</h4>
         <ul>
             <li><b>Reactive Architecture:</b> Full refactoring to a decoupled reactive model (SOLID).</li>

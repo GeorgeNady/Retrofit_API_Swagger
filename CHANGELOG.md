@@ -2,6 +2,15 @@
 
 # Retrofit API Swagger Changelog
 
+## [1.1.9] - 2026-08-29
+### Added
+- **Android Studio Exclusive**: Explicitly restricted compatibility to Android Studio (required for Marketplace approval).
+- **JVM Default Methods**: Enabled `-Xjvm-default=all` to ensure stable binary compatibility with Kotlin 2.0.
+
+### Fixed
+- **Link Nodes**: Resolved inconsistencies in node connection behaviors.
+- **Vertical List Layout**: Fixed a bug where vertical lists were displaying nodes in a grid layout instead of a proper list.
+
 ## [1.1.8] - 2026-08-23
 ### Added
 - **Reactive UI Architecture**: Full refactoring to a decoupled reactive model (SOLID). Individual API cards now manage their own state, significantly improving stability.
