@@ -34,5 +34,10 @@
 
 Your privacy is important to us. **Retrofit API Swagger** operates entirely locally on your machine and does not collect, store, or transmit any personal data or source code. Read our full [Privacy Policy](PRIVACY.md).
 
+## 📄 License
+
+Copyright © 2026 George Nady. All Rights Reserved.  
+This software is provided under a **Proprietary and Non-Commercial Source License**. Copying, redistribution, commercial use, trading, reselling, or making any profit from this software is strictly prohibited. See [LICENSE](LICENSE) for details.
+
 ---
 Plugin based on the [IntelliJ Platform Plugin Template](https://github.com/JetBrains/intellij-platform-plugin-template).
