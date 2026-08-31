@@ -1,6 +1,6 @@
 # Retrofit API Swagger
 
-![Build](https://github.com/GeorgeNady/android_api_graph/workflows/Build/badge.svg)
+![Build](https://github.com/GeorgeNady/Retrofit_API_Graph/workflows/Build/badge.svg)
 
 **Retrofit API Swagger** is a high-performance visual toolkit for Android developers to visualize, manage, and test Retrofit API definitions. It provides a visual "Design Mode" similar to the Jetpack Navigation Editor, directly inside your favorite IDE.
 
@@ -22,13 +22,17 @@
 4. **Interactive Graph**: Switch to **Graph Mode** in the tool window to see a high-level architectural view of your network layer.
 5. **Search & Filter**: Use the side panel to filter by HTTP method, module, or specific annotations.
 
-## 🛠 Installation
+## 🛠️ Installation
 
 - Using the IDE built-in plugin system:
   <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "Retrofit API Swagger"</kbd> > <kbd>Install</kbd>
 
 - Manually:
-  Download the [latest release](https://github.com/GeorgeNady/android_api_graph/releases/latest) and install using <kbd>Install plugin from disk...</kbd>
+  Download the [latest release](https://github.com/GeorgeNady/Retrofit_API_Graph/releases/latest) and install using <kbd>Install plugin from disk...</kbd>
+
+## 🔒 Privacy Policy
+
+Your privacy is important to us. **Retrofit API Swagger** operates entirely locally on your machine and does not collect, store, or transmit any personal data or source code. Read our full [Privacy Policy](PRIVACY.md).
 
 ---
 Plugin based on the [IntelliJ Platform Plugin Template](https://github.com/JetBrains/intellij-platform-plugin-template).
