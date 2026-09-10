@@ -1,56 +1,18 @@
-import org.jetbrains.intellij.platform.gradle.TestFrameworkType
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-
 plugins {
-    id("java")
-    id("org.jetbrains.kotlin.jvm")
-    id("org.jetbrains.intellij.platform")
+    id("org.jetbrains.kotlin.jvm") apply false
+    id("org.jetbrains.intellij.platform") apply false
 }
 
-version = "1.1.9"
-
-kotlin {
-    compilerOptions {
-        apiVersion.set(KotlinVersion.KOTLIN_2_0)
-        languageVersion.set(KotlinVersion.KOTLIN_2_0)
-
-        // ADD THIS LINE:
-        // Instructs Kotlin to use native JVM 8 default interface methods
-        // instead of generating synthetic bridge methods that trigger the verifier.
-        freeCompilerArgs.add("-Xjvm-default=all")
-    }
+allprojects {
+    group = providers.gradleProperty("group").getOrElse("com.github.georgenady.androidapigraph")
+    version = providers.gradleProperty("version").getOrElse("1.1.9")
 }
 
-dependencies {
-    testImplementation("junit:junit:4.13.2")
-    implementation("org.tinyjee.jgraphx:jgraphx:3.4.1.3")
-
-    intellijPlatform {
-        androidStudio("2024.2.1.12")
-
-        bundledPlugin("org.jetbrains.kotlin")
-        bundledPlugin("com.intellij.java")
-        bundledPlugin("org.jetbrains.android")
-
-        testFramework(TestFrameworkType.Platform)
-        pluginVerifier()
-        zipSigner()
-    }
-}
-
-intellijPlatform {
-    pluginVerification {
-        ides {
-            // Automatically tells the verifier to ONLY test against
-            // the Android Studio Ladybug version you defined above.
-            current()
-        }
-    }
-}
-
-tasks {
-    patchPluginXml {
-        sinceBuild.set("242") // Matches 2024.2
-        untilBuild.set(provider { null }) // Open-ended for all future releases
-    }
+// Copy the assembled plugin archive to the root build/distributions directory for CI workflow compatibility
+tasks.register<Copy>("buildPlugin") {
+    group = "intellij"
+    description = "Assembles plugin archive in :plugin and copies it to root build directory"
+    dependsOn(":plugin:buildPlugin")
+    from(project(":plugin").layout.buildDirectory.dir("distributions"))
+    into(layout.buildDirectory.dir("distributions"))
 }
