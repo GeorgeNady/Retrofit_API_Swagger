@@ -1,0 +1,7 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <projectService
+            serviceInterface="com.github.georgenady.retrofitApiSwagger.parser.FileEndpointParser"
+            serviceImplementation="com.github.georgenady.retrofitApiSwagger.parser.impl.CompositeEndpointParser"/>
+    </extensions>
+</idea-plugin>

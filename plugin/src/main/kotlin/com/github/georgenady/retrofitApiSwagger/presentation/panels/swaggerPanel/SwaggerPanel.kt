@@ -1,7 +1,7 @@
 package com.github.georgenady.retrofitApiSwagger.presentation.panels.swaggerPanel
 
 import com.github.georgenady.retrofitApiSwagger.MyBundle
-import com.github.georgenady.retrofitApiSwagger.domain.model.ApiNode
+import com.github.georgenady.retrofitApiSwagger.model.ApiNode
 import com.github.georgenady.retrofitApiSwagger.domain.usecase.GroupEndpointsByServiceUseCase
 import com.github.georgenady.retrofitApiSwagger.presentation.main.MainToolViewModel
 import com.github.georgenady.retrofitApiSwagger.presentation.panels.swaggerPanel.components.SwaggerServiceGroup

@@ -1,8 +1,8 @@
 package com.github.georgenady.retrofitApiSwagger.presentation.panels.swaggerPanel.components
 
-import com.github.georgenady.retrofitApiSwagger.domain.model.ApiNode
-import com.github.georgenady.retrofitApiSwagger.domain.model.ParameterLocation
-import com.github.georgenady.retrofitApiSwagger.domain.model.ParameterDetail
+import com.github.georgenady.retrofitApiSwagger.model.ApiNode
+import com.github.georgenady.retrofitApiSwagger.model.ParameterLocation
+import com.github.georgenady.retrofitApiSwagger.model.ParameterDetail
 import com.github.georgenady.retrofitApiSwagger.domain.usecase.FindPsiClassUseCase
 import com.github.georgenady.retrofitApiSwagger.presentation.main.MainToolViewModel
 import com.intellij.icons.AllIcons

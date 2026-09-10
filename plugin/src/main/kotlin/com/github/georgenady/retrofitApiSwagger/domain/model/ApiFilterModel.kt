@@ -1,5 +1,7 @@
 package com.github.georgenady.retrofitApiSwagger.domain.model
 
+import com.github.georgenady.retrofitApiSwagger.model.ApiNode
+
 data class ApiFilterModel(
     val query: String = "",
     val methods: Set<String> = emptySet(),

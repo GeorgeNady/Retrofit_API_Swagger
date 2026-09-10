@@ -1,6 +1,6 @@
 package com.github.georgenady.retrofitApiSwagger.presentation.panels.sidePanel
 
-import com.github.georgenady.retrofitApiSwagger.domain.model.ApiNode
+import com.github.georgenady.retrofitApiSwagger.model.ApiNode
 import com.github.georgenady.retrofitApiSwagger.presentation.panels.sidePanel.utils.SidePanelSection
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor

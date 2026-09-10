@@ -1,6 +1,6 @@
 package com.github.georgenady.retrofitApiSwagger.presentation.main
 
-import com.github.georgenady.retrofitApiSwagger.domain.model.ApiNode
+import com.github.georgenady.retrofitApiSwagger.model.ApiNode
 import com.github.georgenady.retrofitApiSwagger.domain.model.enums.ViewMode
 
 data class MainToolUiState(

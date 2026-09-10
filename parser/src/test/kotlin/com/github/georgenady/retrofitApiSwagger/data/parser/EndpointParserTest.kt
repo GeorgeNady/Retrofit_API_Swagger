@@ -1,5 +1,8 @@
 package com.github.georgenady.retrofitApiSwagger.data.parser
 
+import com.github.georgenady.retrofitApiSwagger.parser.impl.CompositeEndpointParser
+import com.github.georgenady.retrofitApiSwagger.parser.impl.JavaEndpointParser
+import com.github.georgenady.retrofitApiSwagger.parser.impl.KotlinEndpointParser
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiJavaFile

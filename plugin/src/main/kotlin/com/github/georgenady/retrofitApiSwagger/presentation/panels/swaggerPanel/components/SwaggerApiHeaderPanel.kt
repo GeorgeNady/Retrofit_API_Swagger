@@ -1,7 +1,7 @@
 package com.github.georgenady.retrofitApiSwagger.presentation.panels.swaggerPanel.components
 
 import com.github.georgenady.retrofitApiSwagger.MyBundle
-import com.github.georgenady.retrofitApiSwagger.domain.model.ApiNode
+import com.github.georgenady.retrofitApiSwagger.model.ApiNode
 import com.github.georgenady.retrofitApiSwagger.presentation.components.BadgeLabel
 import com.github.georgenady.retrofitApiSwagger.presentation.main.MainToolViewModel
 import com.github.georgenady.retrofitApiSwagger.presentation.theme.HttpMethodTheme

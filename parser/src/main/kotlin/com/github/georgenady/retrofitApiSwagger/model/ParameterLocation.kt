@@ -1,4 +1,4 @@
-package com.github.georgenady.retrofitApiSwagger.domain.model
+package com.github.georgenady.retrofitApiSwagger.model
 
 /**
  * Defines the HTTP transmission location of a parameter in a Retrofit endpoint declaration.

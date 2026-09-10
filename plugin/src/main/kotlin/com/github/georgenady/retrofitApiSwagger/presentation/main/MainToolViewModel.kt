@@ -2,7 +2,7 @@ package com.github.georgenady.retrofitApiSwagger.presentation.main
 
 import com.github.georgenady.retrofitApiSwagger.data.service.SwaggerSettingsService
 import com.github.georgenady.retrofitApiSwagger.domain.model.ApiFilterModel
-import com.github.georgenady.retrofitApiSwagger.domain.model.ApiNode
+import com.github.georgenady.retrofitApiSwagger.model.ApiNode
 import com.github.georgenady.retrofitApiSwagger.domain.model.ScanOperation
 import com.github.georgenady.retrofitApiSwagger.domain.model.enums.ViewMode
 import com.github.georgenady.retrofitApiSwagger.domain.repository.ApiRepository

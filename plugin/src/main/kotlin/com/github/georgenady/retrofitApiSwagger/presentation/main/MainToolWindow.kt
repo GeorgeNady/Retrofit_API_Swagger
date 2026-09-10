@@ -1,7 +1,7 @@
 package com.github.georgenady.retrofitApiSwagger.presentation.main
 
 import com.github.georgenady.retrofitApiSwagger.MyBundle
-import com.github.georgenady.retrofitApiSwagger.domain.model.ApiNode
+import com.github.georgenady.retrofitApiSwagger.model.ApiNode
 import com.github.georgenady.retrofitApiSwagger.domain.model.enums.ViewMode
 import com.github.georgenady.retrofitApiSwagger.presentation.panels.swaggerPanel.SwaggerPanel
 import com.github.georgenady.retrofitApiSwagger.presentation.components.ApiEmptyStateView

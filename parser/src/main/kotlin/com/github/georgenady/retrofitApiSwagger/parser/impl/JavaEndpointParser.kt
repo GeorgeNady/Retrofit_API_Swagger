@@ -1,10 +1,11 @@
-package com.github.georgenady.retrofitApiSwagger.data.parser
+package com.github.georgenady.retrofitApiSwagger.parser.impl
 
-import com.github.georgenady.retrofitApiSwagger.data.parser.utils.RetrofitConstants
-import com.github.georgenady.retrofitApiSwagger.domain.model.AnnotationDetail
-import com.github.georgenady.retrofitApiSwagger.domain.model.ApiNode
-import com.github.georgenady.retrofitApiSwagger.domain.model.ParameterDetail
-import com.github.georgenady.retrofitApiSwagger.domain.model.ParameterLocation
+import com.github.georgenady.retrofitApiSwagger.utils.RetrofitConstants
+import com.github.georgenady.retrofitApiSwagger.model.AnnotationDetail
+import com.github.georgenady.retrofitApiSwagger.model.ApiNode
+import com.github.georgenady.retrofitApiSwagger.model.ParameterDetail
+import com.github.georgenady.retrofitApiSwagger.model.ParameterLocation
+import com.github.georgenady.retrofitApiSwagger.parser.FileEndpointParser
 import com.intellij.psi.PsiAnnotation
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassType
@@ -16,7 +17,7 @@ import com.intellij.psi.util.PsiTreeUtil
 /**
  * Parses Retrofit endpoint definitions from Java source files ([PsiJavaFile]).
  */
-class JavaEndpointParser : FileEndpointParser {
+internal class JavaEndpointParser : FileEndpointParser {
 
     override fun canParse(psiFile: PsiFile): Boolean = psiFile is PsiJavaFile
 

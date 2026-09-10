@@ -1,6 +1,6 @@
 package com.github.georgenady.retrofitApiSwagger.domain.usecase
 
-import com.github.georgenady.retrofitApiSwagger.domain.model.ApiNode
+import com.github.georgenady.retrofitApiSwagger.model.ApiNode
 import com.github.georgenady.retrofitApiSwagger.domain.repository.ApiRepository
 import com.intellij.openapi.vfs.VirtualFile
 

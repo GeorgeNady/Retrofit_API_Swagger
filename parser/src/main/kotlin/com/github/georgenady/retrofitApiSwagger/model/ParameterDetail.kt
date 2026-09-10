@@ -1,4 +1,4 @@
-package com.github.georgenady.retrofitApiSwagger.domain.model
+package com.github.georgenady.retrofitApiSwagger.model
 
 /**
  * Represents metadata about an individual parameter of an API endpoint method.

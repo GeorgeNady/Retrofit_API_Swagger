@@ -1,4 +1,4 @@
-package com.github.georgenady.retrofitApiSwagger.domain.model
+package com.github.georgenady.retrofitApiSwagger.model
 
 import com.intellij.psi.PsiElement
 

@@ -1,6 +1,6 @@
 package com.github.georgenady.retrofitApiSwagger.presentation.panels.swaggerPanel.components
 
-import com.github.georgenady.retrofitApiSwagger.domain.model.ApiNode
+import com.github.georgenady.retrofitApiSwagger.model.ApiNode
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel

@@ -1,6 +1,6 @@
-package com.github.georgenady.retrofitApiSwagger.data.parser
+package com.github.georgenady.retrofitApiSwagger.parser
 
-import com.github.georgenady.retrofitApiSwagger.domain.model.ApiNode
+import com.github.georgenady.retrofitApiSwagger.model.ApiNode
 import com.intellij.psi.PsiFile
 
 /**

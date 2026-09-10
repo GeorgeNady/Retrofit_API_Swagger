@@ -1,9 +1,8 @@
 package com.github.georgenady.retrofitApiSwagger.data.repository
 
 import com.github.georgenady.retrofitApiSwagger.data.collector.ProjectSourceFileCollector
-import com.github.georgenady.retrofitApiSwagger.data.parser.CompositeEndpointParser
-import com.github.georgenady.retrofitApiSwagger.data.parser.FileEndpointParser
-import com.github.georgenady.retrofitApiSwagger.domain.model.ApiNode
+import com.github.georgenady.retrofitApiSwagger.parser.FileEndpointParser
+import com.github.georgenady.retrofitApiSwagger.model.ApiNode
 import com.github.georgenady.retrofitApiSwagger.domain.model.ScanOperation
 import com.github.georgenady.retrofitApiSwagger.domain.model.ScanResult
 import com.github.georgenady.retrofitApiSwagger.domain.repository.ApiRepository
@@ -26,7 +25,8 @@ class ApiRepositoryImpl(
 
     private val fileCollector = project.getService(ProjectSourceFileCollector::class.java)
 
-    private val endpointParser: FileEndpointParser = CompositeEndpointParser()
+    private val endpointParser: FileEndpointParser
+        get() = project.getService(FileEndpointParser::class.java)
 
     override fun scanEndpoints(): Flow<ScanOperation> = flow {
         emit(ScanOperation.Started)

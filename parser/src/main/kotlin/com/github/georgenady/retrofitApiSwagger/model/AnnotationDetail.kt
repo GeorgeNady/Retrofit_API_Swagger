@@ -1,4 +1,4 @@
-package com.github.georgenady.retrofitApiSwagger.domain.model
+package com.github.georgenady.retrofitApiSwagger.model
 
 /**
  * Encapsulates an annotation name and its key-value arguments extracted from source code.

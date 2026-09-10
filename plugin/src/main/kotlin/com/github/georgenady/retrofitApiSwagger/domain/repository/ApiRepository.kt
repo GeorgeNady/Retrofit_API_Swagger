@@ -1,6 +1,6 @@
 package com.github.georgenady.retrofitApiSwagger.domain.repository
 
-import com.github.georgenady.retrofitApiSwagger.domain.model.ApiNode
+import com.github.georgenady.retrofitApiSwagger.model.ApiNode
 import com.github.georgenady.retrofitApiSwagger.domain.model.ScanOperation
 import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.flow.Flow

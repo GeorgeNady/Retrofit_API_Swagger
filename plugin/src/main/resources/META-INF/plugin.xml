@@ -1,5 +1,5 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
-<idea-plugin>
+<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
     <id>com.github.georgenady.retrofit_api_swagger</id>
     <name>Retrofit API Swagger</name>
     <vendor email="gorgonady.gn@gmail.com" url="https://github.com/GeorgeNady">
@@ -25,6 +25,9 @@
             <li>Themed UI that respects Darcula and Light modes.</li>
         </ul>
     ]]></description>
+
+    <!-- Include the definitions from the parser module -->
+    <xi:include href="parser.xml" />
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.java</depends>
@@ -54,28 +57,20 @@
     <actions>
         <action
             class="com.github.georgenady.retrofitApiSwagger.presentation.main.actions.RefreshAction"
-            description="Scan project for Retrofit endpoints"
-            icon="AllIcons.Actions.Refresh"
-            id="RetrofitAPISwagger.Refresh"
-            text="Refresh APIs List" />
+            description="Scan project for Retrofit endpoints" icon="AllIcons.Actions.Refresh"
+            id="RetrofitAPISwagger.Refresh" text="Refresh APIs List" />
         <action
             class="com.github.georgenady.retrofitApiSwagger.presentation.main.actions.ToggleSidePanelAction"
-            description="Show or hide the feature panel"
-            icon="AllIcons.General.Filter"
-            id="RetrofitAPISwagger.ToggleSidePanel"
-            text="Toggle Side Panel" />
+            description="Show or hide the feature panel" icon="AllIcons.General.Filter"
+            id="RetrofitAPISwagger.ToggleSidePanel" text="Toggle Side Panel" />
         <action
             class="com.github.georgenady.retrofitApiSwagger.presentation.main.actions.SwitchViewModeAction"
-            description="Toggle between List, and Graph views"
-            icon="AllIcons.Actions.Diff"
-            id="RetrofitAPISwagger.SwitchView"
-            text="Switch View Mode" />
+            description="Toggle between List, and Graph views" icon="AllIcons.Actions.Diff"
+            id="RetrofitAPISwagger.SwitchView" text="Switch View Mode" />
         <action
             class="com.github.georgenady.retrofitApiSwagger.presentation.main.actions.OpenSwaggerSettingsAction"
             description="Configure default headers and plugin settings"
-            icon="AllIcons.General.Settings"
-            id="RetrofitAPISwagger.Settings"
-            text="Settings" />
+            icon="AllIcons.General.Settings" id="RetrofitAPISwagger.Settings" text="Settings" />
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">

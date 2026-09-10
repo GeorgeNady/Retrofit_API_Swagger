@@ -1,10 +1,11 @@
-package com.github.georgenady.retrofitApiSwagger.data.parser
+package com.github.georgenady.retrofitApiSwagger.parser.impl
 
-import com.github.georgenady.retrofitApiSwagger.data.parser.utils.RetrofitConstants
-import com.github.georgenady.retrofitApiSwagger.domain.model.AnnotationDetail
-import com.github.georgenady.retrofitApiSwagger.domain.model.ApiNode
-import com.github.georgenady.retrofitApiSwagger.domain.model.ParameterDetail
-import com.github.georgenady.retrofitApiSwagger.domain.model.ParameterLocation
+import com.github.georgenady.retrofitApiSwagger.utils.RetrofitConstants
+import com.github.georgenady.retrofitApiSwagger.model.AnnotationDetail
+import com.github.georgenady.retrofitApiSwagger.model.ApiNode
+import com.github.georgenady.retrofitApiSwagger.model.ParameterDetail
+import com.github.georgenady.retrofitApiSwagger.model.ParameterLocation
+import com.github.georgenady.retrofitApiSwagger.parser.FileEndpointParser
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
@@ -15,7 +16,7 @@ import org.jetbrains.kotlin.psi.KtNamedFunction
 /**
  * Parses Retrofit endpoint definitions from Kotlin source files ([KtFile]).
  */
-class KotlinEndpointParser : FileEndpointParser {
+internal class KotlinEndpointParser : FileEndpointParser {
 
     override fun canParse(psiFile: PsiFile): Boolean = psiFile is KtFile
 

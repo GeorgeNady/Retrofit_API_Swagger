@@ -1,4 +1,4 @@
-package com.github.georgenady.retrofitApiSwagger.data.parser.utils
+package com.github.georgenady.retrofitApiSwagger.utils
 
 /**
  * Constants used during Retrofit annotation discovery and parsing.

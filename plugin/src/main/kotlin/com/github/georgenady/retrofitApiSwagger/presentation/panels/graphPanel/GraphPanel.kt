@@ -1,7 +1,7 @@
 package com.github.georgenady.retrofitApiSwagger.presentation.panels.graphPanel
 
 import com.github.georgenady.retrofitApiSwagger.MyBundle
-import com.github.georgenady.retrofitApiSwagger.domain.model.ApiNode
+import com.github.georgenady.retrofitApiSwagger.model.ApiNode
 import com.github.georgenady.retrofitApiSwagger.presentation.main.MainToolViewModel
 import com.github.georgenady.retrofitApiSwagger.presentation.theme.SwaggerTheme
 import com.intellij.openapi.application.ReadAction
