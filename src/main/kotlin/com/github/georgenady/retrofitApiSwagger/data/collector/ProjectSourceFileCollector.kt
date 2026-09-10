@@ -2,6 +2,7 @@ package com.github.georgenady.retrofitApiSwagger.data.collector
 
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.progress.ProgressIndicator
@@ -14,7 +15,10 @@ import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.ProjectScope
 import org.jetbrains.kotlin.idea.KotlinFileType
 
-class ProjectSourceFileCollector(private val project: Project) {
+@Service(Service.Level.PROJECT)
+class ProjectSourceFileCollector(
+    private val project: Project
+) {
 
     fun collectSourceFiles(indicator: ProgressIndicator? = null): List<VirtualFile> {
         return runReadAction {

@@ -23,7 +23,8 @@ class ApiRepositoryImpl(
     private val project: Project
 ) : ApiRepository {
 
-    private val fileCollector = ProjectSourceFileCollector(project)
+    private val fileCollector = project.getService(ProjectSourceFileCollector::class.java)
+
     private val endpointParser: FileEndpointParser = CompositeEndpointParser()
 
     override fun scanEndpoints(): Flow<ScanOperation> = flow {

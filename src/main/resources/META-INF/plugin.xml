@@ -53,21 +53,29 @@
     ]]></change-notes>
 
     <actions>
-        <action class="com.github.georgenady.retrofitApiSwagger.presentation.main.actions.RefreshAction"
+        <action
+            class="com.github.georgenady.retrofitApiSwagger.presentation.main.actions.RefreshAction"
             description="Scan project for Retrofit endpoints"
-            icon="AllIcons.Actions.Refresh" id="RetrofitAPISwagger.Refresh"
+            icon="AllIcons.Actions.Refresh"
+            id="RetrofitAPISwagger.Refresh"
             text="Refresh APIs List" />
-        <action class="com.github.georgenady.retrofitApiSwagger.presentation.main.actions.ToggleSidePanelAction"
+        <action
+            class="com.github.georgenady.retrofitApiSwagger.presentation.main.actions.ToggleSidePanelAction"
             description="Show or hide the feature panel"
-            icon="AllIcons.General.Filter" id="RetrofitAPISwagger.ToggleSidePanel"
+            icon="AllIcons.General.Filter"
+            id="RetrofitAPISwagger.ToggleSidePanel"
             text="Toggle Side Panel" />
-        <action class="com.github.georgenady.retrofitApiSwagger.presentation.main.actions.SwitchViewModeAction"
+        <action
+            class="com.github.georgenady.retrofitApiSwagger.presentation.main.actions.SwitchViewModeAction"
             description="Toggle between List, and Graph views"
-            icon="AllIcons.Actions.Diff" id="RetrofitAPISwagger.SwitchView"
+            icon="AllIcons.Actions.Diff"
+            id="RetrofitAPISwagger.SwitchView"
             text="Switch View Mode" />
-        <action class="com.github.georgenady.retrofitApiSwagger.presentation.main.actions.OpenSwaggerSettingsAction"
+        <action
+            class="com.github.georgenady.retrofitApiSwagger.presentation.main.actions.OpenSwaggerSettingsAction"
             description="Configure default headers and plugin settings"
-            icon="AllIcons.General.Settings" id="RetrofitAPISwagger.Settings"
+            icon="AllIcons.General.Settings"
+            id="RetrofitAPISwagger.Settings"
             text="Settings" />
     </actions>
 
@@ -77,6 +85,8 @@
             serviceInterface="com.github.georgenady.retrofitApiSwagger.domain.repository.ApiRepository" />
         <projectService
             serviceImplementation="com.github.georgenady.retrofitApiSwagger.presentation.main.MainToolViewModel" />
+        <projectService
+            serviceImplementation="com.github.georgenady.retrofitApiSwagger.data.collector.ProjectSourceFileCollector" />
         <applicationService
             serviceImplementation="com.github.georgenady.retrofitApiSwagger.presentation.panels.swaggerPanel.SwaggerPanelViewModel" />
 
