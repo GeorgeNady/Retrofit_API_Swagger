@@ -5,6 +5,7 @@ import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.ui.TitledSeparator
 import com.intellij.ui.ToolbarDecorator
+import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.table.JBTable
@@ -23,6 +24,10 @@ class SwaggerSettingsConfigurable(
 
     // --- Base URL UI ---
     private var baseUrlField: JBTextField? = null
+
+    // --- Scanner Settings UI ---
+    private var scanKotlinCheckBox: JBCheckBox? = null
+    private var scanJavaCheckBox: JBCheckBox? = null
 
     // --- Headers Table Data Model ---
     data class HeaderEntry(var key: String, var value: String)
@@ -52,6 +57,10 @@ class SwaggerSettingsConfigurable(
 
         // Base URL Input
         baseUrlField = JBTextField(settingsService.state.baseUrl)
+
+        // Scanner Checkboxes
+        scanKotlinCheckBox = JBCheckBox("Scan Kotlin files (*.kt)", settingsService.state.scanKotlinFiles)
+        scanJavaCheckBox = JBCheckBox("Scan Java files (*.java)", settingsService.state.scanJavaFiles)
 
         // Headers Table Setup
         table.setShowGrid(true)
@@ -87,7 +96,12 @@ class SwaggerSettingsConfigurable(
             )
             .addTooltip("Default host prefix used for API execution (e.g., https://api.example.com or http://localhost:8080)")
 
-            // --- Section 2: Default Headers ---
+            // --- Section 2: File Scanner Configuration ---
+            .addComponent(TitledSeparator("File Scanner Configuration"))
+            .addComponent(scanKotlinCheckBox!!)
+            .addComponent(scanJavaCheckBox!!)
+
+            // --- Section 3: Default Headers ---
             .addComponent(TitledSeparator("Global Request Headers"))
             .addComponent(headersTablePanel)
 
@@ -103,6 +117,10 @@ class SwaggerSettingsConfigurable(
         val currentBaseUrl = baseUrlField?.text?.trim() ?: ""
         if (currentBaseUrl != savedState.baseUrl) return true
 
+        // Check if Scanner settings changed
+        if (scanKotlinCheckBox?.isSelected != savedState.scanKotlinFiles) return true
+        if (scanJavaCheckBox?.isSelected != savedState.scanJavaFiles) return true
+
         // Check if Headers Table changed
         val currentHeadersInTable = tableModel.items
             .filter { it.key.isNotBlank() }
@@ -115,6 +133,10 @@ class SwaggerSettingsConfigurable(
 
         // Save Base URL
         settingsService.state.baseUrl = baseUrlField?.text?.trim() ?: ""
+
+        // Save Scanner Settings
+        settingsService.state.scanKotlinFiles = scanKotlinCheckBox?.isSelected ?: true
+        settingsService.state.scanJavaFiles = scanJavaCheckBox?.isSelected ?: true
 
         // Save Headers
         settingsService.clearHeaders()
@@ -131,6 +153,10 @@ class SwaggerSettingsConfigurable(
         // Reset Base URL
         baseUrlField?.text = savedState.baseUrl
 
+        // Reset Scanner Settings
+        scanKotlinCheckBox?.isSelected = savedState.scanKotlinFiles
+        scanJavaCheckBox?.isSelected = savedState.scanJavaFiles
+
         // Reset Headers Table
         val entries =
             savedState.defaultHeaders.map { HeaderEntry(it.key, it.value) }.toMutableList()
@@ -139,5 +165,7 @@ class SwaggerSettingsConfigurable(
 
     override fun disposeUIResources() {
         baseUrlField = null
+        scanKotlinCheckBox = null
+        scanJavaCheckBox = null
     }
 }

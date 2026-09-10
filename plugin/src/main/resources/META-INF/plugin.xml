@@ -76,17 +76,21 @@
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
+        <applicationService
+            serviceImplementation="com.github.georgenady.retrofitApiSwagger.presentation.panels.swaggerPanel.SwaggerPanelViewModel" />
+
         <projectService
             serviceImplementation="com.github.georgenady.retrofitApiSwagger.data.repository.ApiRepositoryImpl"
             serviceInterface="com.github.georgenady.retrofitApiSwagger.domain.repository.ApiRepository" />
         <projectService
             serviceImplementation="com.github.georgenady.retrofitApiSwagger.presentation.main.MainToolViewModel" />
-        <applicationService
-            serviceImplementation="com.github.georgenady.retrofitApiSwagger.presentation.panels.swaggerPanel.SwaggerPanelViewModel" />
 
         <!-- UI Settings Configuration -->
-        <applicationService
+        <projectService
             serviceImplementation="com.github.georgenady.retrofitApiSwagger.data.service.SwaggerSettingsService" />
+        <projectService
+            serviceInterface="com.github.georgenady.retrofitApiSwagger.scanner.ScannerSettings"
+            serviceImplementation="com.github.georgenady.retrofitApiSwagger.data.service.ScannerSettingsAdapter" />
         <projectConfigurable displayName="Retrofit API Swagger"
             id="com.github.georgenady.retrofitApiSwagger.settings"
             instance="com.github.georgenady.retrofitApiSwagger.core.configuration.SwaggerSettingsConfigurable"

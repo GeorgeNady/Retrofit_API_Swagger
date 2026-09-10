@@ -1,6 +1,7 @@
 package com.github.georgenady.retrofitApiSwagger.scanner.impl
 
 import com.github.georgenady.retrofitApiSwagger.scanner.ProjectSourceFileCollector
+import com.github.georgenady.retrofitApiSwagger.scanner.ScannerSettings
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.Service
@@ -32,10 +33,17 @@ internal class ProjectSourceFileCollectorImpl(
             val fileIndex = ProjectRootManager.getInstance(project).fileIndex
             val processedFiles = LinkedHashSet<VirtualFile>()
 
-            val supportedFileTypes = listOf(
-                KotlinFileType.INSTANCE,
-                JavaFileType.INSTANCE
-            )
+            val scannerSettings = project.getService(ScannerSettings::class.java)
+            val scanKotlin = scannerSettings?.isKotlinEnabled ?: true
+            val scanJava = scannerSettings?.isJavaEnabled ?: true
+
+            val supportedFileTypes = mutableListOf<FileType>()
+            if (scanKotlin) {
+                supportedFileTypes.add(KotlinFileType.INSTANCE)
+            }
+            if (scanJava) {
+                supportedFileTypes.add(JavaFileType.INSTANCE)
+            }
 
             for (fileType in supportedFileTypes) {
                 processedFiles.addAll(collectIndexedFiles(fileType, scope, fileIndex, indicator))
@@ -51,8 +59,9 @@ internal class ProjectSourceFileCollectorImpl(
                         !fileIndex.isExcluded(dir)
                     }) { vf ->
                         indicator?.checkCanceled()
-                        if (!vf.isDirectory && (vf.extension == "kt" || vf.extension == "java")) {
-                            if (isEligibleSourceFile(vf, fileIndex)) {
+                        if (!vf.isDirectory) {
+                            val matchesExtension = (scanKotlin && vf.extension == "kt") || (scanJava && vf.extension == "java")
+                            if (matchesExtension && isEligibleSourceFile(vf, fileIndex)) {
                                 processedFiles.add(vf)
                             }
                         }
