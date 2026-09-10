@@ -24,6 +24,7 @@ dependencies {
     implementation("org.tinyjee.jgraphx:jgraphx:3.4.1.3")
 
     intellijPlatform {
+        pluginComposedModule(project(":parser"))
         androidStudio("2024.2.1.12")
 
         bundledPlugin("org.jetbrains.kotlin")

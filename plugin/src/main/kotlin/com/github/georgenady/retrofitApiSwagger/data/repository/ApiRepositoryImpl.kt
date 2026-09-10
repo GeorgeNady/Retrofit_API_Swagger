@@ -10,6 +10,7 @@ import com.github.georgenady.retrofitApiSwagger.domain.repository.ApiRepository
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -52,7 +53,12 @@ class ApiRepositoryImpl(
             val fileEndpoints = readAction {
                 if (!virtualFile.isValid) return@readAction emptyList()
                 val psiFile = psiManager.findFile(virtualFile) ?: return@readAction emptyList()
-                endpointParser.parse(psiFile)
+                try {
+                    endpointParser.parse(psiFile)
+                } catch (e: Throwable) {
+                    thisLogger().warn("Failed to parse endpoints in ${virtualFile.path}", e)
+                    emptyList()
+                }
             }
 
             endpoints.addAll(fileEndpoints)
@@ -69,7 +75,12 @@ class ApiRepositoryImpl(
             if (!virtualFile.isValid) return@runReadAction emptyList()
             val psiManager = PsiManager.getInstance(project)
             val psiFile = psiManager.findFile(virtualFile) ?: return@runReadAction emptyList()
-            endpointParser.parse(psiFile)
+            try {
+                endpointParser.parse(psiFile)
+            } catch (e: Throwable) {
+                thisLogger().warn("Failed to parse endpoints in ${virtualFile.path}", e)
+                emptyList()
+            }
         }
     }
 }

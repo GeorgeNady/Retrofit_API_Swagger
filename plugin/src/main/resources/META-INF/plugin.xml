@@ -2,7 +2,6 @@
 <idea-plugin>
     <id>com.github.georgenady.retrofit_api_swagger</id>
     <name>Retrofit API Swagger</name>
-    <vendor>George Nady</vendor>
     <vendor email="gorgonady.gn@gmail.com" url="https://github.com/GeorgeNady">
         George Nady
     </vendor>

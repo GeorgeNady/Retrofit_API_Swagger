@@ -19,5 +19,6 @@ object RetrofitConstants {
     /**
      * Annotation name for cache support tagging.
      */
+    @Deprecated("will be removed in a future versions")
     const val SUPPORT_CACHE = "SupportCache"
 }

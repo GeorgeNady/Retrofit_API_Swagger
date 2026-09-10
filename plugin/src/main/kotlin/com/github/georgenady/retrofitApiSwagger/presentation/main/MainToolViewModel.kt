@@ -45,6 +45,20 @@ class MainToolViewModel(
 
     fun refresh() {
         scanJob?.cancel()
+
+        if (com.intellij.openapi.project.DumbService.isDumb(project)) {
+            _uiState.update { 
+                it.copy(
+                    isLoading = true, 
+                    progressMessage = "Indexing in progress. Waiting for smart mode..."
+                ) 
+            }
+            com.intellij.openapi.project.DumbService.getInstance(project).runWhenSmart {
+                refresh()
+            }
+            return
+        }
+
         val task = object : Task.Backgroundable(project, "Scanning retrofit endpoints", true) {
             override fun run(indicator: ProgressIndicator) {
                 runBlocking {
@@ -79,13 +93,25 @@ class MainToolViewModel(
                                     }
                                 }
                                 is ScanOperation.Completed -> {
-                                    _uiState.update { 
-                                        it.copy(
-                                            allEndpoints = op.result.endpoints,
-                                            totalScanned = op.result.filesScanned,
-                                            durationMs = op.result.durationMs,
-                                            filteredEndpoints = filterUseCase(op.result.endpoints, currentFilter)
-                                        )
+                                    if (op.result.isDumb) {
+                                        _uiState.update { 
+                                            it.copy(
+                                                isLoading = true, 
+                                                progressMessage = "Indexing in progress. Waiting for smart mode..."
+                                            ) 
+                                        }
+                                        com.intellij.openapi.project.DumbService.getInstance(project).runWhenSmart {
+                                            refresh()
+                                        }
+                                    } else {
+                                        _uiState.update { 
+                                            it.copy(
+                                                allEndpoints = op.result.endpoints,
+                                                totalScanned = op.result.filesScanned,
+                                                durationMs = op.result.durationMs,
+                                                filteredEndpoints = filterUseCase(op.result.endpoints, currentFilter)
+                                            )
+                                        }
                                     }
                                 }
                                 is ScanOperation.Failed -> {

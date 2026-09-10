@@ -29,7 +29,7 @@ class ProjectSourceFileCollector(
             indicator?.checkCanceled()
             val ktFiles = FileTypeIndex.getFiles(KotlinFileType.INSTANCE, scope)
             for (file in ktFiles) {
-                if (file.isValid && fileIndex.isInSourceContent(file)) {
+                if (file.isValid && !fileIndex.isExcluded(file)) {
                     processedFiles.add(file)
                 }
             }
@@ -37,28 +37,27 @@ class ProjectSourceFileCollector(
             indicator?.checkCanceled()
             val javaFiles = FileTypeIndex.getFiles(JavaFileType.INSTANCE, scope)
             for (file in javaFiles) {
-                if (file.isValid && fileIndex.isInSourceContent(file)) {
+                if (file.isValid && !fileIndex.isExcluded(file)) {
                     processedFiles.add(file)
                 }
             }
 
             if (processedFiles.isEmpty()) {
                 indicator?.checkCanceled()
-                thisLogger().info("Index results empty, walking module source roots.")
-                val modules = ModuleManager.getInstance(project).modules
-                for (module in modules) {
+                thisLogger().info("Index results empty, walking project content roots.")
+                val contentRoots = ProjectRootManager.getInstance(project).contentRoots
+                for (root in contentRoots) {
                     indicator?.checkCanceled()
-                    val sourceRoots = ModuleRootManager.getInstance(module).sourceRoots
-                    for (root in sourceRoots) {
-                        VfsUtilCore.iterateChildrenRecursively(root, null) { vf ->
-                            indicator?.checkCanceled()
-                            if (!vf.isDirectory && (vf.extension == "kt" || vf.extension == "java")) {
-                                if (vf.isValid && fileIndex.isInSourceContent(vf)) {
-                                    processedFiles.add(vf)
-                                }
+                    VfsUtilCore.iterateChildrenRecursively(root, { dir ->
+                        !fileIndex.isExcluded(dir)
+                    }) { vf ->
+                        indicator?.checkCanceled()
+                        if (!vf.isDirectory && (vf.extension == "kt" || vf.extension == "java")) {
+                            if (vf.isValid && !fileIndex.isExcluded(vf)) {
+                                processedFiles.add(vf)
                             }
-                            true
                         }
+                        true
                     }
                 }
             }

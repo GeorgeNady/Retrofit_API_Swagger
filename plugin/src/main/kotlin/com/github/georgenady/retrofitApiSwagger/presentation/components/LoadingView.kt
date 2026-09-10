@@ -11,6 +11,8 @@ import javax.swing.JPanel
 import javax.swing.SwingConstants
 
 class LoadingView: JPanel(BorderLayout())  {
+    private val textLabel = JBLabel(MyBundle.message("dashboard.scanning"), SwingConstants.CENTER)
+
     init {
         isOpaque = false
 
@@ -33,12 +35,13 @@ class LoadingView: JPanel(BorderLayout())  {
         // Row 1: Informational Text Label
         gbc.gridy = 1
         gbc.insets = Insets(0, 0, 0, 0) // Reset padding for the baseline text element
-        centerPanel.add(
-            JBLabel(MyBundle.message("dashboard.scanning"), SwingConstants.CENTER),
-            gbc
-        )
+        centerPanel.add(textLabel, gbc)
 
         // Place the tightly bundled components directly into the main panel's center
         add(centerPanel, BorderLayout.CENTER)
+    }
+
+    fun setMessage(text: String) {
+        textLabel.text = text
     }
 }
