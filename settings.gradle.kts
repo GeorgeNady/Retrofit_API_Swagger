@@ -1,5 +1,6 @@
 import org.jetbrains.intellij.platform.gradle.extensions.intellijPlatform
 
+include(":plugin")
 include(":example")
 include(":parser")
 
