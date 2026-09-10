@@ -16,6 +16,7 @@ kotlin {
 }
 
 dependencies {
+    implementation(project(":parser"))
     testImplementation("junit:junit:4.13.2")
 
     intellijPlatform {

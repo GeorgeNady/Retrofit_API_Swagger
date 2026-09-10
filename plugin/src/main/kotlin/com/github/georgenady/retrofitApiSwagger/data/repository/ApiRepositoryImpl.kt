@@ -1,11 +1,14 @@
 package com.github.georgenady.retrofitApiSwagger.data.repository
 
 import com.github.georgenady.retrofitApiSwagger.scanner.ProjectSourceFileCollector
+import com.github.georgenady.retrofitApiSwagger.scanner.EndpointScanCache
+import com.github.georgenady.retrofitApiSwagger.scanner.RetrofitCandidateFilter
 import com.github.georgenady.retrofitApiSwagger.parser.FileEndpointParser
 import com.github.georgenady.retrofitApiSwagger.model.ApiNode
 import com.github.georgenady.retrofitApiSwagger.domain.model.ScanOperation
 import com.github.georgenady.retrofitApiSwagger.domain.model.ScanResult
 import com.github.georgenady.retrofitApiSwagger.domain.repository.ApiRepository
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.Service
@@ -23,10 +26,17 @@ class ApiRepositoryImpl(
     private val project: Project
 ) : ApiRepository {
 
-    private val fileCollector = project.getService(ProjectSourceFileCollector::class.java)
+    private val fileCollector: ProjectSourceFileCollector
+        get() = project.getService(ProjectSourceFileCollector::class.java)
 
     private val endpointParser: FileEndpointParser
         get() = project.getService(FileEndpointParser::class.java)
+
+    private val endpointCache: EndpointScanCache
+        get() = project.getService(EndpointScanCache::class.java)
+
+    private val candidateFilter: RetrofitCandidateFilter
+        get() = ApplicationManager.getApplication().getService(RetrofitCandidateFilter::class.java)
 
     override fun scanEndpoints(): Flow<ScanOperation> = flow {
         emit(ScanOperation.Started)
@@ -50,6 +60,17 @@ class ApiRepositoryImpl(
             val fraction = if (totalFilesCount > 0) (index.toDouble() / totalFilesCount) else 1.0
             emit(ScanOperation.InProgress(fraction, virtualFile.name, index + 1, totalFilesCount))
 
+            val cached = endpointCache.get(virtualFile)
+            if (cached != null) {
+                endpoints.addAll(cached)
+                continue
+            }
+
+            if (!candidateFilter.isCandidate(virtualFile)) {
+                endpointCache.put(virtualFile, emptyList())
+                continue
+            }
+
             val fileEndpoints = readAction {
                 if (!virtualFile.isValid) return@readAction emptyList()
                 val psiFile = psiManager.findFile(virtualFile) ?: return@readAction emptyList()
@@ -61,6 +82,7 @@ class ApiRepositoryImpl(
                 }
             }
 
+            endpointCache.put(virtualFile, fileEndpoints)
             endpoints.addAll(fileEndpoints)
         }
 
@@ -71,16 +93,26 @@ class ApiRepositoryImpl(
     override fun findRetrofitEndpointsInFile(virtualFile: VirtualFile): List<ApiNode> {
         if (DumbService.isDumb(project)) return emptyList()
 
+        val cached = endpointCache.get(virtualFile)
+        if (cached != null) return cached
+
+        if (!candidateFilter.isCandidate(virtualFile)) {
+            endpointCache.put(virtualFile, emptyList())
+            return emptyList()
+        }
+
         return runReadAction {
             if (!virtualFile.isValid) return@runReadAction emptyList()
             val psiManager = PsiManager.getInstance(project)
             val psiFile = psiManager.findFile(virtualFile) ?: return@runReadAction emptyList()
-            try {
+            val parsed = try {
                 endpointParser.parse(psiFile)
             } catch (e: Throwable) {
                 thisLogger().warn("Failed to parse endpoints in ${virtualFile.path}", e)
                 emptyList()
             }
+            endpointCache.put(virtualFile, parsed)
+            parsed
         }
     }
 }

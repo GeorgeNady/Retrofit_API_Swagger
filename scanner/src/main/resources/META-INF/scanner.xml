@@ -3,5 +3,19 @@
         <projectService
             serviceInterface="com.github.georgenady.retrofitApiSwagger.scanner.ProjectSourceFileCollector"
             serviceImplementation="com.github.georgenady.retrofitApiSwagger.scanner.impl.ProjectSourceFileCollectorImpl"/>
+
+        <projectService
+            serviceInterface="com.github.georgenady.retrofitApiSwagger.scanner.EndpointScanCache"
+            serviceImplementation="com.github.georgenady.retrofitApiSwagger.scanner.impl.EndpointScanCacheImpl"/>
+
+        <applicationService
+            serviceInterface="com.github.georgenady.retrofitApiSwagger.scanner.RetrofitCandidateFilter"
+            serviceImplementation="com.github.georgenady.retrofitApiSwagger.scanner.impl.RetrofitCandidateFilterImpl"/>
     </extensions>
+
+    <projectListeners>
+        <listener
+            class="com.github.georgenady.retrofitApiSwagger.scanner.listener.RetrofitFileChangeListener"
+            topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
+    </projectListeners>
 </idea-plugin>
