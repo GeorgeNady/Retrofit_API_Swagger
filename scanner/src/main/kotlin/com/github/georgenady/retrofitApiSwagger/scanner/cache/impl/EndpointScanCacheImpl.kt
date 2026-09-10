@@ -1,14 +1,14 @@
-package com.github.georgenady.retrofitApiSwagger.scanner.impl
+package com.github.georgenady.retrofitApiSwagger.scanner.cache.impl
 
 import com.github.georgenady.retrofitApiSwagger.model.ApiNode
-import com.github.georgenady.retrofitApiSwagger.scanner.EndpointScanCache
+import com.github.georgenady.retrofitApiSwagger.scanner.cache.EndpointScanCache
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Thread-safe project-level implementation of [com.github.georgenady.retrofitApiSwagger.scanner.EndpointScanCache] tracking [com.intellij.openapi.vfs.VirtualFile.getModificationStamp].
+ * Thread-safe project-level implementation of [com.github.georgenady.retrofitApiSwagger.scanner.cache.EndpointScanCache] tracking [com.intellij.openapi.vfs.VirtualFile.getModificationStamp].
  */
 @Service(Service.Level.PROJECT)
 internal class EndpointScanCacheImpl(

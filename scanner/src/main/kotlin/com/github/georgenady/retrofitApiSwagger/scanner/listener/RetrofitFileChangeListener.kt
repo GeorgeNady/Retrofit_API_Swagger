@@ -1,6 +1,6 @@
 package com.github.georgenady.retrofitApiSwagger.scanner.listener
 
-import com.github.georgenady.retrofitApiSwagger.scanner.EndpointScanCache
+import com.github.georgenady.retrofitApiSwagger.scanner.cache.EndpointScanCache
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent

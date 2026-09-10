@@ -1,4 +1,4 @@
-package com.github.georgenady.retrofitApiSwagger.scanner
+package com.github.georgenady.retrofitApiSwagger.scanner.filter
 
 import com.intellij.openapi.vfs.VirtualFile
 

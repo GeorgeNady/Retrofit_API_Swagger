@@ -1,4 +1,4 @@
-package com.github.georgenady.retrofitApiSwagger.scanner
+package com.github.georgenady.retrofitApiSwagger.scanner.collector
 
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.vfs.VirtualFile

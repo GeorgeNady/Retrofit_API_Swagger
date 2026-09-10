@@ -1,6 +1,6 @@
-package com.github.georgenady.retrofitApiSwagger.scanner.impl
+package com.github.georgenady.retrofitApiSwagger.scanner.filter.impl
 
-import com.github.georgenady.retrofitApiSwagger.scanner.RetrofitCandidateFilter
+import com.github.georgenady.retrofitApiSwagger.scanner.filter.RetrofitCandidateFilter
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile

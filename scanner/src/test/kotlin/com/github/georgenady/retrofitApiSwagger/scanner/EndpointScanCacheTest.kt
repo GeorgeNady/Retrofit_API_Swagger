@@ -1,7 +1,8 @@
 package com.github.georgenady.retrofitApiSwagger.scanner
 
 import com.github.georgenady.retrofitApiSwagger.model.ApiNode
-import com.github.georgenady.retrofitApiSwagger.scanner.impl.EndpointScanCacheImpl
+import com.github.georgenady.retrofitApiSwagger.scanner.cache.EndpointScanCache
+import com.github.georgenady.retrofitApiSwagger.scanner.cache.impl.EndpointScanCacheImpl
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.jetbrains.kotlin.idea.KotlinFileType
 import org.junit.Test

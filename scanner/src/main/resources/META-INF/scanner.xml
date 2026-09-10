@@ -1,16 +1,16 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.intellij">
         <projectService
-            serviceInterface="com.github.georgenady.retrofitApiSwagger.scanner.ProjectSourceFileCollector"
-            serviceImplementation="com.github.georgenady.retrofitApiSwagger.scanner.impl.ProjectSourceFileCollectorImpl"/>
+            serviceInterface="com.github.georgenady.retrofitApiSwagger.scanner.collector.ProjectSourceFileCollector"
+            serviceImplementation="com.github.georgenady.retrofitApiSwagger.scanner.collector.impl.ProjectSourceFileCollectorImpl"/>
 
         <projectService
-            serviceInterface="com.github.georgenady.retrofitApiSwagger.scanner.EndpointScanCache"
-            serviceImplementation="com.github.georgenady.retrofitApiSwagger.scanner.impl.EndpointScanCacheImpl"/>
+            serviceInterface="com.github.georgenady.retrofitApiSwagger.scanner.cache.EndpointScanCache"
+            serviceImplementation="com.github.georgenady.retrofitApiSwagger.scanner.cache.impl.EndpointScanCacheImpl"/>
 
         <applicationService
-            serviceInterface="com.github.georgenady.retrofitApiSwagger.scanner.RetrofitCandidateFilter"
-            serviceImplementation="com.github.georgenady.retrofitApiSwagger.scanner.impl.RetrofitCandidateFilterImpl"/>
+            serviceInterface="com.github.georgenady.retrofitApiSwagger.scanner.filter.RetrofitCandidateFilter"
+            serviceImplementation="com.github.georgenady.retrofitApiSwagger.scanner.filter.impl.RetrofitCandidateFilterImpl"/>
     </extensions>
 
     <projectListeners>

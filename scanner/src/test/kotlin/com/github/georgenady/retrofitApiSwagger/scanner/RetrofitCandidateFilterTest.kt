@@ -1,6 +1,7 @@
 package com.github.georgenady.retrofitApiSwagger.scanner
 
-import com.github.georgenady.retrofitApiSwagger.scanner.impl.RetrofitCandidateFilterImpl
+import com.github.georgenady.retrofitApiSwagger.scanner.filter.RetrofitCandidateFilter
+import com.github.georgenady.retrofitApiSwagger.scanner.filter.impl.RetrofitCandidateFilterImpl
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.jetbrains.kotlin.idea.KotlinFileType
 import org.junit.Test

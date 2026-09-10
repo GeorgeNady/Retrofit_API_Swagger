@@ -1,7 +1,7 @@
-package com.github.georgenady.retrofitApiSwagger.scanner.impl
+package com.github.georgenady.retrofitApiSwagger.scanner.collector.impl
 
-import com.github.georgenady.retrofitApiSwagger.scanner.ProjectSourceFileCollector
-import com.github.georgenady.retrofitApiSwagger.scanner.ScannerSettings
+import com.github.georgenady.retrofitApiSwagger.scanner.collector.ProjectSourceFileCollector
+import com.github.georgenady.retrofitApiSwagger.scanner.settings.ScannerSettings
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.components.Service

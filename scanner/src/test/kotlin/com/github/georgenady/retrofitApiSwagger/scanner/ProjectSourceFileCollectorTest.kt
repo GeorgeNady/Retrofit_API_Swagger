@@ -1,6 +1,7 @@
 package com.github.georgenady.retrofitApiSwagger.scanner
 
-import com.github.georgenady.retrofitApiSwagger.scanner.impl.ProjectSourceFileCollectorImpl
+import com.github.georgenady.retrofitApiSwagger.scanner.collector.ProjectSourceFileCollector
+import com.github.georgenady.retrofitApiSwagger.scanner.collector.impl.ProjectSourceFileCollectorImpl
 import com.intellij.ide.highlighter.JavaFileType
 import com.intellij.openapi.components.service
 import com.intellij.psi.PsiFileFactory

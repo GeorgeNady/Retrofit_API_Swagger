@@ -1,4 +1,4 @@
-package com.github.georgenady.retrofitApiSwagger.scanner
+package com.github.georgenady.retrofitApiSwagger.scanner.settings
 
 /**
  * Configuration contract defining file scanning options for the scanner module.

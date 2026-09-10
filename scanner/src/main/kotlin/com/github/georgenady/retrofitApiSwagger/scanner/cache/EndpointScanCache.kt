@@ -1,4 +1,4 @@
-package com.github.georgenady.retrofitApiSwagger.scanner
+package com.github.georgenady.retrofitApiSwagger.scanner.cache
 
 import com.github.georgenady.retrofitApiSwagger.model.ApiNode
 import com.intellij.openapi.vfs.VirtualFile

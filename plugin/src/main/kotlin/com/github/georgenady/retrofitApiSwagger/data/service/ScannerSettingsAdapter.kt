@@ -1,6 +1,6 @@
 package com.github.georgenady.retrofitApiSwagger.data.service
 
-import com.github.georgenady.retrofitApiSwagger.scanner.ScannerSettings
+import com.github.georgenady.retrofitApiSwagger.scanner.settings.ScannerSettings
 import com.intellij.openapi.project.Project
 
 class ScannerSettingsAdapter(
