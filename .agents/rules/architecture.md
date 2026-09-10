@@ -62,14 +62,59 @@ Organize the codebase into decoupled layers with strict, unidirectional dependen
 - **Role**: Cross-cutting utilities, logging, shared constants, and configurations required across modules.
 - Must remain lightweight and not become a dumping ground for unrelated helpers.
 
+### 5. Single-Purpose Submodules Architecture (Helper / Feature Modules)
+Small, single-purpose helper modules (e.g., parsers, analyzers, scanners) must follow a disciplined, self-contained architecture:
+- **Structure**:
+  ```text
+  com.yourdomain.<module>/
+  ├── model/                 // Public domain models, value objects, and data transfer types
+  ├── utils/                 // Module-specific constants and helper utilities
+  ├── <Module>Service.kt     // Public interface / contract defining the module's capability
+  └── impl/                  // Internal implementations (hidden from consumers)
+      ├── ConcreteService.kt // Marked 'internal class'
+      └── SubWorker.kt       // Marked 'internal class'
+  ```
+- **Rules for Single-Purpose Modules**:
+  - Expose **only** the contract interface and models to consuming modules.
+  - All concrete implementations in `impl/` must be marked with the `internal` visibility modifier.
+  - External consumers must interact strictly with the public interface obtained via Dependency Injection.
+
 ---
 
 ## 3. Dependency Injection & Inversion of Control
 
 - **Program to Contracts**: Always accept interface dependencies rather than concrete implementations.
 - **Constructor Injection**: Prefer constructor injection over field or service-locator injection. This guarantees explicit dependencies, immutability, and frictionless unit testing.
-- **Platform DI Integration**: Leverage the platform's standard dependency management mechanism (e.g., Spring, Hilt, Koin, NestJS, Service Container) without letting framework annotations leak into pure domain entities.
+- **Platform DI Integration**: Leverage the platform's standard dependency management mechanism (e.g., IntelliJ Services/Extensions, Spring, Hilt, Koin, NestJS, Service Container) without letting framework annotations leak into pure domain entities.
 - **No Global Mutable Singletons**: Avoid global mutable state. Singletons must be managed by the dependency container with thread-safe access.
+
+### Modular DI & Descriptor Separation (`xi:include`)
+When working in a multi-module architecture with platform descriptor files (e.g., IntelliJ Plugin Platform, modular XML/manifest configurations):
+- **Self-Contained Module Descriptors**:
+  - Each helper/utility submodule must define its own descriptor file in `src/main/resources/META-INF/<module>.xml`.
+  - The submodule registers its own services, extensions, or listeners against its public contract:
+    ```xml
+    <idea-plugin>
+        <extensions defaultExtensionNs="com.intellij">
+            <projectService
+                serviceInterface="com.yourdomain.module.ModuleService"
+                serviceImplementation="com.yourdomain.module.impl.ConcreteServiceImpl"/>
+        </extensions>
+    </idea-plugin>
+    ```
+- **Executable Module Aggregation via `<xi:include>`**:
+  - The main executable module (e.g., `:plugin`, `:app`) must **not** duplicate the submodule's service or extension declarations.
+  - Instead, the main module links the submodule descriptor using standard `XInclude`:
+    ```xml
+    <idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
+        ...
+        <xi:include href="<module>.xml"/>
+        ...
+    </idea-plugin>
+    ```
+- **Benefits**:
+  - **Decoupled ownership**: Submodule configurations remain entirely within the submodule boundary.
+  - **Implementation concealment**: The main module consumes `project.getService(ModuleService::class.java)` without ever referencing or depending on the `internal` implementation class.
 
 ---
 
@@ -78,6 +123,7 @@ Organize the codebase into decoupled layers with strict, unidirectional dependen
 - **Principle of Least Privilege**: Default to the most restrictive access modifier available (`private` > `protected` / package-private > `internal` > `public`).
 - **Encapsulate Implementation Details**:
   - Keep internal helpers, low-level parsers, network adapters, and intermediate state private or module-internal.
+  - In submodules, all classes inside `impl/` must be marked `internal`.
   - Public exposure is strictly reserved for domain interfaces, use cases, domain models, and designated public API entry points.
 - **Immutability by Default**:
   - Expose read-only state/collections (e.g., `StateFlow`, `Observable`, unmodifiable lists) to observers while keeping mutable state private.
