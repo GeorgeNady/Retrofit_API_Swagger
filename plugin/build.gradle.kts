@@ -20,11 +20,14 @@ kotlin {
 
 dependencies {
     implementation(project(":parser"))
+    implementation(project(":scanner"))
     testImplementation("junit:junit:4.13.2")
     implementation("org.tinyjee.jgraphx:jgraphx:3.4.1.3")
 
     intellijPlatform {
         pluginComposedModule(project(":parser"))
+        pluginComposedModule(project(":scanner"))
+
         androidStudio("2024.2.1.12")
 
         bundledPlugin("org.jetbrains.kotlin")

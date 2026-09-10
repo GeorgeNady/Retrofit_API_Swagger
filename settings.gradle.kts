@@ -3,6 +3,7 @@ import org.jetbrains.intellij.platform.gradle.extensions.intellijPlatform
 include(":plugin")
 include(":example")
 include(":parser")
+include(":scanner")
 
 
 rootProject.name = "Retrofit_API_Swagger"

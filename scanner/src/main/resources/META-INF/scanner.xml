@@ -1,0 +1,7 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <projectService
+            serviceInterface="com.github.georgenady.retrofitApiSwagger.scanner.ProjectSourceFileCollector"
+            serviceImplementation="com.github.georgenady.retrofitApiSwagger.scanner.impl.ProjectSourceFileCollectorImpl"/>
+    </extensions>
+</idea-plugin>

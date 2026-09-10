@@ -1,6 +1,6 @@
 package com.github.georgenady.retrofitApiSwagger.data.repository
 
-import com.github.georgenady.retrofitApiSwagger.data.collector.ProjectSourceFileCollector
+import com.github.georgenady.retrofitApiSwagger.scanner.ProjectSourceFileCollector
 import com.github.georgenady.retrofitApiSwagger.parser.FileEndpointParser
 import com.github.georgenady.retrofitApiSwagger.model.ApiNode
 import com.github.georgenady.retrofitApiSwagger.domain.model.ScanOperation

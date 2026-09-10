@@ -27,8 +27,9 @@
         </ul>
     ]]></description>
 
-    <!-- Include the definitions from the parser module -->
+    <!-- Include the definitions from the other modules -->
     <xi:include href="/META-INF/parser.xml" xpointer="xpointer(/idea-plugin/*)" />
+    <xi:include href="/META-INF/scanner.xml" xpointer="xpointer(/idea-plugin/*)" />
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.java</depends>
@@ -80,8 +81,6 @@
             serviceInterface="com.github.georgenady.retrofitApiSwagger.domain.repository.ApiRepository" />
         <projectService
             serviceImplementation="com.github.georgenady.retrofitApiSwagger.presentation.main.MainToolViewModel" />
-        <projectService
-            serviceImplementation="com.github.georgenady.retrofitApiSwagger.data.collector.ProjectSourceFileCollector" />
         <applicationService
             serviceImplementation="com.github.georgenady.retrofitApiSwagger.presentation.panels.swaggerPanel.SwaggerPanelViewModel" />
 
