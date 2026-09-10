@@ -1,7 +1,7 @@
 import org.jetbrains.intellij.platform.gradle.extensions.intellijPlatform
 
 include(":example")
-include(":plugin")
+include(":parser")
 
 
 rootProject.name = "Retrofit_API_Swagger"
@@ -11,6 +11,7 @@ pluginManagement {
         id("org.jetbrains.kotlin.jvm") version "2.3.21"
         id("org.jetbrains.changelog") version "2.5.0"
         id("org.jetbrains.intellij.platform") version "2.1.0"
+        id("org.jetbrains.intellij.platform.module") version "2.1.0"
     }
 }
 

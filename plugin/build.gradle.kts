@@ -19,6 +19,7 @@ kotlin {
 }
 
 dependencies {
+    implementation(project(":parser"))
     testImplementation("junit:junit:4.13.2")
     implementation("org.tinyjee.jgraphx:jgraphx:3.4.1.3")
 

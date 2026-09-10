@@ -1,10 +1,21 @@
 package com.github.georgenady.retrofitApiSwagger.data.parser
 
 import com.github.georgenady.retrofitApiSwagger.data.parser.utils.RetrofitConstants
-import com.github.georgenady.retrofitApiSwagger.domain.model.*
-import com.intellij.psi.*
+import com.github.georgenady.retrofitApiSwagger.domain.model.AnnotationDetail
+import com.github.georgenady.retrofitApiSwagger.domain.model.ApiNode
+import com.github.georgenady.retrofitApiSwagger.domain.model.ParameterDetail
+import com.github.georgenady.retrofitApiSwagger.domain.model.ParameterLocation
+import com.intellij.psi.PsiAnnotation
+import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiClassType
+import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiJavaFile
+import com.intellij.psi.PsiMethod
 import com.intellij.psi.util.PsiTreeUtil
 
+/**
+ * Parses Retrofit endpoint definitions from Java source files ([PsiJavaFile]).
+ */
 class JavaEndpointParser : FileEndpointParser {
 
     override fun canParse(psiFile: PsiFile): Boolean = psiFile is PsiJavaFile
@@ -14,6 +25,12 @@ class JavaEndpointParser : FileEndpointParser {
         return parseJavaFile(javaFile)
     }
 
+    /**
+     * Finds and parses all methods with Retrofit annotations in a Java file.
+     *
+     * @param file The Java source file.
+     * @return List of parsed [ApiNode] objects.
+     */
     fun parseJavaFile(file: PsiJavaFile): List<ApiNode> {
         val endpoints = mutableListOf<ApiNode>()
         val classes = PsiTreeUtil.findChildrenOfType(file, PsiClass::class.java)
@@ -29,6 +46,14 @@ class JavaEndpointParser : FileEndpointParser {
         return endpoints
     }
 
+    /**
+     * Parses a single Java method to check for Retrofit HTTP annotations and construct an [ApiNode].
+     *
+     * @param method The Java method PSI element.
+     * @param psiClass The declaring Java class or interface.
+     * @param file The enclosing Java file.
+     * @return An [ApiNode] if the method declares a Retrofit endpoint, or null otherwise.
+     */
     fun parseMethod(method: PsiMethod, psiClass: PsiClass, file: PsiJavaFile): ApiNode? {
         var httpMethod: String? = null
         var path = ""
@@ -40,7 +65,7 @@ class JavaEndpointParser : FileEndpointParser {
             val shortName = qualifiedName?.substringAfterLast(".")
                 ?: annotation.nameReferenceElement?.referenceName
                 ?: continue
-            
+
             val args = extractJavaAnnotationArgs(annotation)
             allAnnotations.add(AnnotationDetail(shortName, args))
 
@@ -56,7 +81,7 @@ class JavaEndpointParser : FileEndpointParser {
 
         val parameters = method.parameterList.parameters.map { param ->
             var location = ParameterLocation.QUERY
-            
+
             for (anno in param.annotations) {
                 val shortName = anno.qualifiedName?.substringAfterLast(".")
                 location = when (shortName) {

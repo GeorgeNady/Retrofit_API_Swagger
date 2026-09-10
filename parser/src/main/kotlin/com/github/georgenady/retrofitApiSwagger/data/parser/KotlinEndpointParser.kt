@@ -1,11 +1,20 @@
 package com.github.georgenady.retrofitApiSwagger.data.parser
 
 import com.github.georgenady.retrofitApiSwagger.data.parser.utils.RetrofitConstants
-import com.github.georgenady.retrofitApiSwagger.domain.model.*
+import com.github.georgenady.retrofitApiSwagger.domain.model.AnnotationDetail
+import com.github.georgenady.retrofitApiSwagger.domain.model.ApiNode
+import com.github.georgenady.retrofitApiSwagger.domain.model.ParameterDetail
+import com.github.georgenady.retrofitApiSwagger.domain.model.ParameterLocation
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.psi.KtAnnotationEntry
+import org.jetbrains.kotlin.psi.KtClassOrObject
+import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.KtNamedFunction
 
+/**
+ * Parses Retrofit endpoint definitions from Kotlin source files ([KtFile]).
+ */
 class KotlinEndpointParser : FileEndpointParser {
 
     override fun canParse(psiFile: PsiFile): Boolean = psiFile is KtFile
@@ -15,6 +24,12 @@ class KotlinEndpointParser : FileEndpointParser {
         return parseKtFile(ktFile)
     }
 
+    /**
+     * Finds and parses all named functions with Retrofit annotations in a Kotlin file.
+     *
+     * @param file The Kotlin source file.
+     * @return List of parsed [ApiNode] objects.
+     */
     fun parseKtFile(file: KtFile): List<ApiNode> {
         val endpoints = mutableListOf<ApiNode>()
         val functions = PsiTreeUtil.findChildrenOfType(file, KtNamedFunction::class.java)
@@ -28,6 +43,13 @@ class KotlinEndpointParser : FileEndpointParser {
         return endpoints
     }
 
+    /**
+     * Parses a single Kotlin function to check for Retrofit HTTP annotations and construct an [ApiNode].
+     *
+     * @param function The Kotlin named function PSI element.
+     * @param file The enclosing Kotlin file.
+     * @return An [ApiNode] if the function is a valid Retrofit endpoint, or null otherwise.
+     */
     fun parseFunction(function: KtNamedFunction, file: KtFile): ApiNode? {
         var httpMethod: String? = null
         var path = ""
@@ -60,7 +82,7 @@ class KotlinEndpointParser : FileEndpointParser {
 
         val parameters = function.valueParameters.map { param ->
             var location = ParameterLocation.QUERY
-            
+
             for (anno in param.annotationEntries) {
                 val shortName = anno.shortName?.asString()
                 location = when (shortName) {
@@ -76,7 +98,7 @@ class KotlinEndpointParser : FileEndpointParser {
                 name = param.name ?: "unnamed",
                 type = param.typeReference?.text ?: "Any",
                 location = location,
-                fqn = null // Simplified for now to fix build
+                fqn = null
             )
         }
 
@@ -89,7 +111,7 @@ class KotlinEndpointParser : FileEndpointParser {
             supportsCache = supportsCache,
             annotations = allAnnotations,
             parameters = parameters,
-            returnTypeFqn = null // Simplified for now to fix build
+            returnTypeFqn = null
         )
     }
 

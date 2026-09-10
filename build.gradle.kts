@@ -1,11 +1,12 @@
 plugins {
     id("org.jetbrains.kotlin.jvm") apply false
     id("org.jetbrains.intellij.platform") apply false
+    id("org.jetbrains.intellij.platform.module") apply false
 }
 
 allprojects {
     group = providers.gradleProperty("group").getOrElse("com.github.georgenady.androidapigraph")
-    version = providers.gradleProperty("version").getOrElse("1.1.9")
+    version = providers.gradleProperty("version").getOrElse("1.1.10")
 }
 
 // Copy the assembled plugin archive to the root build/distributions directory for CI workflow compatibility

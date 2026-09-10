@@ -6,7 +6,7 @@
     <vendor email="gorgonady.gn@gmail.com" url="https://github.com/GeorgeNady">
         George Nady
     </vendor>
-    <version>1.1.9</version>
+    <version>1.1.10</version>
     <description><![CDATA[
         <p><b>Retrofit API Swagger</b> is a professional tool for visualizing and managing your Android network layer. It provides a visual "Design Mode" similar to the Jetpack Navigation Editor, tailored for Retrofit APIs.</p>
 
