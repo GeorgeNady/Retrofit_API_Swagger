@@ -83,12 +83,12 @@
             serviceImplementation="com.github.georgenady.retrofitApiSwagger.presentation.main.MainToolViewModel" />
         <projectService
             serviceImplementation="com.github.georgenady.retrofitApiSwagger.presentation.panels.graphPanel.WebviewResourceService" />
-        <projectService
-            serviceImplementation="com.github.georgenady.retrofitApiSwagger.data.service.CacheScaffoldingService" />
 
         <!-- UI Settings Configuration -->
         <projectService
             serviceImplementation="com.github.georgenady.retrofitApiSwagger.data.service.SwaggerSettingsService" />
+        <projectService
+            serviceImplementation="com.github.georgenady.retrofitApiSwagger.data.service.EdgeActionSettingsService" />
         <projectService
             serviceInterface="com.github.georgenady.retrofitApiSwagger.scanner.settings.ScannerSettings"
             serviceImplementation="com.github.georgenady.retrofitApiSwagger.data.service.ScannerSettingsAdapter" />
@@ -96,6 +96,10 @@
             id="com.github.georgenady.retrofitApiSwagger.settings"
             instance="com.github.georgenady.retrofitApiSwagger.core.configuration.SwaggerSettingsConfigurable"
             parentId="tools" />
+        <projectConfigurable displayName="Edge Actions"
+            id="com.github.georgenady.retrofitApiSwagger.edgeActions"
+            instance="com.github.georgenady.retrofitApiSwagger.core.configuration.EdgeActionsConfigurable"
+            parentId="com.github.georgenady.retrofitApiSwagger.settings" />
 
         <toolWindow name="Retrofit API Swagger" anchor="right"
             factoryClass="com.github.georgenady.retrofitApiSwagger.presentation.main.MainToolWindowFactory"

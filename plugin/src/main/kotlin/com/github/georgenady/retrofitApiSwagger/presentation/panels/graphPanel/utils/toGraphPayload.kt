@@ -1,5 +1,6 @@
 package com.github.georgenady.retrofitApiSwagger.presentation.panels.graphPanel.utils
 
+import com.github.georgenady.retrofitApiSwagger.domain.edgeaction.model.EdgeActionConfig
 import com.github.georgenady.retrofitApiSwagger.model.ApiNode
 import com.github.georgenady.retrofitApiSwagger.presentation.theme.SwaggerTheme
 import com.intellij.ui.JBColor
@@ -7,7 +8,8 @@ import java.awt.Color
 
 fun List<ApiNode>.toGraphPayload(
     requestResults: Map<String, String> = emptyMap(),
-    isEditorMode: Boolean = false
+    isEditorMode: Boolean = false,
+    edgeActions: List<EdgeActionConfig> = emptyList()
 ): Map<String, Any> {
     val jsonData = this.map { node ->
         mapOf(
@@ -40,12 +42,23 @@ fun List<ApiNode>.toGraphPayload(
         )
     }
 
+    val actionsData = edgeActions.map { action ->
+        mapOf(
+            "id" to action.id,
+            "name" to action.name,
+            "description" to action.description,
+            "icon" to action.icon,
+            "placement" to action.placement.name
+        )
+    }
+
     return mapOf(
         "endpoints" to jsonData,
         "colors" to methodColors,
         "isDark" to !JBColor.isBright(),
         "requestResults" to requestResults,
-        "isEditorMode" to isEditorMode
+        "isEditorMode" to isEditorMode,
+        "edgeActions" to actionsData
     )
 }
 

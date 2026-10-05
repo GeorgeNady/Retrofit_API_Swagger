@@ -3,9 +3,9 @@ import { useKotlinData } from './hooks/useKotlinData';
 import { useCytoscape } from './hooks/useCytoscape.js';
 import UnifiedHeader from './components/UnifiedHeader/UnifiedHeader';
 import Toolbar from './components/ModernToolbar/ModernToolbar';
-import Legend from './components/Legend/Legend';
 import SwaggerPanel from './components/SwaggerPanel/SwaggerPanel';
 import ApiFormModal from './components/SwaggerPanel/ApiFormModal';
+import EdgeActionDialog from './components/EdgeActionDialog/EdgeActionDialog';
 import { KotlinBridge } from './api/KotlinBridge';
 
 function App() {
@@ -14,6 +14,7 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingNode, setEditingNode] = useState(null);
+  const [activeConnection, setActiveConnection] = useState(null);
 
   // URL query params: ?view=graph|list|swagger &editor=true|false
   const params = new URLSearchParams(window.location.search);
@@ -30,7 +31,7 @@ function App() {
   const [currentView, setCurrentView] = useState(initialView);
 
   const graphState = useKotlinData();
-  const cyRef = useCytoscape(containerRef, graphState, isPanMode);
+  const cyRef = useCytoscape(containerRef, graphState, isPanMode, (conn) => setActiveConnection(conn));
 
   // Filter endpoints for count and for passing down
   const filteredEndpoints = useMemo(() => {
@@ -153,8 +154,6 @@ function App() {
             }}
             onZoomFit={() => cyRef.current?.fit(null, 50)}
           />
-
-          <Legend />
         </div>
 
         {/* List / Swagger View */}
@@ -184,6 +183,25 @@ function App() {
         onClose={() => setIsModalOpen(false)}
         initialData={editingNode}
         isDark={graphState.isDark}
+        onSubmit={(payload) => KotlinBridge.createOrUpdateApi(payload)}
+      />
+
+      {/* Dynamic Edge Action Dialog */}
+      <EdgeActionDialog
+        connection={activeConnection}
+        edgeActions={graphState.edgeActions || []}
+        isDark={graphState.isDark}
+        onClose={() => setActiveConnection(null)}
+        onSelectAction={(actionId) => {
+          if (activeConnection) {
+            KotlinBridge.executeEdgeAction(
+              actionId,
+              activeConnection.source.signature,
+              activeConnection.target.signature
+            );
+          }
+          setActiveConnection(null);
+        }}
       />
     </div>
   );

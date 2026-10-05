@@ -1,168 +1,152 @@
-# Software Architecture & Engineering Rules
+# Clean Architecture & Engineering Rules
 
-A standardized set of architectural principles, engineering practices, and code hygiene rules applicable across software projects and platforms.
+Standardized architectural principles, engineering practices, and code hygiene rules for **Retrofit_API_Swagger** across AI agents (Antigravity & Claude).
+
+### Modular Rule Files (`.agents/rules/`)
+The architecture rules are split into modular files under `.agents/rules/` so you can selectively apply or toggle rules per topic:
+| Rule File | Topic | Size |
+| :--- | :--- | :--- |
+| [clean-architecture.md](file:///Users/georgenady/IdeaProjects/Retrofit_API_Swagger/.agents/rules/clean-architecture.md) | Multi-module boundaries (`:parser`, `:scanner`, `:plugin`, `webview-ui`), layer constraints (domain, data, presentation), zero-UI rule for `:parser`. | ~2.8 KB |
+| [intellij-platform-sdk.md](file:///Users/georgenady/IdeaProjects/Retrofit_API_Swagger/.agents/rules/intellij-platform-sdk.md) | Native DI (`@Service`, `project.service<T>()`), Threading & PSI (`ReadAction`, `WriteCommandAction`), UI thread safety, ClassLoader hygiene. | ~3.0 KB |
+| [solid-principles.md](file:///Users/georgenady/IdeaProjects/Retrofit_API_Swagger/.agents/rules/solid-principles.md) | Single Responsibility (SRP), Open/Closed (OCP), Liskov Substitution (LSP), Interface Segregation (ISP), Dependency Inversion (DIP). | ~2.5 KB |
+| [code-quality-and-hygiene.md](file:///Users/georgenady/IdeaProjects/Retrofit_API_Swagger/.agents/rules/code-quality-and-hygiene.md) | One Entity Per File, submodule `internal` encapsulation in `impl/`, immutability & YAGNI. | ~1.4 KB |
+| [react-architecture.md](file:///Users/georgenady/IdeaProjects/Retrofit_API_Swagger/.agents/rules/react-architecture.md) | Zero-business-logic pure UI components, layered building blocks & screens, custom hooks for logic, One Component Per File. | ~3.0 KB |
+| [jcef-webview-bridge.md](file:///Users/georgenady/IdeaProjects/Retrofit_API_Swagger/.agents/rules/jcef-webview-bridge.md) | `KotlinBridge.js` single gateway, unidirectional `StateFlow` synchronization (`window.updateGraphData`), event standards, dark/light theme support. | ~1.5 KB |
+| [testing-and-verification.md](file:///Users/georgenady/IdeaProjects/Retrofit_API_Swagger/.agents/rules/testing-and-verification.md) | Automated unit testing standards for use cases & parsers, regression prevention, standard workflow commands. | ~1.1 KB |
 
 ---
 
 ## 1. General Principles
-
-### SOLID Principles Compliance
-- **Single Responsibility (SRP)**: Each class, module, or function must have one reason to change and perform a single well-defined task.
-- **Open/Closed (OCP)**: Software entities should be open for extension, but closed for modification. Favor composition, strategy patterns, and polymorphism over modifying existing tested logic.
-- **Liskov Substitution (LSP)**: Subtypes must be substitutable for their base types without altering program correctness.
-- **Interface Segregation (ISP)**: Prefer many client-specific, focused interfaces over a single bloated "god" interface.
-- **Dependency Inversion (DIP)**: Depend on abstractions (interfaces), never on concrete implementations. High-level business logic must never depend directly on low-level infrastructure or UI details.
-
-### One Entity Per File
-- **Rule**: Every class, interface, enum, record, or sealed hierarchy must reside in its own dedicated source file matching the type name.
-- **Reason**: Maximizes searchability, avoids monolithic files, minimizes git merge conflicts, and clarifies ownership.
-- **Exception**: Trivial, tightly-scoped private helper classes or single-purpose data holders solely used by the parent class in the same file.
-
-### Simplicity & YAGNI
-- Write the simplest code that solves the current problem. Avoid speculative abstractions, unnecessary generic indirection, and premature optimization.
-- Boring, readable code wins over clever, complex code.
+- **SOLID Compliance**:
+  - **SRP**: Single responsibility per class/function.
+  - **OCP**: Open for extension, closed for modification.
+  - **LSP**: Subtypes must be substitutable for their base types.
+  - **ISP**: Small, focused interfaces over bloated god-interfaces.
+  - **DIP**: High-level domain logic must depend on abstractions, never on low-level UI or concrete data details.
+- **One Entity Per File**: Every class, interface, enum, and component resides in its own dedicated file matching its type name.
+- **Simplicity & YAGNI**: Write the minimal code that solves the task. Deletion over addition. Avoid premature abstractions.
 
 ---
 
-## 2. Layered Architecture & Separation of Concerns
-
-Organize the codebase into decoupled layers with strict, unidirectional dependency flow:
+## 2. Multi-Module Clean Architecture
 
 ```text
-[ Presentation / UI Layer ]
-           ↓ depends on
-     [ Domain Layer ]  ←  (Core: No external dependencies)
-           ↑ implemented by
-[ Data / Infrastructure Layer ]
+┌────────────────────────────────────────────────────────┐
+│                        :plugin                         │
+│  ├── presentation/  (Swing, ToolWindow, JCEF, Bridges) │
+│  ├── domain/        (UseCases, Repository Contracts)   │
+│  ├── data/          (Repo Impls, Settings Services)    │
+│  └── core/          (Configurables, System Setup)      │
+└──────────────┬──────────────────────────┬──────────────┘
+               │                          │
+               ▼                          ▼
+┌───────────────────────────┐ ┌──────────────────────────┐
+│         :scanner          │ │         :parser          │
+│ Candidate filtering &     │ │ AST/PSI parsers for      │
+│ project file scanning     │ │ Retrofit & Ktorfit APIs  │
+└───────────────────────────┘ └──────────────────────────┘
+               ▲
+               │
+┌───────────────────────────┐
+│       webview-ui/         │
+│ React 18 + Vite frontend  │
+│ (Cytoscape Graph + List)  │
+└───────────────────────────┘
 ```
 
-### 1. Domain Layer (Core Business Logic)
-- **Role**: Contains enterprise business rules, entities, value objects, and repository/service interfaces.
-- **Dependency Rule**: **Zero external framework or UI dependencies**. This layer must be pure, portable, and independently testable without mock frameworks or platform emulators.
-- **Key Components**:
-  - `model/`: Immutable entities, value objects, and domain enums.
-  - `repository/`: Abstract contracts/interfaces defining how data is accessed and persisted.
-  - `usecase/` (or `interactor/`): Single-responsibility business use cases executing domain operations.
-
-### 2. Data & Infrastructure Layer
-- **Role**: Implements domain interfaces and interacts with the outside world (databases, network APIs, disk I/O, hardware, operating system, external SDKs).
-- **Key Components**:
-  - `repository/`: Concrete implementations of domain repository interfaces.
-  - `datasource/` or `client/`: Low-level data fetchers, API clients, database DAOs, and third-party wrappers.
-  - `dto/` or `mapper/`: Data Transfer Objects for external serialization and mappers converting DTOs to pure domain entities.
-
-### 3. Presentation / UI Layer
-- **Role**: Manages UI rendering, user interaction, input capture, and UI state presentation.
-- **Key Components**:
-  - `view/` or `ui/`: Visual components, layouts, screens, or panels.
-  - `state/` or `viewmodel/`: State holders (ViewModels, Presenters, Controllers) that observe use cases and emit immutable UI state.
-  - `components/`: Modular, reusable UI widgets and design system elements.
-
-### 4. Core / Common Layer
-- **Role**: Cross-cutting utilities, logging, shared constants, and configurations required across modules.
-- Must remain lightweight and not become a dumping ground for unrelated helpers.
-
-### 5. Single-Purpose Submodules Architecture (Helper / Feature Modules)
-Small, single-purpose helper modules (e.g., parsers, analyzers, scanners) must follow a disciplined, self-contained architecture:
-- **Structure**:
-  ```text
-  com.yourdomain.<module>/
-  ├── model/                 // Public domain models, value objects, and data transfer types
-  ├── utils/                 // Module-specific constants and helper utilities
-  ├── <Module>Service.kt     // Public interface / contract defining the module's capability
-  └── impl/                  // Internal implementations (hidden from consumers)
-      ├── ConcreteService.kt // Marked 'internal class'
-      └── SubWorker.kt       // Marked 'internal class'
-  ```
-- **Rules for Single-Purpose Modules**:
-  - Expose **only** the contract interface and models to consuming modules.
-  - All concrete implementations in `impl/` must be marked with the `internal` visibility modifier.
-  - External consumers must interact strictly with the public interface obtained via Dependency Injection.
+### Module Boundaries:
+1. **`:parser`**: Pure AST/PSI parsing and domain models (`ApiNode`, `ParameterDetail`). **Zero UI, Swing, or JCEF dependencies.**
+2. **`:scanner`**: File discovery and candidate filtering logic.
+3. **`:plugin`**:
+   - **`domain/`**: Pure business use cases (`operator fun invoke(...)`) and repository interfaces (`ApiRepository`). Zero UI/Swing imports.
+   - **`data/`**: Repository implementations (`ApiRepositoryImpl`), persistent storage (`PersistentStateComponent`), and platform I/O.
+   - **`presentation/`**: `MainToolViewModel` (`StateFlow`), JCEF Chromium browser integration (`JBCefBrowser`), JavaScript bridges, and split editor panels.
+4. **`webview-ui`**: React 18 + Vite UI. Single gateway communication via `KotlinBridge.js`. Unidirectional state flow (Kotlin pushes state snapshots, React dispatches user actions).
 
 ---
 
-## 3. Dependency Injection & Inversion of Control
-
-- **Program to Contracts**: Always accept interface dependencies rather than concrete implementations.
-- **Constructor Injection**: Prefer constructor injection over field or service-locator injection. This guarantees explicit dependencies, immutability, and frictionless unit testing.
-- **Platform DI Integration**: Leverage the platform's standard dependency management mechanism (e.g., IntelliJ Services/Extensions, Spring, Hilt, Koin, NestJS, Service Container) without letting framework annotations leak into pure domain entities.
-- **No Global Mutable Singletons**: Avoid global mutable state. Singletons must be managed by the dependency container with thread-safe access.
-
-### Modular DI & Descriptor Separation (`xi:include`)
-When working in a multi-module architecture with platform descriptor files (e.g., IntelliJ Plugin Platform, modular XML/manifest configurations):
-- **Self-Contained Module Descriptors**:
-  - Each helper/utility submodule must define its own descriptor file in `src/main/resources/META-INF/<module>.xml`.
-  - The submodule registers its own services, extensions, or listeners against its public contract:
-    ```xml
-    <idea-plugin>
-        <extensions defaultExtensionNs="com.intellij">
-            <projectService
-                serviceInterface="com.yourdomain.module.ModuleService"
-                serviceImplementation="com.yourdomain.module.impl.ConcreteServiceImpl"/>
-        </extensions>
-    </idea-plugin>
-    ```
-- **Executable Module Aggregation via `<xi:include>`**:
-  - The main executable module (e.g., `:plugin`, `:app`) must **not** duplicate the submodule's service or extension declarations.
-  - Instead, the main module links the submodule descriptor using standard `XInclude`:
-    ```xml
-    <idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
-        ...
-        <xi:include href="<module>.xml"/>
-        ...
-    </idea-plugin>
-    ```
-- **Benefits**:
-  - **Decoupled ownership**: Submodule configurations remain entirely within the submodule boundary.
-  - **Implementation concealment**: The main module consumes `project.getService(ModuleService::class.java)` without ever referencing or depending on the `internal` implementation class.
+## 3. Submodule Encapsulation (`internal` by default)
+Single-purpose submodules (`:parser`, `:scanner`) must encapsulate implementation details:
+```text
+com.github.georgenady.<module>/
+├── model/                 // Public domain models and value objects
+├── utils/                 // Constants and helper utilities
+├── <Module>Service.kt     // Public interface / contract
+└── impl/                  // Internal implementations (marked 'internal class')
+```
+- Only expose domain interfaces and models to consumers.
+- All classes inside `impl/` must be marked `internal`.
 
 ---
 
-## 4. Encapsulation & Visibility Modifiers
+## 4. IntelliJ Platform SDK & Concurrency Rules
 
-- **Principle of Least Privilege**: Default to the most restrictive access modifier available (`private` > `protected` / package-private > `internal` > `public`).
-- **Encapsulate Implementation Details**:
-  - Keep internal helpers, low-level parsers, network adapters, and intermediate state private or module-internal.
-  - In submodules, all classes inside `impl/` must be marked `internal`.
-  - Public exposure is strictly reserved for domain interfaces, use cases, domain models, and designated public API entry points.
-- **Immutability by Default**:
-  - Expose read-only state/collections (e.g., `StateFlow`, `Observable`, unmodifiable lists) to observers while keeping mutable state private.
-  - Prefer immutable data structures (`data class`, `record`, `readonly` properties) for models and value objects.
+### Threading & PSI Operations:
+- **UI / Main Thread Protection**: Never block the UI thread with I/O, file scanning, or network requests. Dispatch to `Dispatchers.Default` or `Dispatchers.IO`.
+- **PSI Read Actions**: Accessing AST/PSI trees requires a read action: `ReadAction.run` or `ReadAction.compute`.
+- **PSI Write Actions**: Any source code modification, file creation, or annotation injection must be wrapped in `WriteCommandAction.runWriteCommandAction(project) { ... }`.
+- **JCEF IPC Queries (`JBCefJSQuery`)**: IPC handlers run on CEF background IO threads. Dispatch to `viewModelScope` or `ApplicationManager.getApplication().invokeLater { ... }` before touching UI or state.
 
----
+### Native Dependency Injection (DI) & Services:
+- **IntelliJ Service Container**: Use `@Service(Service.Level.PROJECT)` / `<projectService>` and `@Service(Service.Level.APP)` / `<applicationService>`. Access instances using `project.service<T>()` or `service<T>()`.
+- **Constructor Injection**: Project-level services should inject `Project` and `CoroutineScope` via constructor parameters.
+- **Extension Points**: For extensible architectures, declare `<extensionPoints>` and consume via `ExtensionPointName` instead of custom service locators or registries.
+- **No Third-Party DI Frameworks**: Never bundle Dagger, Guice, Koin, Spring, or Hilt. They cause ClassLoader leaks during dynamic plugin unloading.
+- **No Deprecated Components**: Avoid `ProjectComponent` and `ApplicationComponent`; use modern services and listeners.
 
-## 5. Concurrency & Thread Safety
-
-- **UI / Main Thread Protection**: Never block the main/UI thread with I/O, database access, heavy computations, or network requests.
-- **Offloading**: Explicitly dispatch expensive operations to background thread pools or worker dispatchers.
-- **Thread Safety**: Avoid shared mutable state. When concurrency is required, use immutable copies, atomic primitives, or proper synchronization/mutexes.
-- **Cancellation & Resource Cleanup**: Every asynchronous task, subscription, or background job must support lifecycle cancellation to avoid memory leaks.
-
----
-
-## 6. Documentation & Code Hygiene
-
-### Self-Documenting Code
-- Use intention-revealing names for variables, methods, and types. Avoid cryptic abbreviations.
-- Functions should do one thing well and ideally fit on a single screen.
-
-### Clean Documentation Comments
-- **Rule**: Every public interface, public class, exported module, and non-obvious method must have documentation comments (KDoc / JSDoc / JavaDoc / Docstrings).
-- **Focus on Intent**: Explain *what* the component does and *why* specific constraints exist, not simply restating what the code visibly does.
-- **Style**: Short, simple, grammatically correct sentences.
+### ClassLoader Hygiene (No 3rd-Party Template Engines):
+- **Rule**: Never bundle external template engines (e.g., standalone `org.apache.velocity` or `freemarker`) into plugin modules. The IntelliJ platform classloader already loads internal versions, triggering fatal `instanceof` / `ResourceManager` linkage crashes.
+- **Practice**: Use pure Kotlin token evaluation (`Regex`, string interpolation) or native platform live template mechanisms.
+- **Decommission Legacy Services**: When replacing hardcoded logic with extensible systems (e.g., Edge Actions), fully delete obsolete service classes, `plugin.xml` entries, and ViewModel references.
 
 ---
 
-## 7. Error Handling & Input Validation
+## 5. React.js Component Architecture
 
-- **Fail Fast & Validate at Boundaries**: Validate input parameters at external boundaries (API controllers, UI form inputs, file parsers). Do not propagate invalid state deep into the domain model.
-- **Explicit Failure Modeling**: Prefer explicit result wrappers (e.g., `Result<T>`, sealed class hierarchies with `Success` / `Failure`) over silent failures or unhandled exception propagation.
-- **No Catch-All Swallowing**: Never catch exceptions silently (empty `catch` blocks). Always log or handle errors with appropriate user-facing messages or recovery logic.
+- **Zero-Business-Logic Reusable UI Primitives**:
+  - Reusable components (`components/ui/`: buttons, inputs, modals, badges) must have **zero** domain logic and **zero** knowledge of `KotlinBridge.js`.
+  - Built on pure abstractions: props-in, events-out.
+- **Layered Hierarchy**:
+  - **Screens / Containers** (`App.jsx`, view modes): Orchestrate state, custom hooks, and IPC bridge calls.
+  - **Building Blocks / Features** (`ApiNode`, `EdgeActionDialog`): Translate domain data into generic UI props by composing primitives.
+  - **Pure UI Primitives** (`Modal`, `Button`, `Input`): 100% agnostic and reusable across screens and projects.
+- **Business Logic in Custom Hooks**:
+  - Extract state flows, Cytoscape graph setup, and search/filter logic into custom hooks (`src/hooks/`).
+- **One Component Per File**:
+  - Every component has its dedicated `.jsx` file with companion `.css` in its folder.
 
 ---
 
-## 8. Testing & Quality Assurance
+## 6. State Management & Data Flow
 
-- **Unit Testing Core Logic**: All domain logic, use cases, business validation, and critical algorithms must be covered by automated unit tests.
-- **Test at Interface Boundaries**: Mock or fake external dependencies (databases, network, platform SDKs) at their interface boundary.
-- **Regression Checks**: Every bug fix should be accompanied by a test reproducing the original issue to prevent future regressions.
+- **Single Source of Truth**: `MainToolViewModel` holds state in an immutable `StateFlow<MainToolUiState>`.
+- **Immutable State Updates**: Mutate state exclusively via `_uiState.update { it.copy(...) }`.
+- **JCEF Synchronization**: State updates serialize via `toGraphPayload()` and push to JavaScript via `window.updateGraphData(jsonPayload, isDark)`.
+- **React Gateway**: All frontend requests flow strictly through `webview-ui/src/api/KotlinBridge.js`.
+
+---
+
+## 7. Testing & Quality Assurance
+
+- **Unit Test Coverage**: All domain use cases, parsing logic, and template evaluators must have automated JUnit tests.
+- **Interface Mocking**: Test at interface boundaries; avoid mocking platform internals.
+- **Regression Protection**: Every bug fix must include an automated check preventing regressions.
+
+---
+
+## 8. Verification & Build Commands
+
+```bash
+# Backend unit tests
+./gradlew test
+
+# Frontend bundle build
+cd webview-ui && npm run build && cd ..
+
+# Plugin package distribution
+./gradlew buildPlugin
+
+# Deploy to local Android Studio
+rm -rf "$HOME/Library/Application Support/Google/AndroidStudio2026.1.2/plugins/Retrofit_API_Swagger"
+unzip -q build/distributions/Retrofit_API_Swagger-1.1.10.zip -d "$HOME/Library/Application Support/Google/AndroidStudio2026.1.2/plugins"
+```

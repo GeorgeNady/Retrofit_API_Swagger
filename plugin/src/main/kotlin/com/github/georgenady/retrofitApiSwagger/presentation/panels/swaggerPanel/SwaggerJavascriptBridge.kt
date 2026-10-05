@@ -1,7 +1,7 @@
 package com.github.georgenady.retrofitApiSwagger.presentation.panels.swaggerPanel
 
-import com.github.georgenady.retrofitApiSwagger.domain.usecase.ApiParamPayload
-import com.github.georgenady.retrofitApiSwagger.domain.usecase.CreateOrUpdateApiRequest
+import com.github.georgenady.retrofitApiSwagger.domain.model.ApiParamPayload
+import com.github.georgenady.retrofitApiSwagger.domain.model.CreateOrUpdateApiRequest
 import com.github.georgenady.retrofitApiSwagger.domain.usecase.CreateOrUpdateApiUseCase
 import com.github.georgenady.retrofitApiSwagger.domain.usecase.FindPsiClassUseCase
 import com.github.georgenady.retrofitApiSwagger.domain.usecase.GenerateJsonSchemaUseCase
@@ -180,8 +180,33 @@ class SwaggerJavascriptBridge(
                 val allNodes = viewModel.uiState.value.allEndpoints
                 val sourceNode = allNodes.find { it.signature == sourceSig }
                 val targetNode = allNodes.find { it.signature == targetSig }
+                val defaultActionId = com.github.georgenady.retrofitApiSwagger.data.service.EdgeActionSettingsService.getInstance(viewModel.project).state.actions.firstOrNull()?.id
+                if (sourceNode != null && targetNode != null && defaultActionId != null) {
+                    try {
+                        com.github.georgenady.retrofitApiSwagger.domain.edgeaction.engine.EdgeActionExecutor(viewModel.project)
+                            .execute(defaultActionId, sourceNode, targetNode)
+                        viewModel.refresh()
+                    } catch (_: Exception) {}
+                }
+            }
+            "executeEdgeAction" -> {
+                val actionId = map["actionId"] as? String ?: return
+                val sourceSig = map["source"] as? String ?: return
+                val targetSig = map["target"] as? String ?: return
+                val allNodes = viewModel.uiState.value.allEndpoints
+                val sourceNode = allNodes.find { it.signature == sourceSig }
+                val targetNode = allNodes.find { it.signature == targetSig }
                 if (sourceNode != null && targetNode != null) {
-                    viewModel.linkApiNodes(sourceNode, targetNode)
+                    try {
+                        com.github.georgenady.retrofitApiSwagger.domain.edgeaction.engine.EdgeActionExecutor(viewModel.project)
+                            .execute(actionId, sourceNode, targetNode)
+                        viewModel.refresh()
+                    } catch (e: Exception) {
+                        NotificationGroupManager.getInstance()
+                            .getNotificationGroup("Retrofit API Swagger Notification Group")
+                            .createNotification("Edge Action Failed", e.message ?: "Unknown error", NotificationType.ERROR)
+                            .notify(viewModel.project)
+                    }
                 }
             }
         }

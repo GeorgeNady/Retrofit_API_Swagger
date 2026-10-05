@@ -157,9 +157,11 @@ class SwaggerPanel(
             return
         }
 
+        val edgeActions = com.github.georgenady.retrofitApiSwagger.data.service.EdgeActionSettingsService.getInstance(viewModel.project).state.actions
         val statePayload = endpoints.toGraphPayload(
             requestResults = viewModel.uiState.value.requestResults,
-            isEditorMode = isEditorMode
+            isEditorMode = isEditorMode,
+            edgeActions = edgeActions
         )
         val jsonPayload = gson.toJson(statePayload)
 

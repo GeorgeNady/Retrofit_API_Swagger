@@ -1,5 +1,7 @@
 package com.github.georgenady.retrofitApiSwagger.domain.usecase
 
+import com.github.georgenady.retrofitApiSwagger.domain.model.ApiParamPayload
+import com.github.georgenady.retrofitApiSwagger.domain.model.CreateOrUpdateApiRequest
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -13,23 +15,6 @@ import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtPsiFactory
 import org.jetbrains.kotlin.resolve.ImportPath
-
-data class ApiParamPayload(
-    val name: String,
-    val location: String,
-    val type: String
-)
-
-data class CreateOrUpdateApiRequest(
-    val isUpdate: Boolean,
-    val originalSignature: String?,
-    val httpMethod: String,
-    val path: String,
-    val methodName: String,
-    val returnType: String,
-    val isSuspend: Boolean = true,
-    val parameters: List<ApiParamPayload> = emptyList()
-)
 
 class CreateOrUpdateApiUseCase(private val project: Project) {
 

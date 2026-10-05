@@ -23,5 +23,7 @@ export const KotlinBridge = {
     copyToClipboard: (text) => KotlinBridge.send('copyToClipboard', { text }),
     navigateToType: (typeName, interfaceClassName) => KotlinBridge.send('navigateToType', { typeName, interfaceClassName }),
     requestSchema: (fqn) => KotlinBridge.send('requestSchema', { fqn }),
-    createOrUpdateApi: (payload) => KotlinBridge.send('createOrUpdateApi', payload)
+    createOrUpdateApi: (payload) => KotlinBridge.send('createOrUpdateApi', payload),
+    executeEdgeAction: (actionId, sourceSignature, targetSignature) =>
+        KotlinBridge.send('executeEdgeAction', { actionId, source: sourceSignature, target: targetSignature })
 };

@@ -16,9 +16,14 @@ cytoscape.use(fcose);
 cytoscape.use(edgehandles);
 nodeHtmlLabel(cytoscape);
 
-export function useCytoscape(containerRef, graphState, isPanMode) {
+export function useCytoscape(containerRef, graphState, isPanMode, onEdgeConnected) {
     const cyRef = useRef(null);
     const ehRef = useRef(null);
+    const onEdgeConnectedRef = useRef(onEdgeConnected);
+
+    useEffect(() => {
+        onEdgeConnectedRef.current = onEdgeConnected;
+    }, [onEdgeConnected]);
 
     // Initialize Cytoscape
     useEffect(() => {
@@ -71,7 +76,7 @@ export function useCytoscape(containerRef, graphState, isPanMode) {
                 handleSize: 12,
                 handlePosition: 'right middle',
                 handleColor: THEME_COLORS.white,
-                handleLineColor: THEME_COLORS.supportCacheColor,
+                handleLineColor: '#58a6ff',
                 handleLineWidth: 2,
 
                 // --- UX Enhancements ---
@@ -90,13 +95,17 @@ export function useCytoscape(containerRef, graphState, isPanMode) {
                 hoverDelay: 50,
 
                 complete: (sourceNode, targetNode, addedEles) => {
-                    if (targetNode.data('supportsCache')) {
-                        KotlinBridge.linkNodes(sourceNode.data('signature'), targetNode.data('signature'));
-                    } else {
-                        KotlinBridge.showError(`Target API "${targetNode.data('label')}" does not support caching. Please add @SupportCache to it first.`);
-                    }
                     // Remove the temporary visual edge drawn by edgehandles
                     addedEles.remove();
+
+                    if (onEdgeConnectedRef.current) {
+                        onEdgeConnectedRef.current({
+                            source: sourceNode.data(),
+                            target: targetNode.data()
+                        });
+                    } else {
+                        KotlinBridge.linkNodes(sourceNode.data('signature'), targetNode.data('signature'));
+                    }
                 }
             });
 

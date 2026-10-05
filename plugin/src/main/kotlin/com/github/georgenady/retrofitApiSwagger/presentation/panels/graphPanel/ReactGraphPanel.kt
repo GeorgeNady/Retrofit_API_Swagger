@@ -111,7 +111,8 @@ class ReactGraphPanel(project: Project) : JPanel(BorderLayout()) {
             return
         }
 
-        val statePayload = endpoints.toGraphPayload()
+        val edgeActions = com.github.georgenady.retrofitApiSwagger.data.service.EdgeActionSettingsService.getInstance(viewModel.project).state.actions
+        val statePayload = endpoints.toGraphPayload(edgeActions = edgeActions)
         val jsonPayload = gson.toJson(statePayload)
 
         val jsCode = "window.updateGraphData(${gson.toJson(jsonPayload)}, ${statePayload["isDark"]})"

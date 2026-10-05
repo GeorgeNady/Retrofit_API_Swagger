@@ -1,6 +1,5 @@
 package com.github.georgenady.retrofitApiSwagger.presentation.main
 
-import com.github.georgenady.retrofitApiSwagger.data.service.CacheScaffoldingService
 import com.github.georgenady.retrofitApiSwagger.data.service.SwaggerSettingsService
 import com.github.georgenady.retrofitApiSwagger.domain.model.ApiFilterModel
 import com.github.georgenady.retrofitApiSwagger.model.ApiNode
@@ -154,13 +153,6 @@ class MainToolViewModel(
 
     fun setViewMode(mode: ViewMode) {
         _uiState.update { it.copy(viewMode = mode) }
-    }
-
-    fun linkApiNodes(source: ApiNode, target: ApiNode) {
-        viewModelScope.launch {
-            project.service<CacheScaffoldingService>().setupCacheDependency(source, target)
-            refresh()
-        }
     }
 
     fun executeApiCall(node: ApiNode, url: String, body: String?) {
