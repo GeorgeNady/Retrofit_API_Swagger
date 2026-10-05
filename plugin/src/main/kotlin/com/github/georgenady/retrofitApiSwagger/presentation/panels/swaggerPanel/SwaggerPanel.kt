@@ -27,7 +27,7 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 
 class SwaggerPanel(
-    project: Project,
+    val project: Project,
     val isEditorMode: Boolean = false,
     val targetFile: VirtualFile? = null,
     val initialViewMode: String = if (isEditorMode) "list" else "graph"
@@ -61,7 +61,12 @@ class SwaggerPanel(
 
         jsBridge = SwaggerJavascriptBridge(b, viewModel, { targetFile }) {
             isReady = true
-            pendingEndpoints?.let { render(it) }
+            val toRender = pendingEndpoints ?: if (isEditorMode && targetFile != null && targetFile.isValid) {
+                project.service<com.github.georgenady.retrofitApiSwagger.domain.repository.ApiRepository>()
+                    .findRetrofitEndpointsInFile(targetFile)
+            } else null
+
+            toRender?.let { render(it) }
             pendingEndpoints = null
         }
 

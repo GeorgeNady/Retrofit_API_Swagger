@@ -38,6 +38,14 @@ class ApiRepositoryImpl(
     private val candidateFilter: RetrofitCandidateFilter
         get() = ApplicationManager.getApplication().getService(RetrofitCandidateFilter::class.java)
 
+    init {
+        project.messageBus.connect().subscribe(DumbService.DUMB_MODE, object : DumbService.DumbModeListener {
+            override fun exitDumbMode() {
+                endpointCache.clear()
+            }
+        })
+    }
+
     override fun scanEndpoints(): Flow<ScanOperation> = flow {
         emit(ScanOperation.Started)
         
@@ -111,7 +119,9 @@ class ApiRepositoryImpl(
                 thisLogger().warn("Failed to parse endpoints in ${virtualFile.path}", e)
                 emptyList()
             }
-            endpointCache.put(virtualFile, parsed)
+            if (parsed.isNotEmpty()) {
+                endpointCache.put(virtualFile, parsed)
+            }
             parsed
         }
     }
