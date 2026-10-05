@@ -148,5 +148,5 @@ cd webview-ui && npm run build && cd ..
 
 # Deploy to local Android Studio
 rm -rf "$HOME/Library/Application Support/Google/AndroidStudio2026.1.2/plugins/Retrofit_API_Swagger"
-unzip -q build/distributions/Retrofit_API_Swagger-1.1.10.zip -d "$HOME/Library/Application Support/Google/AndroidStudio2026.1.2/plugins"
+unzip -q build/distributions/Retrofit_API_Swagger-1.2.0.zip -d "$HOME/Library/Application Support/Google/AndroidStudio2026.1.2/plugins"
 ```

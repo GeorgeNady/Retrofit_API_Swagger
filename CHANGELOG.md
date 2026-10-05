@@ -2,6 +2,24 @@
 
 # Retrofit API Swagger Changelog
 
+## [1.2.0] - 2026-10-05
+### Added
+- **Custom Code Generation & Edge Actions**: Connect any two API nodes in the visual graph to trigger customizable code generation. Includes a pure Kotlin template evaluation engine with zero-overhead variable substitutions (`${source.methodName}`, `${target.methodName}`).
+- **Edge Actions Settings UI**: Dedicated configuration page under *Settings > Tools > Edge Actions* to manage, edit, and create custom edge action templates and placement rules (`ANNOTATE_TARGET`, `ANNOTATE_SOURCE`, `INJECT_BEFORE_TARGET`, `GENERATE_NEW_FILE`).
+- **Multi-Module Clean Architecture**: Split project into modular submodules (`:parser`, `:scanner`, `:plugin`, and `webview-ui`) for improved maintainability, faster incremental compilation, and clean separation of concerns.
+- **Pure Reusable UI Primitives**: Implemented generic `Modal`, `Button`, and `Badge` components in `webview-ui/src/components/ui/` with zero business logic and decoupled IPC event callbacks.
+- **Enhanced List Item Design**: Modernized card list view items to align visually with graph nodes, featuring function name headers, divider lines, HTTP badges, and full API paths.
+- **IntelliJ Native Dependency Injection**: Converted all plugin services to use native IntelliJ Platform services (`@Service(Service.Level.PROJECT)`) and constructor injection.
+- **Modular AI Architecture Rules**: Standardized coding, clean architecture, SOLID, React design, and IntelliJ Platform SDK rules in `.agents/rules/` and `CLAUDE.md`.
+
+### Changed
+- Replaced hardcoded cache scaffolding with the extensible Edge Action engine.
+- Decommissioned obsolete legacy services (`CacheScaffoldingService`, hardcoded `<Legend />`).
+- Decoupled API form modals from global IPC bridges using unidirectional props/callbacks.
+
+### Fixed
+- Fixed ClassLoader linkage collision by eliminating external Apache Velocity dependencies in favor of pure Kotlin template evaluation.
+
 ## [1.1.9] - 2026-08-29
 ### Added
 - **Android Studio Exclusive**: Explicitly restricted compatibility to Android Studio (required for Marketplace approval).

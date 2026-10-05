@@ -1,20 +1,21 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude">
     <id>com.github.georgenady.retrofit_api_swagger</id>
-    <name>Retrofit API Swagger</name>
+    <name>Ktorfit &amp; Retrofit Studio</name>
     <vendor email="gorgonady.gn@gmail.com" url="https://github.com/GeorgeNady">
         George Nady
     </vendor>
-    <version>1.1.10</version>
+    <version>1.2.0</version>
 
     <description><![CDATA[
-        <p><b>Retrofit API Swagger</b> is a professional tool for visualizing and managing your Android network layer. It provides a visual "Design Mode" similar to the Jetpack Navigation Editor, tailored for Retrofit APIs.</p>
+        <p><b>Ktorfit &amp; Retrofit Studio</b> is a professional tool for visualizing, inspecting, and generating code for your Android and Kotlin Multiplatform (KMP) network layer. It provides an interactive visual "Design Mode" similar to the Jetpack Navigation Editor, tailored for both Ktorfit and Retrofit APIs.</p>
 
         <h3>🚀 Key Features</h3>
         <ul>
+            <li><b>Custom Code Generation & Edge Actions:</b> Connect two API nodes in the visual graph to trigger customizable code templates and annotations. Configure templates and rules in <i>Settings &gt; Tools &gt; Edge Actions</i>.</li>
             <li><b>Interactive Node Graph:</b> Visualize your service-to-endpoint relationships with a draggable and zoomable canvas.</li>
             <li><b>Dual View Modes:</b> Toggle between a high-level visual graph and a detailed, searchable card list.</li>
-            <li><b>Deep Inspection:</b> Automatically extracts annotations (including custom ones like @SupportCache), method signatures, and parameters.</li>
+            <li><b>Deep Inspection:</b> Automatically extracts annotations, method signatures, return types, and parameters.</li>
             <li><b>Powerful Filters:</b> Live search by path or method name, and filter by HTTP method or module scope.</li>
             <li><b>Design Tools:</b> Includes a floating design toolbar with a hand-pan tool, zoom controls, and fit-to-screen functionality.</li>
         </ul>
@@ -38,6 +39,16 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <change-notes><![CDATA[
+        <h4>1.2.0</h4>
+        <ul>
+            <li><b>Custom Code Generation & Edge Actions:</b> Added an extensible Edge Action engine. Dragging a connection between two API nodes presents an action menu with customizable code templates and placement strategies.</li>
+            <li><b>Edge Actions Settings UI:</b> Dedicated configuration panel in <i>Settings &gt; Tools &gt; Edge Actions</i> to customize templates, placement rules, and variable substitutions.</li>
+            <li><b>Multi-Module Clean Architecture:</b> Re-architected the plugin into modular Gradle submodules (<code>:parser</code>, <code>:scanner</code>, and <code>:plugin</code>) with strict layer boundaries.</li>
+            <li><b>Performance & Smart Hash Caching:</b> File scanning now leverages persistent hash-based candidate caching on background threads, completely eliminating UI thread freezing.</li>
+            <li><b>Modular React UI System:</b> Built pure presentation primitives (Modals, Buttons, Badges) with zero business logic and clean unidirectional state synchronization.</li>
+            <li><b>Enhanced List Item View:</b> Redesigned the card list view layout with function name columns, HTTP method badges, API path rows, and CTA buttons to match visual graph cards.</li>
+            <li><b>IntelliJ Platform Alignment:</b> Adopted native IntelliJ Platform service injection (<code>@Service</code>), Kotlin coroutines, and thread-safe PSI read/write transactions.</li>
+        </ul>
         <h4>1.1.9</h4>
         <ul>
             <li><b>Android Studio Only:</b> Restricted plugin compatibility specifically to Android Studio as requested by JetBrains Marketplace.</li>
@@ -92,7 +103,7 @@
         <projectService
             serviceInterface="com.github.georgenady.retrofitApiSwagger.scanner.settings.ScannerSettings"
             serviceImplementation="com.github.georgenady.retrofitApiSwagger.data.service.ScannerSettingsAdapter" />
-        <projectConfigurable displayName="Retrofit API Swagger"
+        <projectConfigurable displayName="Ktorfit &amp; Retrofit Studio"
             id="com.github.georgenady.retrofitApiSwagger.settings"
             instance="com.github.georgenady.retrofitApiSwagger.core.configuration.SwaggerSettingsConfigurable"
             parentId="tools" />
@@ -101,7 +112,7 @@
             instance="com.github.georgenady.retrofitApiSwagger.core.configuration.EdgeActionsConfigurable"
             parentId="com.github.georgenady.retrofitApiSwagger.settings" />
 
-        <toolWindow name="Retrofit API Swagger" anchor="right"
+        <toolWindow name="Ktorfit &amp; Retrofit Studio" anchor="right"
             factoryClass="com.github.georgenady.retrofitApiSwagger.presentation.main.MainToolWindowFactory"
             icon="/icons/pluginIcon.svg" id="RetrofitAPISwagger" />
 

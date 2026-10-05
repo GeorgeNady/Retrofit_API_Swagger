@@ -6,7 +6,7 @@ plugins {
 
 allprojects {
     group = providers.gradleProperty("group").getOrElse("com.github.georgenady.androidapigraph")
-    version = providers.gradleProperty("version").getOrElse("1.1.10")
+    version = providers.gradleProperty("version").getOrElse("1.2.0")
 }
 
 // Copy the assembled plugin archive to the root build/distributions directory for CI workflow compatibility

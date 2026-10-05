@@ -51,7 +51,7 @@ class SwaggerSettingsConfigurable(
     private val tableModel = ListTableModel<HeaderEntry>(KeyColumn(), ValueColumn())
     private val table = JBTable(tableModel)
 
-    override fun getDisplayName(): String = "Retrofit API Swagger"
+    override fun getDisplayName(): String = "Ktorfit & Retrofit Studio"
 
     override fun createComponent(): JComponent {
 

@@ -29,7 +29,7 @@ class RetrofitGutterIconProvider : LineMarkerProvider {
             nameIdentifier,
             nameIdentifier.textRange,
             AllIcons.Actions.Execute,
-            { "Open and test in Retrofit API Swagger" },
+            { "Open and test in Ktorfit & Retrofit Studio" },
             { _, elt ->
                 val project = elt.project
                 val virtualFile = elt.containingFile.virtualFile ?: return@LineMarkerInfo
