@@ -39,11 +39,117 @@ export function useCytoscape(containerRef, graphState, isPanMode, onEdgeConnecte
             }
         };
 
+        // --- Figma / Android NavGraph Standard Touchpad & Gesture Interaction Engine ---
         const handleWheel = (e) => {
-            if (e.ctrlKey || e.metaKey) return;
+            // Prevent default page scroll, bounce, and browser pinch-zoom
             e.preventDefault();
             e.stopImmediatePropagation();
-            if (cyRef.current) cyRef.current.panBy({ x: -e.deltaX, y: -e.deltaY });
+
+            const cy = cyRef.current;
+            if (!cy) return;
+
+            // Normalize delta values across modes (0: pixels, 1: lines, 2: pages)
+            let dx = e.deltaX;
+            let dy = e.deltaY;
+            if (e.deltaMode === 1) { // DOM_DELTA_LINE
+                dx *= 20;
+                dy *= 20;
+            } else if (e.deltaMode === 2) { // DOM_DELTA_PAGE
+                dx *= 300;
+                dy *= 300;
+            }
+
+            const isPinchOrCtrl = e.ctrlKey || e.metaKey;
+
+            if (isPinchOrCtrl) {
+                // PINCH-TO-ZOOM: 2-finger touchpad pinch gesture OR Ctrl/Cmd + wheel
+                // Smooth exponential zoom curve centered around the exact cursor position
+                const clampedDy = Math.max(Math.min(dy, 100), -100);
+                const zoomFactor = Math.pow(1.006, -clampedDy);
+
+                const currentZoom = cy.zoom();
+                const minZoom = 0.08;
+                const maxZoom = 4.0;
+                const targetZoom = Math.min(Math.max(currentZoom * zoomFactor, minZoom), maxZoom);
+
+                if (Math.abs(targetZoom - currentZoom) > 0.0001) {
+                    const rect = currentContainer.getBoundingClientRect();
+                    const renderedPosition = {
+                        x: e.clientX - rect.left,
+                        y: e.clientY - rect.top
+                    };
+                    cy.zoom({
+                        level: targetZoom,
+                        renderedPosition: renderedPosition
+                    });
+                }
+            } else if (e.shiftKey) {
+                // Shift + Wheel = Horizontal pan (Figma / Photoshop standard)
+                cy.panBy({ x: -dy, y: 0 });
+            } else {
+                // TWO-FINGER TOUCHPAD SWIPE = 2D Pan (Figma / Android NavGraph standard)
+                cy.panBy({ x: -dx, y: -dy });
+            }
+        };
+
+        // --- Spacebar Pan and Middle-Click Drag (Figma / Photoshop standard) ---
+        let isSpacePressed = false;
+        let isDragPanning = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+
+        const isInputFocused = () => {
+            const active = document.activeElement;
+            return active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable);
+        };
+
+        const handleKeyDown = (e) => {
+            if (e.code === 'Space' && !isInputFocused() && !isSpacePressed) {
+                isSpacePressed = true;
+                currentContainer.style.cursor = 'grab';
+                if (ehRef.current) ehRef.current.disable();
+            }
+        };
+
+        const handleKeyUp = (e) => {
+            if (e.code === 'Space') {
+                isSpacePressed = false;
+                if (isDragPanning) {
+                    isDragPanning = false;
+                }
+                currentContainer.style.cursor = '';
+                if (ehRef.current) ehRef.current.enable();
+            }
+        };
+
+        const handleMouseDown = (e) => {
+            // Middle mouse click (button 1) OR Left click with Spacebar held
+            if (e.button === 1 || (e.button === 0 && isSpacePressed)) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                isDragPanning = true;
+                dragStartX = e.clientX;
+                dragStartY = e.clientY;
+                currentContainer.style.cursor = 'grabbing';
+            }
+        };
+
+        const handleMouseMove = (e) => {
+            if (isDragPanning && cyRef.current) {
+                e.preventDefault();
+                const dx = e.clientX - dragStartX;
+                const dy = e.clientY - dragStartY;
+                dragStartX = e.clientX;
+                dragStartY = e.clientY;
+                cyRef.current.panBy({ x: dx, y: dy });
+            }
+        };
+
+        const handleMouseUp = (e) => {
+            if (isDragPanning) {
+                isDragPanning = false;
+                currentContainer.style.cursor = isSpacePressed ? 'grab' : '';
+            }
         };
 
         try {
@@ -51,8 +157,9 @@ export function useCytoscape(containerRef, graphState, isPanMode, onEdgeConnecte
                 container: currentContainer,
                 layout: { name: 'fcose', packComponents: true },
                 userPanningEnabled: true,
-                userZoomingEnabled: true,
-                wheelSensitivity: 0.1,
+                userZoomingEnabled: false, // Handled exclusively by custom Figma/NavGraph touchpad engine
+                minZoom: 0.08,
+                maxZoom: 4.0,
                 boxSelectionEnabled: true,
                 selectionType: 'single'
             });
@@ -109,13 +216,6 @@ export function useCytoscape(containerRef, graphState, isPanMode, onEdgeConnecte
                 }
             });
 
-            // Hide handle when hovering over the empty canvas background
-            // cy.on('mouseover', 'core', () => {
-            //     if (ehRef.current) {
-            //         ehRef.current.hide();
-            //     }
-            // });
-
             // Event: Selection
             cy.on('tap', 'node', (evt) => {
                 const node = evt.target;
@@ -127,6 +227,11 @@ export function useCytoscape(containerRef, graphState, isPanMode, onEdgeConnecte
             // Attach native DOM events
             currentContainer.addEventListener('mouseleave', handleMouseLeave);
             currentContainer.addEventListener('wheel', handleWheel, { passive: false, capture: true });
+            currentContainer.addEventListener('mousedown', handleMouseDown, { capture: true });
+            window.addEventListener('keydown', handleKeyDown);
+            window.addEventListener('keyup', handleKeyUp);
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
 
         } catch (err) {
             console.error("Cytoscape Init Error:", err);
@@ -139,7 +244,13 @@ export function useCytoscape(containerRef, graphState, isPanMode, onEdgeConnecte
             if (currentContainer) {
                 currentContainer.removeEventListener('mouseleave', handleMouseLeave);
                 currentContainer.removeEventListener('wheel', handleWheel, { capture: true });
+                currentContainer.removeEventListener('mousedown', handleMouseDown, { capture: true });
             }
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keyup', handleKeyUp);
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+
             // Destroy cytoscape instance
             if (cyRef.current) {
                 cyRef.current.destroy();
@@ -211,7 +322,11 @@ export function useCytoscape(containerRef, graphState, isPanMode, onEdgeConnecte
         if (!cyRef.current) return;
         const cy = cyRef.current;
         cy.autoungrabify(isPanMode);
+        cy.boxSelectionEnabled(!isPanMode);
         if (ehRef.current) isPanMode ? ehRef.current.disable() : ehRef.current.enable();
+        if (containerRef.current) {
+            containerRef.current.style.cursor = isPanMode ? 'grab' : '';
+        }
     }, [isPanMode]);
 
     return cyRef;
