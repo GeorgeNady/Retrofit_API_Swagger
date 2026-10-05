@@ -10,6 +10,7 @@ import {
     faXmark 
 } from '@fortawesome/free-solid-svg-icons';
 import { KotlinBridge } from '../../api/KotlinBridge';
+import ResponseViewer from './ResponseViewer';
 import './SwaggerCard.css';
 
 export default function SwaggerCard({ node, methodColors, isDark, responseText, schemaData, isEditorMode, onEdit }) {
@@ -239,37 +240,24 @@ export default function SwaggerCard({ node, methodColors, isDark, responseText, 
                         </button>
                     </div>
 
-                    {(localResponse || isLoading) && (
-                        <div className="swagger-response-terminal">
+                    {isLoading && (
+                        <div className={`swagger-response-terminal ${!isDark ? 'light' : ''}`}>
                             <div className="swagger-response-header">
-                                <span>RESPONSE</span>
-                                <div style={{ display: 'flex', gap: '6px' }}>
-                                    <button 
-                                        className="swagger-icon-btn"
-                                        title="Copy Response"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (localResponse) KotlinBridge.copyToClipboard(localResponse);
-                                        }}
-                                    >
-                                        <FontAwesomeIcon icon={faCopy} />
-                                    </button>
-                                    <button 
-                                        className="swagger-icon-btn"
-                                        title="Clear Response"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setLocalResponse(null);
-                                        }}
-                                    >
-                                        <FontAwesomeIcon icon={faXmark} />
-                                    </button>
-                                </div>
+                                <span className="swagger-response-title">RESPONSE</span>
                             </div>
-                            <pre className="swagger-response-content">
-                                {isLoading ? "Sending request..." : localResponse}
-                            </pre>
+                            <div className="swagger-response-loading">
+                                <span className="swagger-spinner" />
+                                <span>Sending request to endpoint...</span>
+                            </div>
                         </div>
+                    )}
+
+                    {!isLoading && localResponse && (
+                        <ResponseViewer 
+                            responseText={localResponse}
+                            isDark={isDark}
+                            onClear={() => setLocalResponse(null)}
+                        />
                     )}
                 </div>
             )}

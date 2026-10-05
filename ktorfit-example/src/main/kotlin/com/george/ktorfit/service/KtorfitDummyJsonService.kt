@@ -13,6 +13,9 @@ import de.jensklingenberg.ktorfit.http.Query
 
 interface KtorfitDummyJsonService {
 
+    @GET("products/{id}")
+    suspend fun getProductById(@Path("id") id: Int): String
+
     // Get a single product by ID
     @GET("products/{id}")
     suspend fun getProductById(
