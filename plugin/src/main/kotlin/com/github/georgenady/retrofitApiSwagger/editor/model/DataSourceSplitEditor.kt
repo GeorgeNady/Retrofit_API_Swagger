@@ -12,5 +12,5 @@ class DataSourceSplitEditor(
     myPreview = designEditor,
     name = "Ktorfit & Retrofit Studio",
     defaultLayout = Layout.SHOW_EDITOR_AND_PREVIEW,
-    isVerticalSplit = true,
+    isVerticalSplit = false,
 )
