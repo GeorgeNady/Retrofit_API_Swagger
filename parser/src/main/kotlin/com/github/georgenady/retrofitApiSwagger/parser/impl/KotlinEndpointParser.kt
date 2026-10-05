@@ -71,6 +71,12 @@ internal class KotlinEndpointParser : FileEndpointParser {
                     httpMethod = simpleName
                     path = extractKotlinPath(annotation, simpleName)
                 }
+            } else if (name.startsWith(RetrofitConstants.KTORFIT_PACKAGE_PREFIX)) {
+                val simpleName = name.removePrefix(RetrofitConstants.KTORFIT_PACKAGE_PREFIX)
+                if (simpleName in RetrofitConstants.HTTP_METHODS) {
+                    httpMethod = simpleName
+                    path = extractKotlinPath(annotation, simpleName)
+                }
             } else if (name == RetrofitConstants.SUPPORT_CACHE || name.endsWith(".${RetrofitConstants.SUPPORT_CACHE}")) {
                 supportsCache = true
             }

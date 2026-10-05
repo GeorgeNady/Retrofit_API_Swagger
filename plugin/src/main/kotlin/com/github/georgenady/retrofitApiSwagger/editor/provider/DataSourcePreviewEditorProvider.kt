@@ -22,9 +22,14 @@ class DataSourcePreviewEditorProvider : AsyncFileEditorProvider, DumbAware {
         // Fast check to avoid parsing the AST on the UI thread for every file clicked.
         // We just read the raw text and check if it imports retrofit or uses annotations.
         val fileContent = String(file.contentsToByteArray())
-        return fileContent.contains("@GET", false) ||
-               fileContent.contains("@POST", false) ||
-               fileContent.contains("retrofit2.http", false)
+        val hasHttpAnnotation = fileContent.contains("@GET", false) ||
+                               fileContent.contains("@POST", false) ||
+                               fileContent.contains("@PUT", false) ||
+                               fileContent.contains("@DELETE", false)
+        val hasFramework = fileContent.contains("retrofit2", false) ||
+                           fileContent.contains("retrofit", false) ||
+                           fileContent.contains("ktorfit", false)
+        return hasHttpAnnotation && hasFramework
     }
 
     override fun createEditor(project: Project, file: VirtualFile): FileEditor {

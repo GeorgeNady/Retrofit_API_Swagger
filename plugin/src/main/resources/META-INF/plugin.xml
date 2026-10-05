@@ -32,10 +32,8 @@
     <xi:include href="/META-INF/scanner.xml" xpointer="xpointer(/idea-plugin/*)" />
 
     <depends>com.intellij.modules.platform</depends>
-    <depends>com.intellij.java</depends>
+    <depends>com.intellij.modules.java</depends>
     <depends>org.jetbrains.kotlin</depends>
-    <depends>com.intellij.modules.androidstudio</depends>
-    <depends>org.jetbrains.android</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
@@ -76,14 +74,17 @@
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService
-            serviceImplementation="com.github.georgenady.retrofitApiSwagger.presentation.panels.swaggerPanel.SwaggerPanelViewModel" />
+        <notificationGroup id="Retrofit API Swagger Notification Group" displayType="BALLOON" />
 
         <projectService
             serviceImplementation="com.github.georgenady.retrofitApiSwagger.data.repository.ApiRepositoryImpl"
             serviceInterface="com.github.georgenady.retrofitApiSwagger.domain.repository.ApiRepository" />
         <projectService
             serviceImplementation="com.github.georgenady.retrofitApiSwagger.presentation.main.MainToolViewModel" />
+        <projectService
+            serviceImplementation="com.github.georgenady.retrofitApiSwagger.presentation.panels.graphPanel.WebviewResourceService" />
+        <projectService
+            serviceImplementation="com.github.georgenady.retrofitApiSwagger.data.service.CacheScaffoldingService" />
 
         <!-- UI Settings Configuration -->
         <projectService

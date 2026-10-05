@@ -4,3 +4,5 @@
 .intellijPlatform
 .kotlin
 build
+webview-ui/node_modules
+webview-ui/dist

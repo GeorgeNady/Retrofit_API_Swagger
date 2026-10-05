@@ -25,13 +25,13 @@ class MainToolWindowFactory : ToolWindowFactory, DumbAware {
         val refreshAction = actionManager.getAction("RetrofitAPISwagger.Refresh")
         val toggleAction = actionManager.getAction("RetrofitAPISwagger.ToggleSidePanel")
         val pluginSettings = actionManager.getAction("RetrofitAPISwagger.Settings")
-//        val switchAction = actionManager.getAction("RetrofitAPISwagger.SwitchView")
+        val switchAction = actionManager.getAction("RetrofitAPISwagger.SwitchView")
 
         val actions = mutableListOf<AnAction>()
         refreshAction?.let { actions.add(it) }
+        switchAction?.let { actions.add(it) }
         toggleAction?.let { actions.add(it) }
         pluginSettings?.let { actions.add(it) }
-//        switchAction?.let { actions.add(it) }
 
         if (actions.isNotEmpty()) {
             toolWindow.setTitleActions(actions)

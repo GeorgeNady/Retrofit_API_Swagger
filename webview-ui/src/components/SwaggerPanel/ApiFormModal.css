@@ -1,0 +1,254 @@
+/* Modal Backdrop and Container */
+.api-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.api-modal-card {
+    background: #2b2d30;
+    border: 1px solid #3e4246;
+    border-radius: 10px;
+    width: 540px;
+    max-width: 92%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+    color: #edf0f4;
+    overflow: hidden;
+}
+
+.api-modal-card.light {
+    background: #ffffff;
+    border: 1px solid #d0d7de;
+    color: #1f2328;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.18);
+}
+
+.api-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.api-modal-card.light .api-modal-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.api-modal-title {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.api-modal-close-btn {
+    background: transparent;
+    border: none;
+    color: #8b949e;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.api-modal-close-btn:hover {
+    color: #edf0f4;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.api-modal-body {
+    padding: 16px 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.api-form-row {
+    display: flex;
+    gap: 12px;
+}
+
+.api-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+}
+
+.api-form-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #8b949e;
+}
+
+.api-modal-card.light .api-form-label {
+    color: #57606a;
+}
+
+.api-form-input,
+.api-form-select {
+    background: #1e1f22;
+    border: 1px solid #3e4246;
+    border-radius: 5px;
+    color: #edf0f4;
+    padding: 7px 10px;
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.15s;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.api-modal-card.light .api-form-input,
+.api-modal-card.light .api-form-select {
+    background: #ffffff;
+    border: 1px solid #d0d7de;
+    color: #1f2328;
+}
+
+.api-form-input:focus,
+.api-form-select:focus {
+    border-color: #58a6ff;
+}
+
+.api-modal-card.light .api-form-input:focus,
+.api-modal-card.light .api-form-select:focus {
+    border-color: #0969da;
+}
+
+.api-form-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-top: 24px;
+}
+
+/* Parameters Section */
+.api-params-section {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 12px;
+}
+
+.api-modal-card.light .api-params-section {
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.api-params-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.api-params-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.api-param-item {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.api-param-remove-btn {
+    background: transparent;
+    border: none;
+    color: #f85149;
+    cursor: pointer;
+    padding: 6px;
+    font-size: 14px;
+    border-radius: 4px;
+}
+
+.api-param-remove-btn:hover {
+    background: rgba(248, 81, 73, 0.15);
+}
+
+.api-btn-outline {
+    background: transparent;
+    border: 1px dashed #3e4246;
+    color: #58a6ff;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 11.5px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.api-modal-card.light .api-btn-outline {
+    border-color: #d0d7de;
+    color: #0969da;
+}
+
+.api-btn-outline:hover {
+    background: rgba(88, 166, 255, 0.1);
+}
+
+/* Modal Footer */
+.api-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 12px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.api-modal-card.light .api-modal-footer {
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    background: #f6f8fa;
+}
+
+.api-btn-cancel {
+    background: transparent;
+    border: 1px solid #3e4246;
+    color: #8b949e;
+    padding: 7px 16px;
+    border-radius: 5px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.api-modal-card.light .api-btn-cancel {
+    border-color: #d0d7de;
+    color: #57606a;
+}
+
+.api-btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #edf0f4;
+}
+
+.api-btn-submit {
+    background: #238636;
+    color: #ffffff;
+    border: none;
+    padding: 7px 18px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.api-btn-submit:hover {
+    background: #2ea043;
+}

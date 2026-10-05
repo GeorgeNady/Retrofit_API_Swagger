@@ -40,4 +40,23 @@ class RetrofitCandidateFilterTest : BasePlatformTestCase() {
         assertTrue(filter.isCandidate(retrofitFile))
         assertFalse(filter.isCandidate(nonRetrofitFile))
     }
+
+    @Test
+    fun testCandidateFilterIdentifiesKtorfitFile() {
+        val ktorfitFile = myFixture.configureByText(
+            KotlinFileType.INSTANCE,
+            """
+                package com.example
+                import de.jensklingenberg.ktorfit.http.GET
+                interface ProductApi {
+                    @GET("products")
+                    suspend fun getProducts(): List<String>
+                }
+            """.trimIndent()
+        ).virtualFile
+
+        val filter = RetrofitCandidateFilterImpl()
+
+        assertTrue(filter.isCandidate(ktorfitFile))
+    }
 }

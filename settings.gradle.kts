@@ -1,7 +1,8 @@
 import org.jetbrains.intellij.platform.gradle.extensions.intellijPlatform
 
 include(":plugin")
-include(":example")
+include(":retrofit-example")
+include(":ktorfit-example")
 include(":parser")
 include(":scanner")
 

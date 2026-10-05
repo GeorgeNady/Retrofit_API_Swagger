@@ -10,9 +10,10 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/example" />
+            <option value="$PROJECT_DIR$/ktorfit-example" />
             <option value="$PROJECT_DIR$/parser" />
             <option value="$PROJECT_DIR$/plugin" />
+            <option value="$PROJECT_DIR$/retrofit-example" />
             <option value="$PROJECT_DIR$/scanner" />
           </set>
         </option>

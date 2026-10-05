@@ -11,11 +11,12 @@ data class MainToolUiState(
     val filteredEndpoints: List<ApiNode> = emptyList(),
     val selectedNode: ApiNode? = null,
     val expandedNode: ApiNode? = null,
-    val viewMode: ViewMode = ViewMode.LIST,
+    val viewMode: ViewMode = ViewMode.GRAPH,
     val totalScanned: Int = 0,
     val currentScanned: Int = 0,
     val totalFilesToScan: Int = 0,
     val durationMs: Long = 0,
     val errorMessage: String? = null,
+    val initializationError: String? = null,
     val requestResults: Map<String, String> = emptyMap() // Map of method signature to response
 )

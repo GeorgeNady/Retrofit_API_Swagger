@@ -163,4 +163,73 @@ class EndpointParserTest : BasePlatformTestCase() {
         assertEquals("GET", parsed[0].httpMethod)
         assertEquals("test", parsed[0].path)
     }
+
+    @Test
+    fun testScanKotlinFileWithKtorfitAnnotations() {
+        val kotlinCode = """
+            package com.example.api
+
+            import de.jensklingenberg.ktorfit.http.GET
+            import de.jensklingenberg.ktorfit.http.POST
+            import de.jensklingenberg.ktorfit.http.PUT
+            import de.jensklingenberg.ktorfit.http.DELETE
+            import de.jensklingenberg.ktorfit.http.Path
+            import de.jensklingenberg.ktorfit.http.Body
+            import de.jensklingenberg.ktorfit.http.Query
+
+            interface KtorfitProductService {
+                @GET("products/{id}")
+                suspend fun getProduct(@Path("id") id: Int): String
+
+                @GET("products/search")
+                suspend fun search(@Query("q") query: String): String
+
+                @POST("products/add")
+                suspend fun addProduct(@Body body: String): String
+
+                @PUT("products/{id}")
+                suspend fun updateProduct(@Path("id") id: Int, @Body body: String): String
+
+                @DELETE("products/{id}")
+                suspend fun deleteProduct(@Path("id") id: Int): String
+            }
+        """.trimIndent()
+
+        val psiFile = PsiFileFactory.getInstance(project).createFileFromText(
+            "KtorfitProductService.kt",
+            KotlinFileType.INSTANCE,
+            kotlinCode
+        ) as KtFile
+
+        val parser = KotlinEndpointParser()
+        val endpoints = parser.parseKtFile(psiFile)
+
+        assertEquals(5, endpoints.size)
+
+        val getEndpoint = endpoints.find { it.methodName == "getProduct" }
+        assertNotNull(getEndpoint)
+        assertEquals("GET", getEndpoint?.httpMethod)
+        assertEquals("products/{id}", getEndpoint?.path)
+        assertEquals("KtorfitProductService", getEndpoint?.className)
+
+        val searchEndpoint = endpoints.find { it.methodName == "search" }
+        assertNotNull(searchEndpoint)
+        assertEquals("GET", searchEndpoint?.httpMethod)
+        assertEquals("products/search", searchEndpoint?.path)
+
+        val postEndpoint = endpoints.find { it.methodName == "addProduct" }
+        assertNotNull(postEndpoint)
+        assertEquals("POST", postEndpoint?.httpMethod)
+        assertEquals("products/add", postEndpoint?.path)
+
+        val putEndpoint = endpoints.find { it.methodName == "updateProduct" }
+        assertNotNull(putEndpoint)
+        assertEquals("PUT", putEndpoint?.httpMethod)
+        assertEquals("products/{id}", putEndpoint?.path)
+
+        val deleteEndpoint = endpoints.find { it.methodName == "deleteProduct" }
+        assertNotNull(deleteEndpoint)
+        assertEquals("DELETE", deleteEndpoint?.httpMethod)
+        assertEquals("products/{id}", deleteEndpoint?.path)
+    }
 }

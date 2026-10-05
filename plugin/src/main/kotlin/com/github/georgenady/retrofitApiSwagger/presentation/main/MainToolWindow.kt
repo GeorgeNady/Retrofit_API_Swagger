@@ -7,7 +7,7 @@ import com.github.georgenady.retrofitApiSwagger.presentation.panels.swaggerPanel
 import com.github.georgenady.retrofitApiSwagger.presentation.components.ApiEmptyStateView
 import com.github.georgenady.retrofitApiSwagger.presentation.components.ApiStatusBarView
 import com.github.georgenady.retrofitApiSwagger.presentation.components.LoadingView
-import com.github.georgenady.retrofitApiSwagger.presentation.panels.graphPanel.GraphPanel
+import com.github.georgenady.retrofitApiSwagger.presentation.panels.graphPanel.ReactGraphPanel
 import com.github.georgenady.retrofitApiSwagger.presentation.panels.sidePanel.FeatureSidePanel
 import com.github.georgenady.retrofitApiSwagger.presentation.panels.sidePanel.sections.DetailsSection
 import com.github.georgenady.retrofitApiSwagger.presentation.panels.sidePanel.sections.FilterSection
@@ -45,7 +45,12 @@ class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
     )
 
     // 2. API Graph Panel
-    private val graphPanel = GraphPanel(project)
+    private val graphPanel = try {
+        ReactGraphPanel(project)
+    } catch (e: Throwable) {
+        println("RetrofitSwagger Error: Failed to initialize ReactGraphPanel: ${e.message}")
+        null
+    }
 
     // 3. Tools Side Panel
     private val sidePanel = FeatureSidePanel(project).apply {
@@ -159,7 +164,7 @@ class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
             // ONLY RENDER LIST IF ENDPOINTS CHANGED
             if (endpointsChanged) {
                 listPanel.render(toRender)
-                graphPanel.render(toRender)
+                graphPanel?.render(toRender)
                 lastRenderedEndpoints = toRender
             }
 
@@ -184,7 +189,7 @@ class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
 
             ViewMode.GRAPH -> {
                 leftSplitter.firstComponent = null
-                leftSplitter.secondComponent = graphPanel
+                leftSplitter.secondComponent = graphPanel ?: listPanel
                 leftSplitter.proportion = 0.0f
             }
         }

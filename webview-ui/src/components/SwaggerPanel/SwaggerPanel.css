@@ -1,0 +1,97 @@
+/* Swagger Panel Container Styles */
+.swagger-panel-container {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    box-sizing: border-box;
+    padding: 14px 18px;
+    background: #1e1f22;
+    color: #edf0f4;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.swagger-panel-container.light {
+    background: #f6f8fa;
+    color: #1f2328;
+}
+
+/* Custom Scrollbar */
+.swagger-panel-container::-webkit-scrollbar {
+    width: 8px;
+}
+.swagger-panel-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+.swagger-panel-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+}
+.swagger-panel-container.light::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.18);
+}
+
+/* Service Groups */
+.swagger-service-group {
+    margin-bottom: 20px;
+}
+
+.swagger-service-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 6px;
+    cursor: pointer;
+    user-select: none;
+    border-radius: 6px;
+    transition: background 0.12s ease;
+}
+
+.swagger-service-header:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.swagger-panel-container.light .swagger-service-header:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.swagger-service-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.swagger-service-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #edf0f4;
+}
+
+.swagger-panel-container.light .swagger-service-title {
+    color: #1f2328;
+}
+
+.swagger-service-count {
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #8b949e;
+}
+
+.swagger-panel-container.light .swagger-service-count {
+    background: #eaeef2;
+    color: #57606a;
+}
+
+.swagger-service-cards {
+    margin-top: 6px;
+}
+
+/* Empty State */
+.swagger-empty {
+    text-align: center;
+    padding: 50px 20px;
+    color: #8b949e;
+    font-size: 13px;
+}

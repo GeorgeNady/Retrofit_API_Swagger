@@ -2,6 +2,7 @@ package com.github.georgenady.retrofitApiSwagger.editor
 
 import com.github.georgenady.retrofitApiSwagger.domain.repository.ApiRepository
 import com.github.georgenady.retrofitApiSwagger.presentation.panels.swaggerPanel.SwaggerPanel
+
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.fileEditor.FileEditor
@@ -23,7 +24,9 @@ class DataSourceDesignEditor(
 ) : UserDataHolderBase(), FileEditor, DumbAware {
 
     private val listPanel = SwaggerPanel(
-        project = project
+        project = project,
+        isEditorMode = true,
+        targetFile = file
     )
 
     init {

@@ -22,7 +22,6 @@ dependencies {
     implementation(project(":parser"))
     implementation(project(":scanner"))
     testImplementation("junit:junit:4.13.2")
-    implementation("org.tinyjee.jgraphx:jgraphx:3.4.1.3")
 
     intellijPlatform {
         pluginComposedModule(project(":parser"))
@@ -51,6 +50,51 @@ intellijPlatform {
 }
 
 tasks {
+    // --- Webview Build Automation ---
+    val webviewDir = rootProject.file("webview-ui")
+    val webviewDistDir = webviewDir.resolve("dist")
+    val webviewTargetDir = file("src/main/resources/webview")
+
+    val npmInstall by registering(Exec::class) {
+        workingDir = webviewDir
+        group = "build"
+        description = "Installs npm dependencies"
+        if (org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)) {
+            commandLine("cmd", "/c", "npm install")
+        } else {
+            commandLine("bash", "-c", "npm install")
+        }
+        inputs.file(webviewDir.resolve("package.json"))
+        outputs.dir(webviewDir.resolve("node_modules"))
+    }
+
+    val buildWebview by registering(Exec::class) {
+        dependsOn(npmInstall)
+        workingDir = webviewDir
+        group = "build"
+        description = "Builds the React webview application"
+        
+        if (org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)) {
+            commandLine("cmd", "/c", "npm run build")
+        } else {
+            commandLine("bash", "-c", "npm run build")
+        }
+        
+        inputs.dir(webviewDir.resolve("src"))
+        inputs.file(webviewDir.resolve("package.json"))
+        outputs.dir(webviewDistDir)
+    }
+
+    val copyWebview by registering(Copy::class) {
+        dependsOn(buildWebview)
+        from(webviewDistDir)
+        into(webviewTargetDir)
+    }
+
+    processResources {
+        dependsOn(copyWebview)
+    }
+
     patchPluginXml {
         sinceBuild.set("242") // Matches 2024.2
         untilBuild.set(provider { null }) // Open-ended for all future releases
