@@ -1,4 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+    faPen, 
+    faCheck, 
+    faCopy, 
+    faArrowUpRightFromSquare, 
+    faChevronDown, 
+    faPlay, 
+    faXmark 
+} from '@fortawesome/free-solid-svg-icons';
 import { KotlinBridge } from '../../api/KotlinBridge';
 import './SwaggerCard.css';
 
@@ -112,7 +122,7 @@ export default function SwaggerCard({ node, methodColors, isDark, responseText, 
                                     onEdit && onEdit(node);
                                 }}
                             >
-                                ✏️
+                                <FontAwesomeIcon icon={faPen} />
                             </button>
                         )}
                         <button 
@@ -120,17 +130,17 @@ export default function SwaggerCard({ node, methodColors, isDark, responseText, 
                             title={copied ? "Copied!" : "Copy Path"}
                             onClick={handleCopyPath}
                         >
-                            {copied ? '✓' : '📋'}
+                            {copied ? <FontAwesomeIcon icon={faCheck} /> : <FontAwesomeIcon icon={faCopy} />}
                         </button>
                         <button 
                             className="swagger-icon-btn"
                             title="Navigate to Source"
                             onClick={handleNavigate}
                         >
-                            ↗
+                            <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
                         </button>
                         <span className={`swagger-chevron ${isExpanded ? 'open' : ''}`}>
-                            ▼
+                            <FontAwesomeIcon icon={faChevronDown} />
                         </span>
                     </div>
                 </div>
@@ -220,7 +230,12 @@ export default function SwaggerCard({ node, methodColors, isDark, responseText, 
                             disabled={isLoading}
                             onClick={handleExecute}
                         >
-                            {isLoading ? 'Sending...' : '▶ Execute'}
+                            {isLoading ? 'Sending...' : (
+                                <>
+                                    <FontAwesomeIcon icon={faPlay} style={{ marginRight: '6px', fontSize: '11px' }} />
+                                    Execute
+                                </>
+                            )}
                         </button>
                     </div>
 
@@ -237,7 +252,7 @@ export default function SwaggerCard({ node, methodColors, isDark, responseText, 
                                             if (localResponse) KotlinBridge.copyToClipboard(localResponse);
                                         }}
                                     >
-                                        📋
+                                        <FontAwesomeIcon icon={faCopy} />
                                     </button>
                                     <button 
                                         className="swagger-icon-btn"
@@ -247,7 +262,7 @@ export default function SwaggerCard({ node, methodColors, isDark, responseText, 
                                             setLocalResponse(null);
                                         }}
                                     >
-                                        ✕
+                                        <FontAwesomeIcon icon={faXmark} />
                                     </button>
                                 </div>
                             </div>

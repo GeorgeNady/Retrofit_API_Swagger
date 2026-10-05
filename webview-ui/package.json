@@ -9,14 +9,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "@fortawesome/free-solid-svg-icons": "^7.3.1",
+    "@fortawesome/react-fontawesome": "^3.5.0",
     "cytoscape": "^3.26.0",
     "cytoscape-dagre": "^2.5.0",
-    "cytoscape-fcose": "^2.2.0",
     "cytoscape-edgehandles": "^3.6.0",
+    "cytoscape-fcose": "^2.2.0",
     "cytoscape-node-html-label": "^1.2.2",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import Modal from '../ui/Modal/Modal';
 import Button from '../ui/Button/Button';
 import './ApiFormModal.css';
@@ -180,7 +182,8 @@ export default function ApiFormModal({ isOpen, onClose, initialData, isDark, onS
                             onClick={handleAddParam}
                             style={{ padding: '3px 8px', fontSize: '11px' }}
                         >
-                            + Add Parameter
+                            <FontAwesomeIcon icon={faPlus} style={{ marginRight: '5px' }} />
+                            Add Parameter
                         </Button>
                     </div>
 
@@ -199,7 +202,7 @@ export default function ApiFormModal({ isOpen, onClose, initialData, isDark, onS
                                         onChange={(e) => handleParamChange(param.id, 'location', e.target.value)}
                                     >
                                         {PARAM_LOCATIONS.map(loc => (
-                                            <option key={loc} value={loc}>{loc}</option>
+                                             <option key={loc} value={loc}>{loc}</option>
                                         ))}
                                     </select>
                                     <input 
@@ -222,7 +225,7 @@ export default function ApiFormModal({ isOpen, onClose, initialData, isDark, onS
                                         onClick={() => handleRemoveParam(param.id)}
                                         title="Remove parameter"
                                     >
-                                        ✕
+                                        <FontAwesomeIcon icon={faTrashCan} />
                                     </button>
                                 </div>
                             ))}

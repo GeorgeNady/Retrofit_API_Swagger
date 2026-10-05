@@ -1,4 +1,6 @@
 import React, { useEffect } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import './Modal.css';
 
 /**
@@ -43,7 +45,7 @@ export default function Modal({
                             onClick={onClose}
                             aria-label="Close dialog"
                         >
-                            ✕
+                            <FontAwesomeIcon icon={faXmark} />
                         </button>
                     </div>
                 )}

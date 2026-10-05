@@ -1,4 +1,6 @@
 import React, { useState, useMemo } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronRight, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import SwaggerCard from './SwaggerCard';
 import './SwaggerPanel.css';
 
@@ -63,8 +65,8 @@ export default function SwaggerPanel({ data, searchQuery = '', onEditApi }) {
                                     onClick={() => toggleGroup(className)}
                                 >
                                     <div className="swagger-service-left">
-                                        <span style={{ fontSize: '11px', color: '#8b949e' }}>
-                                            {isCollapsed ? '▶' : '▼'}
+                                        <span style={{ fontSize: '11px', color: '#8b949e', width: '12px', display: 'inline-flex', alignItems: 'center' }}>
+                                            <FontAwesomeIcon icon={isCollapsed ? faChevronRight : faChevronDown} />
                                         </span>
                                         <span className="swagger-service-title">
                                             {className}

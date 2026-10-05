@@ -1,4 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+    faMagnifyingGlass, 
+    faList, 
+    faDiagramProject, 
+    faPlus, 
+    faXmark 
+} from '@fortawesome/free-solid-svg-icons';
 import './UnifiedHeader.css';
 
 export default function UnifiedHeader({
@@ -78,19 +86,7 @@ export default function UnifiedHeader({
                         onClick={handleToggleSearch}
                         title={isSearchOpen ? "Close search (Esc)" : "Search APIs (⌘F / Ctrl+F)"}
                     >
-                        <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        >
-                            <circle cx="11" cy="11" r="8" />
-                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                        </svg>
+                        <FontAwesomeIcon icon={faMagnifyingGlass} style={{ fontSize: '13px' }} />
                         {searchQuery && !isSearchOpen && (
                             <span className="search-active-dot" />
                         )}
@@ -103,7 +99,9 @@ export default function UnifiedHeader({
                             onClick={() => onViewChange('list')}
                             title="Card List View"
                         >
-                            <span className="segmented-icon">📋</span>
+                            <span className="segmented-icon">
+                                <FontAwesomeIcon icon={faList} />
+                            </span>
                             <span className="segmented-text">List</span>
                         </button>
                         <button
@@ -111,7 +109,9 @@ export default function UnifiedHeader({
                             onClick={() => onViewChange('graph')}
                             title="Interactive Graph View"
                         >
-                            <span className="segmented-icon">🕸️</span>
+                            <span className="segmented-icon">
+                                <FontAwesomeIcon icon={faDiagramProject} />
+                            </span>
                             <span className="segmented-text">Graph</span>
                         </button>
                     </div>
@@ -123,7 +123,9 @@ export default function UnifiedHeader({
                             onClick={onAddApi}
                             title="Add new API in this interface"
                         >
-                            <span className="add-icon">+</span>
+                            <span className="add-icon">
+                                <FontAwesomeIcon icon={faPlus} />
+                            </span>
                             <span className="add-text">Add API</span>
                         </button>
                     )}
@@ -134,7 +136,9 @@ export default function UnifiedHeader({
             {isSearchOpen && (
                 <div className="unified-search-drawer">
                     <div className="search-drawer-inner">
-                        <span className="search-drawer-icon">🔍</span>
+                        <span className="search-drawer-icon">
+                            <FontAwesomeIcon icon={faMagnifyingGlass} />
+                        </span>
                         <input
                             ref={searchInputRef}
                             type="text"
@@ -156,7 +160,7 @@ export default function UnifiedHeader({
                             onClick={handleCloseSearch}
                             title="Close search and reset (Esc)"
                         >
-                            ✕
+                            <FontAwesomeIcon icon={faXmark} />
                         </button>
                     </div>
                 </div>
