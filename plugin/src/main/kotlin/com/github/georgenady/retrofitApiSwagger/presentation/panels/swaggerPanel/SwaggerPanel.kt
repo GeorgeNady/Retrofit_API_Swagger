@@ -29,7 +29,8 @@ import javax.swing.JPanel
 class SwaggerPanel(
     project: Project,
     val isEditorMode: Boolean = false,
-    val targetFile: VirtualFile? = null
+    val targetFile: VirtualFile? = null,
+    val initialViewMode: String = if (isEditorMode) "list" else "graph"
 ) : JPanel(BorderLayout()) {
 
     private val viewModel = project.service<MainToolViewModel>()
@@ -110,7 +111,7 @@ class SwaggerPanel(
         val extractedDir = resourceService.extractResources()
         val indexFile = File(extractedDir, "index.html")
         if (indexFile.exists()) {
-            val url = indexFile.toURI().toURL().toString() + "?view=list&editor=$isEditorMode"
+            val url = indexFile.toURI().toURL().toString() + "?view=$initialViewMode&editor=$isEditorMode"
             println("RetrofitSwagger Debug: Loading Swagger index URL: $url")
             b.loadURL(url)
         } else {

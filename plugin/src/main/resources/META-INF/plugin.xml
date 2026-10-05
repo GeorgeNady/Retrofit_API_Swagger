@@ -75,10 +75,6 @@
             description="Show or hide the feature panel" icon="AllIcons.General.Filter"
             id="RetrofitAPISwagger.ToggleSidePanel" text="Toggle Side Panel" />
         <action
-            class="com.github.georgenady.retrofitApiSwagger.presentation.main.actions.SwitchViewModeAction"
-            description="Toggle between List, and Graph views" icon="AllIcons.Actions.Diff"
-            id="RetrofitAPISwagger.SwitchView" text="Switch View Mode" />
-        <action
             class="com.github.georgenady.retrofitApiSwagger.presentation.main.actions.OpenSwaggerSettingsAction"
             description="Configure default headers and plugin settings"
             icon="AllIcons.General.Settings" id="RetrofitAPISwagger.Settings" text="Settings" />

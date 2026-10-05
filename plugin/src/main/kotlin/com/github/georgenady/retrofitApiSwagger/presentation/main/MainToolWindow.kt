@@ -7,7 +7,6 @@ import com.github.georgenady.retrofitApiSwagger.presentation.panels.swaggerPanel
 import com.github.georgenady.retrofitApiSwagger.presentation.components.ApiEmptyStateView
 import com.github.georgenady.retrofitApiSwagger.presentation.components.ApiStatusBarView
 import com.github.georgenady.retrofitApiSwagger.presentation.components.LoadingView
-import com.github.georgenady.retrofitApiSwagger.presentation.panels.graphPanel.ReactGraphPanel
 import com.github.georgenady.retrofitApiSwagger.presentation.panels.sidePanel.FeatureSidePanel
 import com.github.georgenady.retrofitApiSwagger.presentation.panels.sidePanel.sections.DetailsSection
 import com.github.georgenady.retrofitApiSwagger.presentation.panels.sidePanel.sections.FilterSection
@@ -39,20 +38,14 @@ class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
     }
     private val detailsSection = DetailsSection()
 
-    // 1. API List Panel
-    private val listPanel = SwaggerPanel(
+    // Unified React Webview Panel (contains both Graph and List views)
+    private val mainPanel = SwaggerPanel(
         project = project,
+        isEditorMode = false,
+        initialViewMode = "graph"
     )
 
-    // 2. API Graph Panel
-    private val graphPanel = try {
-        ReactGraphPanel(project)
-    } catch (e: Throwable) {
-        println("RetrofitSwagger Error: Failed to initialize ReactGraphPanel: ${e.message}")
-        null
-    }
-
-    // 3. Tools Side Panel
+    // Tools Side Panel
     private val sidePanel = FeatureSidePanel(project).apply {
         addSection(filterSection)
         addSection(detailsSection)
@@ -66,19 +59,13 @@ class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
 
     private val loadingPanel = LoadingView()
 
-    private val leftSplitter = OnePixelSplitter(false, 0.4f).apply {
-        firstComponent = listPanel
-        secondComponent = graphPanel
-        setHonorComponentsMinimumSize(true)
-    }
-
     private val mainSplitter = object : OnePixelSplitter(false, 1.0f) {
         override fun setProportion(proportion: Float) {
             val clamped = proportion.coerceIn(0.50f, 0.95f)
             super.setProportion(clamped)
         }
     }.apply {
-        firstComponent = leftSplitter
+        firstComponent = mainPanel
         secondComponent = null
         setHonorComponentsMinimumSize(true)
     }
@@ -161,10 +148,9 @@ class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
             val toRender = state.filteredEndpoints.ifEmpty { state.allEndpoints }
             val endpointsChanged = lastRenderedEndpoints != toRender
 
-            // ONLY RENDER LIST IF ENDPOINTS CHANGED
+            // ONLY RENDER IF ENDPOINTS CHANGED
             if (endpointsChanged) {
-                listPanel.render(toRender)
-                graphPanel?.render(toRender)
+                mainPanel.render(toRender)
                 lastRenderedEndpoints = toRender
             }
 
@@ -180,19 +166,7 @@ class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
     }
 
     private fun updateViewMode(mode: ViewMode) {
-        when (mode) {
-            ViewMode.LIST -> {
-                leftSplitter.firstComponent = listPanel
-                leftSplitter.secondComponent = null
-                leftSplitter.proportion = 1.0f
-            }
-
-            ViewMode.GRAPH -> {
-                leftSplitter.firstComponent = null
-                leftSplitter.secondComponent = graphPanel ?: listPanel
-                leftSplitter.proportion = 0.0f
-            }
-        }
+        mainPanel.setViewMode(if (mode == ViewMode.GRAPH) "graph" else "list")
     }
 
     fun toggleSidePanel() {
