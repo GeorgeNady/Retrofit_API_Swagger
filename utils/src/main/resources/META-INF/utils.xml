@@ -1,0 +1,7 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <projectService
+            serviceInterface="com.github.georgenady.retrofitApiSwagger.utils.notification.NotificationService"
+            serviceImplementation="com.github.georgenady.retrofitApiSwagger.utils.notification.impl.NotificationServiceImpl"/>
+    </extensions>
+</idea-plugin>
