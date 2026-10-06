@@ -1,6 +1,11 @@
 import org.jetbrains.intellij.platform.gradle.extensions.intellijPlatform
 
-include(":example")
+include(":plugin")
+include(":retrofit-example")
+include(":ktorfit-example")
+include(":parser")
+include(":scanner")
+include(":utils")
 
 
 rootProject.name = "Retrofit_API_Swagger"
@@ -9,7 +14,8 @@ pluginManagement {
     plugins {
         id("org.jetbrains.kotlin.jvm") version "2.3.21"
         id("org.jetbrains.changelog") version "2.5.0"
-        id("org.jetbrains.intellij.platform") version "2.1.0"
+        id("org.jetbrains.intellij.platform") version "2.16.0"
+        id("org.jetbrains.intellij.platform.module") version "2.16.0"
     }
 }
 

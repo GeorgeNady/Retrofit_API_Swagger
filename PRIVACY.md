@@ -1,14 +1,14 @@
-# Privacy Policy for Retrofit API Swagger
+# Privacy Policy for Ktorfit & Retrofit Studio
 
-**Last Updated:** September 1, 2026
+**Last Updated:** October 5, 2026
 
-This Privacy Policy describes how **Retrofit API Swagger** ("the Plugin", "we", "us", or "our"), an extension for IntelliJ IDEA and Android Studio developed by **George Nady**, handles data when you install and use the Plugin.
+This Privacy Policy describes how **Ktorfit & Retrofit Studio** ("the Plugin", "we", "us", or "our"), an extension for IntelliJ IDEA and Android Studio developed by **George Nady**, handles data when you install and use the Plugin.
 
 ---
 
 ## 1. Data Collection and Usage
 
-**Retrofit API Swagger** operates entirely locally within your Integrated Development Environment (IDE).
+**Ktorfit & Retrofit Studio** operates entirely locally within your Integrated Development Environment (IDE).
 
 - **No Personal Data Collection:** We do not collect, capture, store, or transmit any personally identifiable information (PII), telemetry, usage statistics, or user behavior data.
 - **No Code Transmission:** All source code analysis, AST parsing, and network endpoint visualizations are performed locally on your machine. Your source code, API keys, endpoints, and project structure are never transmitted to external servers or third parties.

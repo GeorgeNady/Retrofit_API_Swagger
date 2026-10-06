@@ -1,0 +1,163 @@
+/* Connection Flow Summary in EdgeActionDialog */
+.edge-connection-flow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+}
+
+.light .edge-connection-flow {
+    background: #f6f8fa;
+    border-color: #d0d7de;
+}
+
+.edge-node-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex: 1;
+}
+
+.edge-node-name {
+    font-family: 'JetBrains Mono', Consolas, monospace;
+    font-size: 11.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #edf0f4;
+}
+
+.light .edge-node-name {
+    color: #1f2328;
+}
+
+.edge-flow-arrow {
+    color: #58a6ff;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* Actions List */
+.edge-actions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 320px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+}
+
+.edge-actions-prompt {
+    font-size: 11.5px;
+    color: #8b949e;
+    margin-bottom: 4px;
+}
+
+.edge-action-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #25282c;
+    border: 1px solid #36393e;
+    border-radius: 8px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+}
+
+.light .edge-action-card {
+    background: #ffffff;
+    border-color: #d0d7de;
+}
+
+.edge-action-card:hover {
+    background: #2d3137;
+    border-color: #58a6ff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.light .edge-action-card:hover {
+    background: #f6f8fa;
+    border-color: #0969da;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.edge-action-icon {
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+.light .edge-action-icon {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.edge-action-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.edge-action-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 2px;
+}
+
+.edge-action-name {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #edf0f4;
+}
+
+.light .edge-action-name {
+    color: #1f2328;
+}
+
+.edge-action-desc {
+    font-size: 11px;
+    color: #8b949e;
+    line-height: 1.35;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.edge-action-arrow {
+    font-size: 18px;
+    font-weight: 700;
+    color: #8b949e;
+    margin-left: 6px;
+    transition: transform 0.15s, color 0.15s;
+}
+
+.edge-action-card:hover .edge-action-arrow {
+    transform: translateX(2px);
+    color: #58a6ff;
+}
+
+/* Footer */
+.edge-dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.light .edge-dialog-footer {
+    border-top-color: #d0d7de;
+}

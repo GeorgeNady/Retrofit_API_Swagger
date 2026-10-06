@@ -1,0 +1,235 @@
+package com.github.georgenady.retrofitApiSwagger.data.parser
+
+import com.github.georgenady.retrofitApiSwagger.parser.impl.CompositeEndpointParser
+import com.github.georgenady.retrofitApiSwagger.parser.impl.JavaEndpointParser
+import com.github.georgenady.retrofitApiSwagger.parser.impl.KotlinEndpointParser
+import com.intellij.ide.highlighter.JavaFileType
+import com.intellij.psi.PsiFileFactory
+import com.intellij.psi.PsiJavaFile
+import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import org.jetbrains.kotlin.idea.KotlinFileType
+import org.jetbrains.kotlin.psi.KtFile
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.JUnit4
+
+/**
+ * Unit tests for Retrofit endpoint parsers (Kotlin, Java, and Composite).
+ */
+@RunWith(JUnit4::class)
+class EndpointParserTest : BasePlatformTestCase() {
+
+    @Test
+    fun testScanKotlinFileWithRetrofitAnnotations() {
+        val kotlinCode = """
+            package com.example.api
+
+            import retrofit2.http.GET
+            import retrofit2.http.POST
+            import retrofit2.http.PUT
+            import retrofit2.http.DELETE
+            import retrofit2.http.HTTP
+            import retrofit2.http.Path
+            import retrofit2.http.Body
+            import com.example.annotations.SupportCache
+
+            interface UserApiService {
+                @GET("users/{id}")
+                @SupportCache
+                suspend fun getUser(@Path("id") id: String): User
+
+                @POST("users/create")
+                suspend fun createUser(@Body user: User): Response
+
+                @PUT("users/update")
+                fun updateUser(@Body user: User): Response
+
+                @DELETE("users/{id}")
+                fun deleteUser(@Path("id") id: String)
+
+                @HTTP(method = "CUSTOM", path = "users/custom")
+                fun customHttp()
+            }
+        """.trimIndent()
+
+        val psiFile = PsiFileFactory.getInstance(project).createFileFromText(
+            "UserApiService.kt",
+            KotlinFileType.INSTANCE,
+            kotlinCode
+        ) as KtFile
+
+        val parser = KotlinEndpointParser()
+        val endpoints = parser.parseKtFile(psiFile)
+
+        assertEquals(5, endpoints.size)
+
+        val getEndpoint = endpoints.find { it.methodName == "getUser" }
+        assertNotNull(getEndpoint)
+        assertEquals("GET", getEndpoint?.httpMethod)
+        assertEquals("users/{id}", getEndpoint?.path)
+        assertEquals("UserApiService", getEndpoint?.className)
+        assertTrue(getEndpoint?.supportsCache == true)
+
+        val postEndpoint = endpoints.find { it.methodName == "createUser" }
+        assertNotNull(postEndpoint)
+        assertEquals("POST", postEndpoint?.httpMethod)
+        assertEquals("users/create", postEndpoint?.path)
+
+        val putEndpoint = endpoints.find { it.methodName == "updateUser" }
+        assertNotNull(putEndpoint)
+        assertEquals("PUT", putEndpoint?.httpMethod)
+        assertEquals("users/update", putEndpoint?.path)
+
+        val deleteEndpoint = endpoints.find { it.methodName == "deleteUser" }
+        assertNotNull(deleteEndpoint)
+        assertEquals("DELETE", deleteEndpoint?.httpMethod)
+        assertEquals("users/{id}", deleteEndpoint?.path)
+
+        val httpEndpoint = endpoints.find { it.methodName == "customHttp" }
+        assertNotNull(httpEndpoint)
+        assertEquals("HTTP", httpEndpoint?.httpMethod)
+        assertEquals("users/custom", httpEndpoint?.path)
+    }
+
+    @Test
+    fun testScanJavaFileWithRetrofitAnnotations() {
+        val javaCode = """
+            package com.example.api;
+
+            import retrofit2.http.GET;
+            import retrofit2.http.POST;
+            import retrofit2.http.HTTP;
+            import retrofit2.Call;
+
+            public interface JavaApiService {
+                @GET("items")
+                Call<List<Item>> getItems();
+
+                @POST("items/add")
+                Call<Void> addItem();
+
+                @HTTP(method = "DELETE", path = "items/remove")
+                Call<Void> removeItem();
+            }
+        """.trimIndent()
+
+        val psiFile = PsiFileFactory.getInstance(project).createFileFromText(
+            "JavaApiService.java",
+            JavaFileType.INSTANCE,
+            javaCode
+        ) as PsiJavaFile
+
+        val parser = JavaEndpointParser()
+        val endpoints = parser.parseJavaFile(psiFile)
+
+        assertEquals(3, endpoints.size)
+
+        val getItems = endpoints.find { it.methodName == "getItems" }
+        assertNotNull(getItems)
+        assertEquals("GET", getItems?.httpMethod)
+        assertEquals("items", getItems?.path)
+        assertEquals("JavaApiService", getItems?.className)
+
+        val addItem = endpoints.find { it.methodName == "addItem" }
+        assertNotNull(addItem)
+        assertEquals("POST", addItem?.httpMethod)
+        assertEquals("items/add", addItem?.path)
+
+        val removeItem = endpoints.find { it.methodName == "removeItem" }
+        assertNotNull(removeItem)
+        assertEquals("HTTP", removeItem?.httpMethod)
+        assertEquals("items/remove", removeItem?.path)
+    }
+
+    @Test
+    fun testCompositeEndpointParser() {
+        val composite = CompositeEndpointParser()
+
+        val kotlinFile = PsiFileFactory.getInstance(project).createFileFromText(
+            "Sample.kt",
+            KotlinFileType.INSTANCE,
+            """
+                interface SampleApi {
+                    @retrofit2.http.GET("test")
+                    fun test(): String
+                }
+            """.trimIndent()
+        )
+
+        assertTrue(composite.canParse(kotlinFile))
+        val parsed = composite.parse(kotlinFile)
+        assertEquals(1, parsed.size)
+        assertEquals("test", parsed[0].methodName)
+        assertEquals("GET", parsed[0].httpMethod)
+        assertEquals("test", parsed[0].path)
+    }
+
+    @Test
+    fun testScanKotlinFileWithKtorfitAnnotations() {
+        val kotlinCode = """
+            package com.example.api
+
+            import de.jensklingenberg.ktorfit.http.GET
+            import de.jensklingenberg.ktorfit.http.POST
+            import de.jensklingenberg.ktorfit.http.PUT
+            import de.jensklingenberg.ktorfit.http.DELETE
+            import de.jensklingenberg.ktorfit.http.Path
+            import de.jensklingenberg.ktorfit.http.Body
+            import de.jensklingenberg.ktorfit.http.Query
+
+            interface KtorfitProductService {
+                @GET("products/{id}")
+                suspend fun getProduct(@Path("id") id: Int): String
+
+                @GET("products/search")
+                suspend fun search(@Query("q") query: String): String
+
+                @POST("products/add")
+                suspend fun addProduct(@Body body: String): String
+
+                @PUT("products/{id}")
+                suspend fun updateProduct(@Path("id") id: Int, @Body body: String): String
+
+                @DELETE("products/{id}")
+                suspend fun deleteProduct(@Path("id") id: Int): String
+            }
+        """.trimIndent()
+
+        val psiFile = PsiFileFactory.getInstance(project).createFileFromText(
+            "KtorfitProductService.kt",
+            KotlinFileType.INSTANCE,
+            kotlinCode
+        ) as KtFile
+
+        val parser = KotlinEndpointParser()
+        val endpoints = parser.parseKtFile(psiFile)
+
+        assertEquals(5, endpoints.size)
+
+        val getEndpoint = endpoints.find { it.methodName == "getProduct" }
+        assertNotNull(getEndpoint)
+        assertEquals("GET", getEndpoint?.httpMethod)
+        assertEquals("products/{id}", getEndpoint?.path)
+        assertEquals("KtorfitProductService", getEndpoint?.className)
+
+        val searchEndpoint = endpoints.find { it.methodName == "search" }
+        assertNotNull(searchEndpoint)
+        assertEquals("GET", searchEndpoint?.httpMethod)
+        assertEquals("products/search", searchEndpoint?.path)
+
+        val postEndpoint = endpoints.find { it.methodName == "addProduct" }
+        assertNotNull(postEndpoint)
+        assertEquals("POST", postEndpoint?.httpMethod)
+        assertEquals("products/add", postEndpoint?.path)
+
+        val putEndpoint = endpoints.find { it.methodName == "updateProduct" }
+        assertNotNull(putEndpoint)
+        assertEquals("PUT", putEndpoint?.httpMethod)
+        assertEquals("products/{id}", putEndpoint?.path)
+
+        val deleteEndpoint = endpoints.find { it.methodName == "deleteProduct" }
+        assertNotNull(deleteEndpoint)
+        assertEquals("DELETE", deleteEndpoint?.httpMethod)
+        assertEquals("products/{id}", deleteEndpoint?.path)
+    }
+}

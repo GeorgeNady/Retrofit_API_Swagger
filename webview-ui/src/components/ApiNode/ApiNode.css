@@ -1,0 +1,47 @@
+/* Node Card Styles */
+.node-card {
+    background: #3c3f41;
+    border: 1px solid #4e5157;
+    border-radius: 6px;
+    padding: 10px;
+    width: 240px;
+    box-sizing: border-box;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    pointer-events: auto;
+    user-select: none;
+    position: relative;
+    z-index: 100;
+    transition: outline 0.2s ease;
+}
+
+/* AS Nav Graph Hover Halo */
+.node-card:hover {
+    outline: 4px solid rgba(255, 255, 255, 0.15);
+    outline-offset: 10px;
+}
+
+.node-header {
+    display: flex;
+    align-items: center;
+}
+
+.method-name {
+    font-weight: 600;
+    font-size: 11px;
+    color: #dfe1e5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.node-path {
+    font-size: 10px;
+    color: #888;
+    word-break: break-all;
+    line-height: 1.2;
+}
