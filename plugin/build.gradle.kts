@@ -9,12 +9,12 @@ plugins {
 
 kotlin {
     compilerOptions {
-        apiVersion.set(KotlinVersion.KOTLIN_2_0)
-        languageVersion.set(KotlinVersion.KOTLIN_2_0)
+        apiVersion.set(KotlinVersion.KOTLIN_2_1)
+        languageVersion.set(KotlinVersion.KOTLIN_2_1)
 
-        // Instructs Kotlin to use native JVM 8 default interface methods
+        // Instructs Kotlin to use native JVM 8+ default interface methods
         // instead of generating synthetic bridge methods that trigger the verifier.
-        freeCompilerArgs.add("-Xjvm-default=all")
+        freeCompilerArgs.add("-jvm-default=no-compatibility")
     }
 }
 
@@ -67,7 +67,7 @@ tasks {
         } else {
             commandLine("bash", "-c", "npm install")
         }
-        inputs.file(webviewDir.resolve("package.json"))
+        inputs.files(listOf("package.json", "package-lock.json").map { webviewDir.resolve(it) }.filter { it.exists() })
         outputs.dir(webviewDir.resolve("node_modules"))
     }
 
@@ -84,7 +84,7 @@ tasks {
         }
         
         inputs.dir(webviewDir.resolve("src"))
-        inputs.file(webviewDir.resolve("package.json"))
+        inputs.files(listOf("package.json", "package-lock.json", "vite.config.js", "index.html").map { webviewDir.resolve(it) }.filter { it.exists() })
         outputs.dir(webviewDistDir)
     }
 
