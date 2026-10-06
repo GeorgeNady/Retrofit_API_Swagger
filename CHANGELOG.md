@@ -4,26 +4,20 @@
 
 ## [1.2.0] - 2026-10-05
 ### Added
-- **Custom Code Generation & Edge Actions**: Connect any two API nodes in the visual graph to trigger customizable code generation. Includes a pure Kotlin template evaluation engine with zero-overhead variable substitutions (`${source.methodName}`, `${target.methodName}`).
-- **Edge Actions Settings UI**: Dedicated configuration page under *Settings > Tools > Edge Actions* to manage, edit, and create custom edge action templates and placement rules (`ANNOTATE_TARGET`, `ANNOTATE_SOURCE`, `INJECT_BEFORE_TARGET`, `GENERATE_NEW_FILE`).
-- **Multi-Module Clean Architecture**: Split project into modular submodules (`:parser`, `:scanner`, `:plugin`, and `webview-ui`) for improved maintainability, faster incremental compilation, and clean separation of concerns.
-- **Pure Reusable UI Primitives**: Implemented generic `Modal`, `Button`, and `Badge` components in `webview-ui/src/components/ui/` with zero business logic and decoupled IPC event callbacks.
-- **Enhanced List Item Design**: Modernized card list view items to align visually with graph nodes, featuring function name headers, divider lines, HTTP badges, and full API paths.
-- **IntelliJ Native Dependency Injection**: Converted all plugin services to use native IntelliJ Platform services (`@Service(Service.Level.PROJECT)`) and constructor injection.
-- **Modular AI Architecture Rules**: Standardized coding, clean architecture, SOLID, React design, and IntelliJ Platform SDK rules in `.agents/rules/` and `CLAUDE.md`.
-
-### Changed
-- Replaced hardcoded cache scaffolding with the extensible Edge Action engine.
-- Decommissioned obsolete legacy services (`CacheScaffoldingService`, hardcoded `<Legend />`).
-- Decoupled API form modals from global IPC bridges using unidirectional props/callbacks.
+- **Custom Code Generation & Edge Actions**: Connect any two API nodes in the visual graph to trigger customizable code generation and annotations.
+- **Edge Actions Settings UI**: Dedicated configuration page under *Settings > Tools > Edge Actions* to manage, edit, and create custom edge action templates and placement rules.
+- **Built-in Response Viewer**: Inspect API responses directly inside the IDE with automatic syntax highlighting and format detection (JSON, XML, HTML, Plain Text).
+- **Figma-Style Canvas Gestures**: Smooth touchpad gestures, trackpad pinch-to-zoom, and fluid canvas panning.
+- **Enhanced Card List View**: Redesigned list items with clear function headers, HTTP method badges, API paths, and quick actions matching visual graph cards.
+- **Fast Background Scanning**: Background endpoint scanning and smart caching ensure instant navigation without UI freezing.
 
 ### Fixed
-- Fixed ClassLoader linkage collision by eliminating external Apache Velocity dependencies in favor of pure Kotlin template evaluation.
+- Fixed node connection linking and edge generation behavior.
 
 ## [1.1.9] - 2026-08-29
 ### Added
-- **Android Studio Exclusive**: Explicitly restricted compatibility to Android Studio (required for Marketplace approval).
-- **JVM Default Methods**: Enabled `-Xjvm-default=all` to ensure stable binary compatibility with Kotlin 2.0.
+- **Android Studio Compatibility**: Dedicated support and optimization for Android Studio.
+- **Kotlin 2.0 & K2 Mode**: Full compatibility with Kotlin 2.0 and K2 mode.
 
 ### Fixed
 - **Link Nodes**: Resolved inconsistencies in node connection behaviors.
@@ -31,37 +25,33 @@
 
 ## [1.1.8] - 2026-08-23
 ### Added
-- **Reactive UI Architecture**: Full refactoring to a decoupled reactive model (SOLID). Individual API cards now manage their own state, significantly improving stability.
-- **Zero-Freeze Performance**: Optimized the rendering pipeline to eliminate UI thread blocking. Expanding or selecting endpoints is now instantaneous.
-- **Split Editor Integration**: Introducing the **Design View**. View your Retrofit interfaces and visual API cards side-by-side in the editor.
+- **Split Editor (Design View)**: View your Retrofit interfaces and visual API cards side-by-side in the editor.
 - **Gutter Icon Navigation**: Enhanced gutter icons to jump directly to the Split Editor's Design view.
-- **Native Progress Integration**: Real-time scanning progress now appears in the IDE status bar with file counts and cancellation support.
-- **Lazy Data Loading**: Heavy JSON schema generation is now performed asynchronously only when a card is expanded.
-- **Stable Signatures**: Implemented unique identity signatures for API nodes to ensure consistent state across background re-scans.
+- **Native Status Bar Progress**: Real-time scanning progress now appears in the IDE status bar with file counts and cancellation support.
+- **Instant UI Performance**: Optimized endpoint expansion and card navigation to eliminate UI freezes.
 
 ### Fixed
-- **Reliable Expansion**: Fixed the "arrow down" toggle responsiveness by improving hit areas and switching to robust mouse-event handling.
-- **Accordion Jitter**: Smoothed out the accordion-style expansion logic across multiple UI panels.
+- **Reliable Expansion**: Fixed arrow-down toggle responsiveness and mouse interactions.
+- **Accordion Jitter**: Smoothed out accordion-style expansion across UI panels.
 
 ## [1.1.6] - 2026-08-20
 ### Added
 - **Unified Dashboard**: All-in-one interface with resizable side-by-side panels.
 - **Interactive Graph**: Visual node-based architecture with service-to-endpoint mapping.
-- **Draggable & Zoomable**: Free canvas navigation with a custom floating design toolbar (Hand pan, Zoom In/Out, Fit).
+- **Draggable & Zoomable Canvas**: Free canvas navigation with a custom floating design toolbar (Hand pan, Zoom In/Out, Fit).
 - **Deep Metadata**: Automatic collection of custom annotations (e.g., `@SupportCache`) and method parameters.
 - **Search & Filters**: Instant live search by path or name, and quick-toggle filters for HTTP methods and modules.
 - **View Switcher**: Jump between high-level architectural Graph mode and detailed searchable List mode.
-- **i18n Support**: Full string extraction to `MyBundle.properties` with descriptive emojis for a modern UI feel.
+- **i18n Support**: Full localized strings with descriptive emojis for a modern UI feel.
 - **Smart Wrapping**: Intelligent multiline text wrapping in the details panel for long API signatures.
 
 ### Fixed
-- **Multi-Module Discovery**: Overhauled scanner to use `FileTypeIndex` and manual brute-force walk for complex Android projects.
-- **K2 Mode Compatibility**: Explicitly declared support for Kotlin K2 mode in Android Studio.
-- **Rendering Fail-Safes**: Fixed "Nothing to show" issues by ensuring robust UI initialization and bundling visual libraries.
-- **Horizontal Stability**: Prevented side panel from expanding horizontally due to long text.
+- **Multi-Module Discovery**: Enhanced scanner to reliably discover endpoints across multi-module projects.
+- **Kotlin K2 Mode**: Support for Kotlin K2 mode in Android Studio.
+- **Rendering Stability**: Fixed UI initialization and display stability across panels.
 
 ## [1.0.0] - 2026-08-19
 ### Added
-- Initial project scaffold.
-- Basic Retrofit annotation scanning.
-- Simple Tool Window registration.
+- Initial plugin release.
+- Retrofit annotation scanning.
+- Dedicated IDE Tool Window.

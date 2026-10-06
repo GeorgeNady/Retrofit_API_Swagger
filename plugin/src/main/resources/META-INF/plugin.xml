@@ -41,27 +41,25 @@
     <change-notes><![CDATA[
         <h4>1.2.0</h4>
         <ul>
-            <li><b>Custom Code Generation & Edge Actions:</b> Added an extensible Edge Action engine. Dragging a connection between two API nodes presents an action menu with customizable code templates and placement strategies.</li>
-            <li><b>Edge Actions Settings UI:</b> Dedicated configuration panel in <i>Settings &gt; Tools &gt; Edge Actions</i> to customize templates, placement rules, and variable substitutions.</li>
-            <li><b>Multi-Module Clean Architecture:</b> Re-architected the plugin into modular Gradle submodules (<code>:parser</code>, <code>:scanner</code>, and <code>:plugin</code>) with strict layer boundaries.</li>
-            <li><b>Performance & Smart Hash Caching:</b> File scanning now leverages persistent hash-based candidate caching on background threads, completely eliminating UI thread freezing.</li>
-            <li><b>Modular React UI System:</b> Built pure presentation primitives (Modals, Buttons, Badges) with zero business logic and clean unidirectional state synchronization.</li>
-            <li><b>Enhanced List Item View:</b> Redesigned the card list view layout with function name columns, HTTP method badges, API path rows, and CTA buttons to match visual graph cards.</li>
-            <li><b>IntelliJ Platform Alignment:</b> Adopted native IntelliJ Platform service injection (<code>@Service</code>), Kotlin coroutines, and thread-safe PSI read/write transactions.</li>
+            <li><b>Custom Code Generation &amp; Edge Actions:</b> Connect any two API nodes in the visual graph to trigger customizable code generation and annotations.</li>
+            <li><b>Edge Actions Settings UI:</b> Dedicated configuration panel under <i>Settings &gt; Tools &gt; Edge Actions</i> to manage and customize action templates and placement rules.</li>
+            <li><b>Built-in Response Viewer:</b> Inspect API responses directly inside the IDE with automatic syntax highlighting and format detection (JSON, XML, HTML, Plain Text).</li>
+            <li><b>Figma-Style Canvas Gestures:</b> Smooth touchpad gestures, trackpad pinch-to-zoom, and fluid canvas panning in Graph mode.</li>
+            <li><b>Enhanced Card List View:</b> Redesigned list layout with function headers, HTTP method badges, API paths, and quick actions matching visual graph nodes.</li>
+            <li><b>Fast Background Scanning:</b> Background endpoint scanning and smart caching ensure instant navigation without UI freezing.</li>
         </ul>
         <h4>1.1.9</h4>
         <ul>
-            <li><b>Android Studio Only:</b> Restricted plugin compatibility specifically to Android Studio as requested by JetBrains Marketplace.</li>
-            <li><b>UI Fixes:</b> Resolved issues with link nodes behavior and vertical list display (nodes correctly shown as a list).</li>
-            <li><b>Kotlin 2.0:</b> Improved compatibility for Kotlin K2 mode with native JVM default methods.</li>
+            <li><b>Android Studio Compatibility:</b> Dedicated support and optimization for Android Studio.</li>
+            <li><b>Kotlin 2.0 &amp; K2 Mode:</b> Full compatibility with Kotlin 2.0 and K2 mode in Android Studio.</li>
+            <li><b>UI Improvements:</b> Resolved issues with node connection linking and vertical list display.</li>
         </ul>
         <h4>1.1.8</h4>
         <ul>
-            <li><b>Reactive Architecture:</b> Full refactoring to a decoupled reactive model (SOLID).</li>
-            <li><b>Zero-Freeze UI:</b> Optimized rendering pipeline eliminates IDE thread blocking during interaction.</li>
-            <li><b>Design View:</b> Integrated Split Editor for side-by-side code and visual API management.</li>
-            <li><b>Native Progress:</b> Scanning progress now integrated with the IDE status bar.</li>
-            <li><b>Reliability:</b> Stable signatures for endpoints and improved mouse interaction models.</li>
+            <li><b>Split Editor (Design View):</b> Side-by-side view for Retrofit interfaces and visual API cards directly in the editor.</li>
+            <li><b>Gutter Icon Navigation:</b> Jump directly from code declarations to visual Design view using editor gutter icons.</li>
+            <li><b>IDE Status Bar Progress:</b> Real-time scanning progress integrated into the IDE status bar with cancellation support.</li>
+            <li><b>Instant UI Performance:</b> Optimized endpoint expansion and card navigation to eliminate UI freezes.</li>
         </ul>
     ]]></change-notes>
 
