@@ -7,6 +7,7 @@
 ## 🚀 Key Features
 
 - **Ktorfit & Retrofit Dual Support**: First-class discovery and parsing for both Retrofit and Ktorfit HTTP interfaces across Android and Kotlin Multiplatform modules.
+- **Modern Android Studio & Kotlin 2.x Support**: Full compatibility with modern Android Studio versions (including Android Studio Rabbit 2026.2+), IntelliJ Platform modular architectures, and Kotlin K2 mode.
 - **Custom Code Generation & Edge Actions**: Drag connections between API nodes in the graph to trigger customizable code templates and annotations. Configure custom templates under *Settings > Tools > Edge Actions*.
 - **Interactive Graph**: Visualize service-to-endpoint relationships with a draggable and zoomable canvas.
 - **Dual View Modes**: Seamlessly switch between the visual graph and a structured, searchable card list.

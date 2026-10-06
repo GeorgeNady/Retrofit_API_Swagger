@@ -3,28 +3,27 @@ package com.github.georgenady.retrofitApiSwagger.presentation.panels.swaggerPane
 import com.github.georgenady.retrofitApiSwagger.model.ApiNode
 import com.github.georgenady.retrofitApiSwagger.presentation.main.MainToolViewModel
 import com.github.georgenady.retrofitApiSwagger.presentation.panels.graphPanel.WebviewResourceService
-import com.github.georgenady.retrofitApiSwagger.presentation.panels.graphPanel.utils.toGraphPayload
-import com.google.gson.Gson
+import com.github.georgenady.retrofitApiSwagger.utils.PluginUiUtils
+import com.github.georgenady.retrofitApiSwagger.utils.notification.NotificationActionItem
+import com.github.georgenady.retrofitApiSwagger.utils.notification.notificationService
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.ui.jcef.JBCefApp
-import com.intellij.ui.jcef.JBCefBrowser
+import com.intellij.ui.components.JBLabel
+import com.intellij.util.ui.JBUI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import org.cef.browser.CefBrowser
-import org.cef.browser.CefFrame
-import org.cef.callback.CefContextMenuParams
-import org.cef.callback.CefMenuModel
-import org.cef.handler.CefContextMenuHandlerAdapter
-import org.cef.handler.CefLoadHandlerAdapter
 import java.awt.BorderLayout
-import java.io.File
-import javax.swing.JLabel
+import java.awt.FlowLayout
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
+import javax.swing.JButton
 import javax.swing.JPanel
+import javax.swing.SwingConstants
 
 class SwaggerPanel(
     val project: Project,
@@ -36,118 +35,126 @@ class SwaggerPanel(
     private val viewModel = project.service<MainToolViewModel>()
     private val resourceService = project.service<WebviewResourceService>()
 
-    private val browser = if (JBCefApp.isSupported()) {
-        JBCefBrowser.createBuilder()
-            .setOffScreenRendering(false)
-            .build()
-    } else null
-    private val gson = Gson()
-
-    private var isReady = false
-    private var pendingEndpoints: List<ApiNode>? = null
-    private var jsBridge: SwaggerJavascriptBridge? = null
+    // Uses JcefWebviewAdapter to isolate JCEF class loading completely from SwaggerPanel
+    private var adapter: JcefWebviewAdapter? = null
     private var subscriptionJob: Job? = null
 
     init {
-        if (browser == null) {
-            add(JLabel("JCEF is not supported. Please use a different IDE runtime."), BorderLayout.CENTER)
-        } else {
-            setupBrowser(browser)
+        if (!tryInitializeBrowser()) {
+            add(createJcefMissingPanel(), BorderLayout.CENTER)
+            notifyMissingJcef()
         }
     }
 
-    private fun setupBrowser(b: JBCefBrowser) {
-        add(b.component, BorderLayout.CENTER)
+    fun isJcefAvailable(): Boolean = adapter != null
 
-        jsBridge = SwaggerJavascriptBridge(b, viewModel, { targetFile }) {
-            isReady = true
-            val toRender = pendingEndpoints ?: if (isEditorMode && targetFile != null && targetFile.isValid) {
-                project.service<com.github.georgenady.retrofitApiSwagger.domain.repository.ApiRepository>()
-                    .findRetrofitEndpointsInFile(targetFile)
-            } else null
-
-            toRender?.let { render(it) }
-            pendingEndpoints = null
-        }
-
-        b.jbCefClient.addLoadHandler(object : CefLoadHandlerAdapter() {
-            override fun onLoadEnd(browser: CefBrowser?, frame: CefFrame?, httpStatusCode: Int) {
-                browser?.executeJavaScript(
-                    "window.cefQuery = function(query) { ${jsBridge?.jsQuery?.inject("query.request")} };",
-                    browser.url ?: "", 0
-                )
-            }
-        }, b.cefBrowser)
-
-        // Native Context Menu for DevTools
-        b.jbCefClient.addContextMenuHandler(object : CefContextMenuHandlerAdapter() {
-            override fun onBeforeContextMenu(
-                browser: CefBrowser?,
-                frame: CefFrame?,
-                params: CefContextMenuParams?,
-                model: CefMenuModel?
-            ) {
-                model?.clear()
-                model?.addItem(CefMenuModel.MenuId.MENU_ID_USER_FIRST, "Refresh Swagger")
-                model?.addItem(CefMenuModel.MenuId.MENU_ID_USER_FIRST + 1, "Open DevTools")
-            }
-
-            override fun onContextMenuCommand(
-                browser: CefBrowser?,
-                frame: CefFrame?,
-                params: CefContextMenuParams?,
-                commandId: Int,
-                eventFlags: Int
-            ): Boolean {
-                when (commandId) {
-                    CefMenuModel.MenuId.MENU_ID_USER_FIRST -> {
-                        b.loadURL(b.cefBrowser.url)
-                        return true
-                    }
-                    CefMenuModel.MenuId.MENU_ID_USER_FIRST + 1 -> {
-                        b.openDevtools()
-                        return true
-                    }
-                }
+    private fun tryInitializeBrowser(): Boolean {
+        if (!JcefWebviewAdapter.isJcefAvailable()) return false
+        return try {
+            val newAdapter = JcefWebviewAdapter(
+                project = project,
+                viewModel = viewModel,
+                resourceService = resourceService,
+                isEditorMode = isEditorMode,
+                targetFile = targetFile,
+                initialViewMode = initialViewMode
+            )
+            if (!newAdapter.isRealBrowserInitialized()) {
                 return false
             }
-        }, b.cefBrowser)
-
-        val extractedDir = resourceService.extractResources()
-        val indexFile = File(extractedDir, "index.html")
-        if (indexFile.exists()) {
-            val url = indexFile.toURI().toURL().toString() + "?view=$initialViewMode&editor=$isEditorMode"
-            println("RetrofitSwagger Debug: Loading Swagger index URL: $url")
-            b.loadURL(url)
-        } else {
-            println("RetrofitSwagger Error: index.html missing from extracted resources at ${extractedDir.absolutePath}")
+            adapter = newAdapter
+            removeAll()
+            add(newAdapter.component, BorderLayout.CENTER)
+            revalidate()
+            repaint()
+            subscribeToUpdates(newAdapter)
+            true
+        } catch (_: Throwable) {
+            false
         }
-
-        // F12 to open DevTools
-        b.component.addKeyListener(object : java.awt.event.KeyAdapter() {
-            override fun keyPressed(e: java.awt.event.KeyEvent) {
-                if (e.keyCode == java.awt.event.KeyEvent.VK_F12) {
-                    b.openDevtools()
-                }
-            }
-        })
     }
 
-    override fun addNotify() {
-        super.addNotify()
+    private fun subscribeToUpdates(a: JcefWebviewAdapter) {
+        subscriptionJob?.cancel()
         subscriptionJob = viewModel.viewModelScope.launch(Dispatchers.Main) {
             viewModel.uiState
                 .map { it.requestResults }
                 .distinctUntilChanged()
                 .collect { results ->
-                    if (isReady && browser != null) {
-                        results.forEach { (sig, res) ->
-                            val js = "if (window.updateResponseResult) window.updateResponseResult(${gson.toJson(sig)}, ${gson.toJson(res)});"
-                            browser.cefBrowser.executeJavaScript(js, browser.cefBrowser.url ?: "", 0)
-                        }
-                    }
+                    a.updateResponseResults(results)
                 }
         }
+    }
+
+    private fun createJcefMissingPanel(): JPanel {
+        return JPanel(GridBagLayout()).apply {
+            border = JBUI.Borders.empty(24)
+            val gbc = GridBagConstraints().apply {
+                gridx = 0
+                gridy = GridBagConstraints.RELATIVE
+                weightx = 1.0
+                fill = GridBagConstraints.HORIZONTAL
+                insets = JBUI.insets(8, 0)
+                anchor = GridBagConstraints.CENTER
+            }
+
+            // Warning Icon + Title
+            val titleLabel = JBLabel(
+                "Web Browser (JCEF) Required",
+                AllIcons.General.WarningDialog,
+                SwingConstants.CENTER
+            ).apply {
+                font = JBUI.Fonts.label().biggerOn(3.0f)
+                horizontalAlignment = SwingConstants.CENTER
+            }
+            add(titleLabel, gbc)
+
+            // Explanatory Text
+            val descLabel = JBLabel(
+                "<html><center><p style='width: 320px; line-height: 1.4;'>" +
+                "Android Studio requires the <b>Web Browser (JCEF)</b> plugin to render the interactive React canvas and API response viewer." +
+                "<br><br>" +
+                "Please install or enable the requirement from the IDE Plugins settings." +
+                "</p></center></html>",
+                SwingConstants.CENTER
+            ).apply {
+                horizontalAlignment = SwingConstants.CENTER
+            }
+            add(descLabel, gbc)
+
+            // Single Prominent CTA Action Button
+            val ctaButton = JButton("Open Plugins to Install Requirement", AllIcons.Actions.Download).apply {
+                addActionListener {
+                    PluginUiUtils.openPluginsSettings(project)
+                }
+            }
+
+            val buttonPanel = JPanel(FlowLayout(FlowLayout.CENTER)).apply {
+                add(ctaButton)
+            }
+            add(buttonPanel, gbc)
+        }
+    }
+
+    private fun notifyMissingJcef() {
+        if (!hasNotifiedMissingJcef) {
+            hasNotifiedMissingJcef = true
+            project.notificationService.showWarning(
+                title = "Web Browser (JCEF) Required",
+                content = "Ktorfit & Retrofit Studio requires the 'Web Browser (JCEF)' plugin to display the interactive API graph and response viewer.",
+                actions = listOf(
+                    NotificationActionItem("Open Plugins") {
+                        PluginUiUtils.openPluginsSettings(project)
+                    }
+                )
+            )
+        }
+    }
+
+    override fun addNotify() {
+        super.addNotify()
+        val a = adapter ?: return
+        subscribeToUpdates(a)
     }
 
     override fun removeNotify() {
@@ -157,27 +164,19 @@ class SwaggerPanel(
     }
 
     fun render(endpoints: List<ApiNode>) {
-        val b = browser ?: return
-        if (!isReady) {
-            pendingEndpoints = endpoints
-            return
-        }
-
-        val edgeActions = com.github.georgenady.retrofitApiSwagger.data.service.EdgeActionSettingsService.getInstance(viewModel.project).state.actions
-        val statePayload = endpoints.toGraphPayload(
-            requestResults = viewModel.uiState.value.requestResults,
-            isEditorMode = isEditorMode,
-            edgeActions = edgeActions
-        )
-        val jsonPayload = gson.toJson(statePayload)
-
-        val jsCode = "window.updateGraphData(${gson.toJson(jsonPayload)}, ${statePayload["isDark"]})"
-        b.cefBrowser.executeJavaScript(jsCode, b.cefBrowser.url, 0)
+        adapter?.render(endpoints)
     }
 
     fun setViewMode(mode: String) {
-        val b = browser ?: return
-        val js = "if (window.setViewMode) window.setViewMode('$mode');"
-        b.cefBrowser.executeJavaScript(js, b.cefBrowser.url ?: "", 0)
+        adapter?.setViewMode(mode)
+    }
+
+    companion object {
+        @Volatile
+        private var hasNotifiedMissingJcef = false
+
+        fun resetNotificationFlag() {
+            hasNotifiedMissingJcef = false
+        }
     }
 }

@@ -21,13 +21,16 @@ kotlin {
 dependencies {
     implementation(project(":parser"))
     implementation(project(":scanner"))
+    implementation(project(":utils"))
     testImplementation("junit:junit:4.13.2")
 
     intellijPlatform {
         pluginComposedModule(project(":parser"))
         pluginComposedModule(project(":scanner"))
+        pluginComposedModule(project(":utils"))
 
         androidStudio("2024.2.1.12")
+        jetbrainsRuntime()
 
         bundledPlugin("org.jetbrains.kotlin")
         bundledPlugin("com.intellij.java")

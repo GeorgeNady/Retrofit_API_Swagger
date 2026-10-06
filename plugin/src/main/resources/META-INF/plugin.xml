@@ -31,16 +31,21 @@
     <!-- Include the definitions from the other modules -->
     <xi:include href="/META-INF/parser.xml" xpointer="xpointer(/idea-plugin/*)" />
     <xi:include href="/META-INF/scanner.xml" xpointer="xpointer(/idea-plugin/*)" />
+    <xi:include href="/META-INF/utils.xml" xpointer="xpointer(/idea-plugin/*)" />
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.java</depends>
     <depends>org.jetbrains.kotlin</depends>
+    <depends config-file="retrofitApiSwagger-jcef.xml" optional="true">com.intellij.modules.jcef
+    </depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <change-notes><![CDATA[
         <h4>1.2.0</h4>
         <ul>
+            <li><b>Latest Android Studio Support:</b> Full compatibility with the latest Android Studio versions (including Android Studio Rabbit 1 | 2026.2.1+ and IntelliJ Platform 2026.2+ modular architecture).</li>
+            <li><b>Tool Window &amp; JCEF Bug Fixes:</b> Resolved an issue causing "Nothing to show" on modern Android Studio releases by linking runtime JCEF modules and adding resilient error recovery.</li>
             <li><b>Custom Code Generation &amp; Edge Actions:</b> Connect any two API nodes in the visual graph to trigger customizable code generation and annotations.</li>
             <li><b>Edge Actions Settings UI:</b> Dedicated configuration panel under <i>Settings &gt; Tools &gt; Edge Actions</i> to manage and customize action templates and placement rules.</li>
             <li><b>Built-in Response Viewer:</b> Inspect API responses directly inside the IDE with automatic syntax highlighting and format detection (JSON, XML, HTML, Plain Text).</li>
@@ -76,10 +81,15 @@
             class="com.github.georgenady.retrofitApiSwagger.presentation.main.actions.OpenSwaggerSettingsAction"
             description="Configure default headers and plugin settings"
             icon="AllIcons.General.Settings" id="RetrofitAPISwagger.Settings" text="Settings" />
+        <action
+            class="com.github.georgenady.retrofitApiSwagger.presentation.main.actions.OpenGitHubIssueAction"
+            description="Create a new issue on GitHub" icon="AllIcons.Vcs.Vendors.Github"
+            id="RetrofitAPISwagger.GitHubIssue" text="Report Issue" />
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
-        <notificationGroup id="Retrofit API Swagger Notification Group" displayType="BALLOON" />
+        <notificationGroup displayType="STICKY_BALLOON" id="Retrofit API Swagger Notification Group"
+            isLogByDefault="true" />
 
         <projectService
             serviceImplementation="com.github.georgenady.retrofitApiSwagger.data.repository.ApiRepositoryImpl"
@@ -95,8 +105,8 @@
         <projectService
             serviceImplementation="com.github.georgenady.retrofitApiSwagger.data.service.EdgeActionSettingsService" />
         <projectService
-            serviceInterface="com.github.georgenady.retrofitApiSwagger.scanner.settings.ScannerSettings"
-            serviceImplementation="com.github.georgenady.retrofitApiSwagger.data.service.ScannerSettingsAdapter" />
+            serviceImplementation="com.github.georgenady.retrofitApiSwagger.data.service.ScannerSettingsAdapter"
+            serviceInterface="com.github.georgenady.retrofitApiSwagger.scanner.settings.ScannerSettings" />
         <projectConfigurable displayName="Ktorfit &amp; Retrofit Studio"
             id="com.github.georgenady.retrofitApiSwagger.settings"
             instance="com.github.georgenady.retrofitApiSwagger.core.configuration.SwaggerSettingsConfigurable"

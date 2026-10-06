@@ -142,6 +142,9 @@ class MainToolWindow(private val project: Project) : JPanel(BorderLayout()) {
             }
             statusBar.setMessage(msg)
             loadingPanel.setMessage(msg)
+        } else if (!mainPanel.isJcefAvailable()) {
+            // When JCEF is missing, always show MAIN so the missing requirement panel with CTA buttons is visible
+            cardLayout.show(contentSwitcher, "MAIN")
         } else if (state.allEndpoints.isEmpty()) {
             cardLayout.show(contentSwitcher, "EMPTY")
         } else {

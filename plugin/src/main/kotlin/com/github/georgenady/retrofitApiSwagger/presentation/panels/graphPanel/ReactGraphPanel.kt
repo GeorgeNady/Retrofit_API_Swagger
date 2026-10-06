@@ -24,11 +24,15 @@ class ReactGraphPanel(project: Project) : JPanel(BorderLayout()) {
     private val viewModel = project.service<MainToolViewModel>()
     private val resourceService = project.service<WebviewResourceService>()
 
-    private val browser = if (JBCefApp.isSupported()) {
-        JBCefBrowser.createBuilder()
-            .setOffScreenRendering(false)
-            .build()
-    } else null
+    private val browser: JBCefBrowser? = try {
+        if (JBCefApp.isSupported()) {
+            JBCefBrowser.createBuilder()
+                .setOffScreenRendering(false)
+                .build()
+        } else null
+    } catch (t: Throwable) {
+        null
+    }
     private val gson = Gson()
 
     private var isReady = false
@@ -36,10 +40,33 @@ class ReactGraphPanel(project: Project) : JPanel(BorderLayout()) {
     private var jsBridge: GraphJavascriptBridge? = null
 
     init {
-        if (browser == null) {
-            add(JLabel("JCEF is not supported. Please use a different IDE runtime."), BorderLayout.CENTER)
+        val b = browser
+        if (b == null) {
+            val msg = try {
+                if (!JBCefApp.isSupported()) {
+                    "JCEF is not supported in this runtime. Please ensure your IDE is running on JetBrains Runtime (JBR)."
+                } else {
+                    "Failed to initialize embedded browser. Please check IDE logs."
+                }
+            } catch (t: Throwable) {
+                "JCEF is not available in this IDE: ${t.localizedMessage ?: t.javaClass.simpleName}"
+            }
+            val msgPanel = JPanel(java.awt.GridBagLayout()).apply {
+                val gbc = java.awt.GridBagConstraints().apply {
+                    gridx = 0
+                    gridy = java.awt.GridBagConstraints.RELATIVE
+                    insets = com.intellij.util.ui.JBUI.insets(6)
+                }
+                add(JLabel(msg, javax.swing.SwingConstants.CENTER), gbc)
+                add(javax.swing.JButton("Open Plugins", com.intellij.icons.AllIcons.Actions.Download).apply {
+                    addActionListener {
+                        com.github.georgenady.retrofitApiSwagger.utils.PluginUiUtils.openPluginsSettings(project)
+                    }
+                }, gbc)
+            }
+            add(msgPanel, BorderLayout.CENTER)
         } else {
-            setupBrowser(browser)
+            setupBrowser(b)
         }
     }
 

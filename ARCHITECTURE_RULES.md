@@ -13,6 +13,7 @@ The architecture rules are split into modular files under `.agents/rules/` so yo
 | [react-architecture.md](file:///Users/georgenady/IdeaProjects/Retrofit_API_Swagger/.agents/rules/react-architecture.md) | Zero-business-logic pure UI components, layered building blocks & screens, custom hooks for logic, One Component Per File. | ~3.0 KB |
 | [jcef-webview-bridge.md](file:///Users/georgenady/IdeaProjects/Retrofit_API_Swagger/.agents/rules/jcef-webview-bridge.md) | `KotlinBridge.js` single gateway, unidirectional `StateFlow` synchronization (`window.updateGraphData`), event standards, dark/light theme support. | ~1.5 KB |
 | [testing-and-verification.md](file:///Users/georgenady/IdeaProjects/Retrofit_API_Swagger/.agents/rules/testing-and-verification.md) | Automated unit testing standards for use cases & parsers, regression prevention, standard workflow commands. | ~1.1 KB |
+| [localization-and-bundle.md](file:///Users/georgenady/IdeaProjects/Retrofit_API_Swagger/.agents/rules/localization-and-bundle.md) | Use `MyBundle.message` for all user-facing UI strings instead of hardcoded literals, centralized string definitions. | ~1.2 KB |
 
 ---
 

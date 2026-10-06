@@ -5,6 +5,7 @@ include(":retrofit-example")
 include(":ktorfit-example")
 include(":parser")
 include(":scanner")
+include(":utils")
 
 
 rootProject.name = "Retrofit_API_Swagger"

@@ -2,8 +2,9 @@
 
 # Retrofit API Swagger Changelog
 
-## [1.2.0] - 2026-10-05
+## [1.2.0] - 2026-10-06
 ### Added
+- **Latest Android Studio Support**: Full compatibility with the latest Android Studio versions (including Android Studio Rabbit 1 | 2026.2.1+ and IntelliJ Platform 2026.2+ modular architecture).
 - **Custom Code Generation & Edge Actions**: Connect any two API nodes in the visual graph to trigger customizable code generation and annotations.
 - **Edge Actions Settings UI**: Dedicated configuration page under *Settings > Tools > Edge Actions* to manage, edit, and create custom edge action templates and placement rules.
 - **Built-in Response Viewer**: Inspect API responses directly inside the IDE with automatic syntax highlighting and format detection (JSON, XML, HTML, Plain Text).
@@ -12,7 +13,9 @@
 - **Fast Background Scanning**: Background endpoint scanning and smart caching ensure instant navigation without UI freezing.
 
 ### Fixed
-- Fixed node connection linking and edge generation behavior.
+- **Tool Window Loading ("Nothing to show")**: Resolved classloader isolation issues in Android Studio Rabbit 2026.2+ by linking the JCEF runtime module (`com.intellij.modules.jcef`).
+- **Defensive UI & Error Recovery**: Added resilient fallback handling and retry mechanisms to prevent blank tool window states on unexpected runtime errors.
+- **Node Connections**: Fixed node connection linking and edge generation behavior.
 
 ## [1.1.9] - 2026-08-29
 ### Added
