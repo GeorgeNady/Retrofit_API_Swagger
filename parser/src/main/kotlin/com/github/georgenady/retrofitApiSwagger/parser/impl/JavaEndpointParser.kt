@@ -55,6 +55,7 @@ internal class JavaEndpointParser : FileEndpointParser {
      * @param file The enclosing Java file.
      * @return An [ApiNode] if the method declares a Retrofit endpoint, or null otherwise.
      */
+    @Suppress("DEPRECATION")
     fun parseMethod(method: PsiMethod, psiClass: PsiClass, file: PsiJavaFile): ApiNode? {
         var httpMethod: String? = null
         var path = ""

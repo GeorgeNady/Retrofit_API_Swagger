@@ -5,7 +5,7 @@
     <vendor email="gorgonady.gn@gmail.com" url="https://github.com/GeorgeNady">
         George Nady
     </vendor>
-    <version>1.2.0</version>
+    <version>1.3.0</version>
 
     <description><![CDATA[
         <p><b>Ktorfit &amp; Retrofit Studio</b> is a professional tool for visualizing, inspecting, and generating code for your Android and Kotlin Multiplatform (KMP) network layer. It provides an interactive visual "Design Mode" similar to the Jetpack Navigation Editor, tailored for both Ktorfit and Retrofit APIs.</p>
@@ -42,6 +42,15 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <change-notes><![CDATA[
+        <h4>1.3.0</h4>
+        <ul>
+            <li><b>JCEF Webview Isolation Adapter:</b> Implemented <code>JcefWebviewAdapter</code> providing dedicated lifecycle management, runtime isolation, and graceful fallback rendering.</li>
+            <li><b>Dedicated Utilities Module:</b> Extracted standalone <code>:utils</code> module with centralized <code>NotificationService</code>, fluent notification action items, and UI utilities.</li>
+            <li><b>Resilient Fallback &amp; Error Recovery:</b> Added automatic fallback error UI with retry actions and direct GitHub issue reporting to eliminate blank tool window states in modern Android Studio.</li>
+            <li><b>Kotlin 2.1 &amp; Build Modernization:</b> Upgraded compiler to Kotlin 2.1, aligned IntelliJ Platform Gradle Plugin to 2.16.0, and modernized compiler flags.</li>
+            <li><b>Incremental Build Automation:</b> Improved webview caching to monitor all configuration, template, and dependency changes.</li>
+            <li><b>Cleaned Up Deprecations:</b> Addressed compiler deprecation warnings for legacy endpoint cache parsing while preserving full backward compatibility.</li>
+        </ul>
         <h4>1.2.0</h4>
         <ul>
             <li><b>Latest Android Studio Support:</b> Full compatibility with the latest Android Studio versions (including Android Studio Rabbit 1 | 2026.2.1+ and IntelliJ Platform 2026.2+ modular architecture).</li>

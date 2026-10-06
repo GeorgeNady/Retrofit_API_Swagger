@@ -51,6 +51,7 @@ internal class KotlinEndpointParser : FileEndpointParser {
      * @param file The enclosing Kotlin file.
      * @return An [ApiNode] if the function is a valid Retrofit endpoint, or null otherwise.
      */
+    @Suppress("DEPRECATION")
     fun parseFunction(function: KtNamedFunction, file: KtFile): ApiNode? {
         var httpMethod: String? = null
         var path = ""

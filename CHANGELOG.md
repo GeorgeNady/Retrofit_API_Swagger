@@ -2,6 +2,18 @@
 
 # Retrofit API Swagger Changelog
 
+## [1.3.0] - 2026-10-07
+### Added
+- **JCEF Webview Isolation Adapter**: Introduced `JcefWebviewAdapter` providing dedicated lifecycle management, isolated webview communication, and defense-in-depth runtime protection.
+- **Dedicated Utilities Module (`:utils`)**: Extracted common utilities into a standalone submodule with centralized `NotificationService` (balloon notifications, action handlers), `PluginUiUtils`, and modular XML registration (`utils.xml`).
+- **Resilient Fallback & Error Recovery**: Added automated fallback error views with retry mechanisms and direct "Report Issue on GitHub" integration (`OpenGitHubIssueAction`) to eliminate blank tool window states in modern IDEs.
+- **Modernized Build System & Kotlin 2.1**: Upgraded Kotlin compiler to 2.1 (`apiVersion` and `languageVersion`), aligned IntelliJ Platform Gradle Plugin across all settings and modules to 2.16.0, and updated compiler flags to `-jvm-default=no-compatibility`.
+- **Enhanced Incremental Build Automation**: Refined webview build caching inputs to track full configuration, dependencies, and template files (`package.json`, `package-lock.json`, `vite.config.js`, `index.html`).
+
+### Fixed
+- **Tool Window Blank Screen Recovery**: Resolved runtime initialization failures and classloader isolation issues in Android Studio Rabbit 2026.2+ and modern IntelliJ Platform runtimes.
+- **Compiler Deprecation Cleanups**: Addressed compiler deprecation warnings for legacy `@SupportCache` parsing in `JavaEndpointParser` and `KotlinEndpointParser` while preserving backward compatibility.
+
 ## [1.2.0] - 2026-10-06
 ### Added
 - **Latest Android Studio Support**: Full compatibility with the latest Android Studio versions (including Android Studio Rabbit 1 | 2026.2.1+ and IntelliJ Platform 2026.2+ modular architecture).
